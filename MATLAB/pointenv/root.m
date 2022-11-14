@@ -3,22 +3,26 @@ clean;
 plot_results = 1;
 anim_results = ~plot_results;
 
-addpath ./kman;
+addpath ../.
 addpath ./sphereworld;
 
 load sphereworld;
 
 
 %% Model function
-dt = 1;
-modelFun = @(x) model(x, [0,0], dt);
+dt = 0.01;
+modelFun = @(x, u) model(x, u, dt);
+inputFun = @(x) rand(1,2);
 
 
 %% Initialize training data
+Nrand = 20;
 x0 = [
-    xStart', zeros(size(xStart'));
-    10*rand(15, 2), 4*rand(15, 2) - 2;
+    xStart', zeros(size(xStart')), ;
+    10*rand(Nrand, 2), 4*rand(Nrand, 2) - 2;
 ];
+
+Nu = length(inputFun(x0(1,:)));
 [Nx, Ns] = size(x0);
 
 % simulation variables
@@ -27,20 +31,17 @@ tspan = 0:dt:T;
 Nt = length(tspan);
 
 % generate model data
-data_train = generate_data(modelFun, tspan, x0);
-x_train = stack_data(data_train, Nx, Ns, Nt);
-
-u = [0, 0];
+data_train = generate_data(modelFun, tspan, x0, inputFun);
+x_train = stack_data(data_train, Nx, Ns+Nu, Nt);
 
 
 %% Evaluate for the observation function
 Q = 1;
-Nu = length(u);
 Nk = (Ns+Nu)*Q^(Ns+Nu);
 
-observation = @(x) observables(x, u, Q);
+observation = @(x) observables(x, Q);
 
-[K, acc, ind, err] = koopman(observation, x_train, x0);
+[K, acc, ind, err] = koopman(observation, x_train, x0, 2);
 fprintf("L-2 norm: %.3s\n\n", acc)
 
 
@@ -50,14 +51,10 @@ T_Koop = T;
 t_Koop = (0:dt:T_Koop)';
 Nt = length(t_Koop);
 
-% redeclare functions (for reading old data)
-modelFun = @(x) model(x, u, dt);
-observation = @(x) observables(x, u, Q);
-
 % introduce variance into the initial conditions
-x0 = x0(Nx-4:end,:);
+x0 = x0(Nx-10:end,:);
 [Nx, Ns] = size(x0);
-x0 = x0 + 0.5*rand(Nx, Ns);
+x0 = x0 + (rand(Nx, Ns) - 0.5);
 
 psi0 = NaN(Nx, Nk);
 for i = 1:Nx
@@ -87,7 +84,7 @@ if ~isnan(acc)
 
     if plot_results
         
-        fig_modelcomp = plot_comparisons(data_train, x_Koop, x0, t_Koop);
+        fig_modelcomp = plot_comparisons(x_test, x_Koop, x0, t_Koop);
 
     end
 

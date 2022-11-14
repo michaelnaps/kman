@@ -11,6 +11,10 @@ function [psi] = observables(q, u, Q, env)
         Q = 3;
     end
 
+    if nargin < 2
+        u = [0, 0];
+    end
+
     Nx = length(q) + length(u);
     Nk = Nx*Q^Nx;
 

@@ -4,10 +4,6 @@ function [fig] = plot_comparisons(x1_list, x2_list, x0, tspan)
 
     k = 0;
 
-    size(x1_list)
-    size(x2_list)
-    size(tspan)
-
     fig = figure;
     for i = 1:Nx
 
@@ -17,8 +13,13 @@ function [fig] = plot_comparisons(x1_list, x2_list, x0, tspan)
             hold on
             plot(tspan, x1_list(:,k+j), 'linewidth', 2)
             plot(tspan, x2_list(:,k+j), '--', 'linewidth', 1.5)
-            legend('Model Func.', 'Koopman op.')
             title("x(" + i + "," + j + ")")
+            
+            if i == 1 && j == Ns
+                legend('Model Func.', 'Koopman op.')
+            end
+
+            ylim([min(x1_list(:,k+j))-1, max(x1_list(:,k+j))+1])
             hold off
             
 

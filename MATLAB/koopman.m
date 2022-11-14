@@ -1,32 +1,32 @@
-function [K, acc, ind, err] = koopman(observation, data, x0)
+function [K, acc, ind, err] = koopman(observation, x_data, u_data, x0)
     %% Create structure variable for errors
     err = struct;
 
     %% evaluate for the observation function
     Nx = length(x0(:,1));                   % number of initial points
-    M  = round(length(data(:,1))/Nx);       % number of data points
-    Nk = length(observation(data(1,:)));    % number of obs. functions
+    Mx = round(length(x_data(:,1))/Nx);       % number of data points
+    Nk = length(observation(x_data(1,:)));    % number of obs. functions
 
-    psiX = NaN(M-Nx, Nk);
-    psiY = NaN(M-Nx, Nk);
+    psiX = NaN(Mx-Nx, Nk);
+    psiY = NaN(Mx-Nx, Nk);
 
     i = 0;
     j = 0;
 
     for n = 1:Nx
 
-        for m = 1:M-1
+        for m = 1:Mx-1
 
             i = i + 1;
             j = j + 1;
 
-            psiX(j,:) = observation(data(i,:));
-            psiY(j,:) = observation(data(i+1,:));
+            psiX(j,:) = observation(x_data(i,:));
+            psiY(j,:) = observation(x_data(i+1,:));
 
         end
 
         i = i + 1;
-        j = n*(M-1);
+        j = n*(Mx-1);
 
     end
 
@@ -46,8 +46,8 @@ function [K, acc, ind, err] = koopman(observation, data, x0)
     %% perform lest-squares
     % create least-squares matrices
     eps = 1e-6;
-    G = 1/M * (psiX')*psiX;
-    A = 1/M * (psiX')*psiY;
+    G = 1/Mx * (psiX')*psiX;
+    A = 1/Mx * (psiX')*psiY;
 
     [U,S,V] = svd(G);
 
