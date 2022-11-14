@@ -1,26 +1,22 @@
-function [psi] = observables(q, u, Q, env)
+function [psi] = observables(q, Q, env)
 
-    if nargin < 4
+    if nargin < 3
         env = struct;
         env.xRange = [0, 1];
         env.yRange = [0, 1];
         env.maxVel = 1;
     end
 
-    if nargin < 3
+    if nargin < 2
         Q = 3;
     end
 
-    if nargin < 2
-        u = [0, 0];
-    end
-
-    Nx = length(q) + length(u);
+    Nx = length(q);
     Nk = Nx*Q^Nx;
 
     x  = q(1);  dx = q(2);
     y  = q(3);  dy = q(4);
-    ux = u(1);  uy = u(2);
+    ux = q(5);  uy = q(6);
     lx = max(abs(env.xRange));
     ly = max(abs(env.yRange));
     lv = env.maxVel;

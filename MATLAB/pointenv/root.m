@@ -11,15 +11,15 @@ load sphereworld;
 
 %% Model function
 dt = 0.01;
-modelFun = @(x, u) model(x, u, dt);
 inputFun = @(x) rand(1,2);
+modelFun = @(x) model(x, dt, inputFun);
 
 
 %% Initialize training data
 Nrand = 20;
 x0 = [
-    xStart', zeros(size(xStart')), ;
-    10*rand(Nrand, 2), 4*rand(Nrand, 2) - 2;
+    xStart', zeros(size(xStart')), zeros(size(xStart'));
+    10*rand(Nrand, 2), 4*rand(Nrand, 2) - 2, 2*rand(Nrand, 2) - 1;
 ];
 
 Nu = length(inputFun(x0(1,:)));
@@ -31,13 +31,13 @@ tspan = 0:dt:T;
 Nt = length(tspan);
 
 % generate model data
-data_train = generate_data(modelFun, tspan, x0, inputFun);
-x_train = stack_data(data_train, Nx, Ns+Nu, Nt);
+data_train = generate_data(modelFun, tspan, x0);
+x_train = stack_data(data_train, Nx, Ns, Nt);
 
 
 %% Evaluate for the observation function
 Q = 1;
-Nk = (Ns+Nu)*Q^(Ns+Nu);
+Nk = Ns*Q^Ns;
 
 observation = @(x) observables(x, Q);
 
@@ -52,7 +52,7 @@ t_Koop = (0:dt:T_Koop)';
 Nt = length(t_Koop);
 
 % introduce variance into the initial conditions
-x0 = x0(Nx-10:end,:);
+x0 = x0(Nx-4:end,:);
 [Nx, Ns] = size(x0);
 x0 = x0 + (rand(Nx, Ns) - 0.5);
 
@@ -66,6 +66,7 @@ end
 KoopFun = @(psi) (K'*psi')';
 x_Koop = generate_data(KoopFun, t_Koop, psi0);
 
+% delete unwanted elements from the observation space
 k = 1;
 for i = 1:Nx
 

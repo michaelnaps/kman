@@ -1,18 +1,19 @@
-function [xn] = model(x, u, dt)
+function [xn] = model(x, dt, inputFun)
 
     if nargin < 3
-        dt = 1e-3;
+        inputFun = @(x) [];
     end
 
     if nargin < 2
-        u = [0,0];
+        dt = 1e-3;
     end
 
     xn = x + dt*[
         x(3);
         x(4);
-        u(1);
-        u(2);
+        x(5);
+        x(6);
+        inputFun(x(1:4))'        
     ]';
 
 end
