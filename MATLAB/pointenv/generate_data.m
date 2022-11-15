@@ -1,5 +1,6 @@
 function [x_list] = generate_data(F, tspan, x0)
-
+    
+    % inputs: F, tspan, x0
     % where function, F, is a discrete dynamics function
     
     [Nx, Ns] = size(x0);

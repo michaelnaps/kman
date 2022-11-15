@@ -1,7 +1,12 @@
 %function sphereworld_plot(world,xGoal)
 %Uses sphere_draw to draw the spherical obstacles together with a  * marker at
 %the goal location.
-function plot_sphereworld(world, xGoal)
+function [fig] = plot_sphereworld(world, xGoal, fig)
+
+if nargin < 3
+    fig = figure;
+end
+
 if nargin < 2
     xGoal = [];
 end

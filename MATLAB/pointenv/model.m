@@ -13,7 +13,7 @@ function [xn] = model(x, dt, inputFun)
         x(4);
         x(5);
         x(6);
-        inputFun(x(1:4))'        
+        inputFun(x(1:4))'
     ]';
 
 end
