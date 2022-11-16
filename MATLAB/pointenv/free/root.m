@@ -11,12 +11,12 @@ load sphereworld;
 
 
 %% Model function
-dt = 0.1;
+dt = 0.01;
 modelFun = @(x) model(x, dt);
 
 
 %% Initialize training data
-Nrand = 2;
+Nrand = 20;
 x0 = [
     xStart', zeros(size(xStart'));
     10*rand(Nrand, 2), 4*rand(Nrand, 2) - 2;
@@ -35,7 +35,7 @@ x_train = stack_data(data_train, Nx, Ns, Nt);
 
 %% Evaluate for the observation function
 Q = 1;
-Nk = Ns*Q^Ns;
+Nk = Ns*Q;
 
 observation = @(x) observables(x, Q);
 
@@ -50,7 +50,7 @@ t_Koop = (0:dt:T_Koop)';
 Nt = length(t_Koop);
 
 % introduce variance into the initial conditions
-% x0 = x0(Nx-4:end,:);
+x0 = x0(Nx-4:end,:);
 [Nx, Ns] = size(x0);
 x0 = x0 + (rand(Nx, Ns) - 0.5);
 
