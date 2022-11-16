@@ -4,29 +4,27 @@ plot_results = 1;
 anim_results = ~plot_results;
 
 addpath ../.
-addpath ./sphereworld;
+addpath ../../.
+addpath ../sphereworld;
 
 load sphereworld;
 
 
 %% Model function
-dt = 0.001;
-inputFun = @(x) [0,0];
-modelFun = @(x) model(x, dt, inputFun);
+dt = 0.1;
+modelFun = @(x) model(x, dt);
 
 
 %% Initialize training data
 Nrand = 2;
 x0 = [
-    xStart', zeros(size(xStart')), zeros(size(xStart'));
-    10*rand(Nrand, 2), 4*rand(Nrand, 2) - 2, 2*rand(Nrand, 2) - 1;
+    xStart', zeros(size(xStart'));
+    10*rand(Nrand, 2), 4*rand(Nrand, 2) - 2;
 ];
-
-Nu = length(inputFun(x0(1,:)));
 [Nx, Ns] = size(x0);
 
 % simulation variables
-T = 20;
+T = 10;
 tspan = 0:dt:T;
 Nt = length(tspan);
 
@@ -36,12 +34,12 @@ x_train = stack_data(data_train, Nx, Ns, Nt);
 
 
 %% Evaluate for the observation function
-Q = 2;
-Nk = (Ns-2)*Q^(Ns-2) + 2;
+Q = 1;
+Nk = Ns*Q^Ns;
 
-observation = @(x) observables(x, inputFun, Q);
+observation = @(x) observables(x, Q);
 
-[K, acc, ind, err] = koopman(observation, x_train, x0, 2);
+[K, acc, ind, err] = koopman(observation, x_train, x0);
 fprintf("L-2 norm: %.3s\n\n", acc)
 
 
@@ -52,7 +50,7 @@ t_Koop = (0:dt:T_Koop)';
 Nt = length(t_Koop);
 
 % introduce variance into the initial conditions
-x0 = x0(Nx-4:end,:);
+% x0 = x0(Nx-4:end,:);
 [Nx, Ns] = size(x0);
 x0 = x0 + (rand(Nx, Ns) - 0.5);
 
@@ -64,14 +62,17 @@ for i = 1:Nx
 end
 
 KoopFun = @(psi) (K'*psi')';
-x_Koop = generate_data(KoopFun, t_Koop, psi0);
+data_Koop = generate_data(KoopFun, t_Koop, psi0);
 
 % delete unwanted elements from the observation space
-k = 1;
+k = 1;  j = 1;
+x_Koop = NaN(Nt,Ns*Nx);
 for i = 1:Nx
 
-    x_Koop(:,k+Ns:k+Nk-1) = [];
-    k = k + Ns;
+    x_Koop(:,j:j+Ns-1) = data_Koop(:,k:k+Ns-1);
+
+    k = k + Nk;
+    j = j + Ns;
 
 end
 
@@ -97,7 +98,7 @@ if ~isnan(acc)
         bernard.distInfluence = 0.25;
         bernard.color = 'k';
 
-        animate(bernard, x_Koop, tspan, world, [0;0]);
+        animate(bernard, x_Koop(:,1:4), tspan, world, xGoal(:,1), x_test(:,1:4));
 
     end
 

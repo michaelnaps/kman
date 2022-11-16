@@ -1,11 +1,11 @@
-function [K, acc, ind, err] = koopman(observation, x_data, u_data, x0)
+function [K, acc, ind, err] = koopman(observation, x_data, x0)
     %% Create structure variable for errors
     err = struct;
 
     %% evaluate for the observation function
     Nx = length(x0(:,1));                   % number of initial points
-    Mx = round(length(x_data(:,1))/Nx);       % number of data points
-    Nk = length(observation(x_data(1,:)));    % number of obs. functions
+    Mx = round(length(x_data(:,1))/Nx);     % number of data points
+    Nk = length(observation(x_data(1,:)));  % number of obs. functions
 
     psiX = NaN(Mx-Nx, Nk);
     psiY = NaN(Mx-Nx, Nk);
