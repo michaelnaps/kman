@@ -10,13 +10,13 @@ load sphereworld;
 
 
 %% Model function
-dt = 0.01;
-inputFun = @(x) rand(1,2);
+dt = 0.001;
+inputFun = @(x) [0,0];
 modelFun = @(x) model(x, dt, inputFun);
 
 
 %% Initialize training data
-Nrand = 20;
+Nrand = 2;
 x0 = [
     xStart', zeros(size(xStart')), zeros(size(xStart'));
     10*rand(Nrand, 2), 4*rand(Nrand, 2) - 2, 2*rand(Nrand, 2) - 1;
@@ -26,7 +26,7 @@ Nu = length(inputFun(x0(1,:)));
 [Nx, Ns] = size(x0);
 
 % simulation variables
-T = 10;
+T = 20;
 tspan = 0:dt:T;
 Nt = length(tspan);
 
@@ -36,10 +36,10 @@ x_train = stack_data(data_train, Nx, Ns, Nt);
 
 
 %% Evaluate for the observation function
-Q = 1;
-Nk = Ns*Q^Ns;
+Q = 2;
+Nk = (Ns-2)*Q^(Ns-2) + 2;
 
-observation = @(x) observables(x, Q);
+observation = @(x) observables(x, inputFun, Q);
 
 [K, acc, ind, err] = koopman(observation, x_train, x0, 2);
 fprintf("L-2 norm: %.3s\n\n", acc)
@@ -89,12 +89,17 @@ if ~isnan(acc)
 
     end
 
-%     if anim_results
-% 
-%         names = ["", "Model", "", "Koopman"];
-%         animate(t_Koop, x_modl, -x_Koop, names, 50, 2);
-% 
-%     end
+    if anim_results
+
+        bernard = struct;
+        bernard.xCenter = [0,0];
+        bernard.radius = 0.25;
+        bernard.distInfluence = 0.25;
+        bernard.color = 'k';
+
+        animate(bernard, x_Koop, tspan, world, [0;0]);
+
+    end
 
 end
 
