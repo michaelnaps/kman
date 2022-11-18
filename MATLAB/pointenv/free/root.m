@@ -1,6 +1,6 @@
 clean;
 
-plot_results = 1;
+plot_results = 0;
 anim_results = ~plot_results;
 
 addpath ../.
@@ -19,7 +19,8 @@ modelFun = @(x) model(x, dt);
 Nrand = 20;
 x0 = [
     xStart', zeros(size(xStart'));
-    10*rand(Nrand, 2), 4*rand(Nrand, 2) - 2;
+    20*rand(Nrand, 2), 10*rand(Nrand, 2) - 5;
+    0, 0, 20, 10
 ];
 [Nx, Ns] = size(x0);
 
@@ -52,7 +53,7 @@ Nt = length(t_Koop);
 % introduce variance into the initial conditions
 x0 = x0(Nx-4:end,:);
 [Nx, Ns] = size(x0);
-x0 = x0 + (rand(Nx, Ns) - 0.5);
+x0 = x0 + [(rand(Nx-1, Ns) - 0.5); 0, 0, 0, 0];
 
 psi0 = NaN(Nx, Nk);
 for i = 1:Nx
@@ -98,30 +99,11 @@ if ~isnan(acc)
         bernard.distInfluence = 0.25;
         bernard.color = 'k';
 
-        animate(bernard, x_Koop(:,1:4), tspan, world, xGoal(:,1), x_test(:,1:4));
+        x_test_anim = x_test(:,end-(Ns-1):end);
+        x_Koop_anim = x_Koop(:,end-(Ns-1):end);
+
+        animate(bernard, x_Koop_anim, tspan, world, xGoal(:,1), x_test_anim);
 
     end
 
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
