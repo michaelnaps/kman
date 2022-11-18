@@ -1,4 +1,4 @@
-function [psi] = observables(q, Q, env)
+function [psi] = observables(x, u, Q, env)
 
     if nargin < 3
         env = struct;
@@ -11,11 +11,13 @@ function [psi] = observables(q, Q, env)
         Q = 3;
     end
 
-    Ns = length(q);
+    Ns = length(x);
     Nk = Ns*Q;
 
-    x  = q(1);  dx = q(3);
-    y  = q(2);  dy = q(4);
+    xpos = x(1);  xvel = x(3);
+    ypos = x(2);  yvel = x(4);
+
+    ux = u(1);  uy = u(2);
 
     lx = max(abs(env.xRange));
     ly = max(abs(env.yRange));
@@ -27,10 +29,11 @@ function [psi] = observables(q, Q, env)
     for i_x  = 1:Q
 
         psi(k:k+Ns-1) = [
-            (x/lx),...
-            (y/ly),...
-            (dx/lv),...
-            (dy/lv)
+            (xpos/lx),...
+            (ypos/ly),...
+            (xvel/lv),...
+            (yvel/lv),...
+            u
         ].^i_x;
 
         k = k + Ns;

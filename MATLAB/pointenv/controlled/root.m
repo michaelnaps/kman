@@ -12,14 +12,15 @@ load sphereworld;
 
 %% Model function
 dt = 0.01;
-modelFun = @(x) model(x, dt);
+modelFun = @(x, u) model(x, [0,0], dt);
 
 
 %% Initialize training data
 Nrand = 20;
 x0 = [
     xStart', zeros(size(xStart'));
-    10*rand(Nrand, 2), 4*rand(Nrand, 2) - 2;
+    20*rand(Nrand, 2), 10*rand(Nrand, 2) - 5;
+    0, 0, 20, 10
 ];
 [Nx, Ns] = size(x0);
 
@@ -37,7 +38,7 @@ x_train = stack_data(data_train, Nx, Ns, Nt);
 Q = 1;
 Nk = Ns*Q;
 
-observation = @(x) observables(x, Q);
+observation = @(x, u) observables(x, [0,0], Q);
 
 [K, acc, ind, err] = koopman(observation, x_train, x0);
 fprintf("L-2 norm: %.3s\n\n", acc)
@@ -52,7 +53,7 @@ Nt = length(t_Koop);
 % introduce variance into the initial conditions
 x0 = x0(Nx-4:end,:);
 [Nx, Ns] = size(x0);
-x0 = x0 + (rand(Nx, Ns) - 0.5);
+x0 = x0 + [(rand(Nx-1, Ns) - 0.5); 0, 0, 0, 0];
 
 psi0 = NaN(Nx, Nk);
 for i = 1:Nx
@@ -98,30 +99,11 @@ if ~isnan(acc)
         bernard.distInfluence = 0.25;
         bernard.color = 'k';
 
-        animate(bernard, x_Koop(:,1:4), tspan, world, xGoal(:,1), x_test(:,1:4));
+        x_test_anim = x_test(:,end-(Ns-1):end);
+        x_Koop_anim = x_Koop(:,end-(Ns-1):end);
+
+        animate(bernard, x_Koop_anim, tspan, world, xGoal(:,1), x_test_anim);
 
     end
 
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
