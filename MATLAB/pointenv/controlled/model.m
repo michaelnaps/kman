@@ -4,7 +4,7 @@ function [xn] = model(x, u, dt)
         dt = 1e-3;
     end
 
-    c = 1;
+    c = 0.5;
 
     xn = x + dt*[
         x(3);

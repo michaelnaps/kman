@@ -1,14 +1,16 @@
-function [x_list] = generate_data(F, tspan, x0)
+function [xlist] = generate_data(F, tspan, x0, ulist)
     
-    % inputs: F, tspan, x0
+    % inputs: F, tspan, x0, ulist
     % where function, F, is a discrete dynamics function
     
     [Nx, Ns] = size(x0);
-    Nt = length(tspan);    % number of time-steps
+    Nu = round(Ns/2);
+    Nt = length(tspan);
     
-    x_list = NaN(Nt, Nx*Ns);
+    xlist = NaN(Nt, Nx*Ns);
 
     n = 1;
+    k = 1;
     for i = 1:Nx
 
         x = NaN(Nt, Ns);
@@ -16,12 +18,13 @@ function [x_list] = generate_data(F, tspan, x0)
 
         for t = 1:Nt-1
           
-            x(t+1,:) = F(x(t,1:Ns));
+            x(t+1,:) = F(x(t,1:Ns), ulist(t,k:k+Nu-1));
 
         end
 
-        x_list(:,n:n+Ns-1) = x;
+        xlist(:,n:n+Ns-1) = x;
         n = n + Ns;
+        k = k + Nu;
 
     end
 
