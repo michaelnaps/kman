@@ -25,7 +25,5 @@ function [fig] = animate(robot, x_list, tspan, world, xGoal, x_comp)
             scatter(x_comp(i,1), x_comp(i,2), 'g*');
         end
 
-        title(tspan(i))
-
         pause(dt);
     end
