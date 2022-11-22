@@ -1,13 +1,17 @@
-clean;
+function root(plot_results)
 
-plot_results = 1;
+if nargin < 1
+    plot_results = 1;
+end
+
 anim_results = ~plot_results;
 
 addpath ../.
 addpath ../../.
 addpath ../sphereworld;
 
-load sphereworld;
+load sphereworld world xStart;
+Nw = length(world);
 
 
 %% Model function
@@ -49,10 +53,10 @@ u_train = stack_data(u_generate, Nx, Nu, Nt);
 
 
 %% Evaluate for the observation function
-Q = 1;
-Nk = Ns*Q;
+Q = 2;
 
-observation = @(x, u) observables(x, u, Q);
+observation = @(x, u) observables(x, u, world, Q);
+Nk = length(observation([0,0,0,0], [0,0]));
 
 [K, acc, ind, err] = KoopmanWithControl(observation, x_train, x0, u_train);
 fprintf("L-2 norm: %.3s\n\n", acc)
@@ -84,27 +88,8 @@ for i = 1:Nx
     k = k + Nu;
 end
 
-% psi0 = NaN(Nx, Nk);
-% for i = 1:Nx
-% 
-%     psi0(i,:) = observation(x0(i,:), [0,0]);
-% 
-% end
-
-koop = @(x, u) KoopFun(x, u, K, Q);
-x_koop = generate_data(koop, t_koop, x0, u_test);
-
-% % delete unwanted elements from the observation space
-% k = 1;  j = 1;
-% x_koop = NaN(Nt,Ns*Nx);
-% for i = 1:Nx
-% 
-%     x_koop(:,j:j+Ns-1) = data_koop(:,k:k+Ns-1);
-% 
-%     k = k + Nk;
-%     j = j + Ns;
-% 
-% end
+KoopModel = @(x, u) KoopFun(x, u, world, K, Q);
+x_koop = generate_data(KoopModel, t_koop, x0, u_test);
 
 
 %% generate data for new initial conditions
@@ -118,9 +103,7 @@ if ~isnan(acc)
         
         fig_modelcomp = plot_comparisons(x_test, x_koop, x0, t_koop);
 
-    end
-
-    if anim_results
+    elseif anim_results
 
         bernard = struct;
         bernard.xCenter = [0,0];
@@ -131,17 +114,21 @@ if ~isnan(acc)
         x_test_anim = x_test(:,end-(Ns-1):end);
         x_koop_anim = x_koop(:,end-(Ns-1):end);
 
-        animate(bernard, x_koop_anim, tspan, world, xGoal(:,1), x_test_anim);
+        animate(bernard, x_koop_anim, tspan, world, [0,0], x_test_anim);
 
     end
 
 end
 
-function [x_n] = KoopFun(x, u, K, Q)
-    Nx = length(x);
-%     Nu = length(u);
+keyboard
 
-    psi = observables(x, u, Q);
+end
+
+function [x_n] = KoopFun(x, u, world, K, Q)
+    Nx = length(x);
+    Nw = length(world);
+
+    psi = observables(x, u, world, Q);
     psi_n = (K'*psi')';
     x_n = psi_n(1:Nx);
 end
