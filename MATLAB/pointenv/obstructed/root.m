@@ -114,9 +114,11 @@ if ~isnan(acc)
         x_test_anim = x_test(:,end-(Ns-1):end);
         x_koop_anim = x_koop(:,end-(Ns-1):end);
 
-        animate(bernard, x_koop_anim, tspan, world, [0,0], x_test_anim);
+        fig_animcomp = animate(bernard, x_koop_anim, tspan, world, [0,0], x_test_anim);
 
     end
+
+    keyboard;
 
 end
 
