@@ -27,3 +27,4 @@ function [fig] = animate(robot, x_list, tspan, world, xGoal, x_comp)
 
         pause(dt);
     end
+end

@@ -1,9 +1,12 @@
-function root(plot_results)
+% function root(plot_results)
+% 
+% if nargin < 1
+%     plot_results = 1;
+% end
 
-if nargin < 1
-    plot_results = 1;
-end
+clean;
 
+plot_results = 1;
 anim_results = ~plot_results;
 
 addpath ../.
@@ -53,12 +56,12 @@ u_train = stack_data(u_generate, Nx, Nu, Nt);
 
 
 %% Evaluate for the observation function
-Q = 2;
+Q = 1;
 
 observation = @(x, u) observables(x, u, world, Q);
 Nk = length(observation([0,0,0,0], [0,0]));
 
-[K, acc, ind, err] = KoopmanWithControl(observation, x_train, x0, u_train);
+[K, acc, ~, ~] = KoopmanWithControl(observation, x_train, x0, u_train);
 fprintf("L-2 norm: %.3s\n\n", acc)
 
 
@@ -71,7 +74,7 @@ Nt = length(t_koop);
 % introduce variance into the initial conditions
 x0 = x0(Nx-4:end,:);
 [Nx, Ns] = size(x0);
-x0 = x0 + [(rand(Nx-1, Ns) - 0.5); 0, 0, 0, 0];
+x0 = x0 + [(rand(Nx-1, Ns) - 0.5); zeros(1, Ns)];
 
 % create list of inputs
 u0 = 20*rand(Nx, Nu) - 10;
@@ -88,12 +91,29 @@ for i = 1:Nx
     k = k + Nu;
 end
 
-KoopModel = @(x, u) KoopFun(x, u, world, K, Q);
-x_koop = generate_data(KoopModel, t_koop, x0, u_test);
-
 
 %% generate data for new initial conditions
+KoopModel = @(x, u) KoopFun(x, u, world, K, Q);
+x_koop = generate_data(KoopModel, t_koop, x0, u_test);
 x_test = generate_data(modelFun, t_koop, x0, u_test);
+
+
+%% generate obstacle distance comparison data
+obs_koop = NaN(Nt, Nw);
+obs_test = NaN(Nt, Nw);
+
+xc = x0(1,:);
+
+for i = 1:Nt
+    psi = observation(xc, u_test(i,1:Nu));
+    psi = (K'*psi')';
+
+    obs_koop(i,:) = psi(Nx+Nu:Nx+Nu+Nw-1);
+
+    xc = psi(1:Ns);
+
+    obs_test(i,:) = ModelToSphere(x_test(i,1:Ns), world);
+end
 
 
 %% plot results
@@ -101,7 +121,8 @@ if ~isnan(acc)
 
     if plot_results
         
-        fig_modelcomp = plot_comparisons(x_test, x_koop, x0, t_koop);
+        plot_comparisons(x_test, x_koop, x0, t_koop);
+        plot_comparisons(obs_test, obs_koop, obs_test(1,:), t_koop);
 
     elseif anim_results
 
@@ -114,16 +135,18 @@ if ~isnan(acc)
         x_test_anim = x_test(:,end-(Ns-1):end);
         x_koop_anim = x_koop(:,end-(Ns-1):end);
 
-        fig_animcomp = animate(bernard, x_koop_anim, tspan, world, [0,0], x_test_anim);
+        animate(bernard, x_koop_anim, tspan, world, [0,0], x_test_anim);
 
     end
 
-    keyboard;
+%     keyboard;
 
 end
 
-end
+% end
 
+
+%% Functions for modeling comparisons
 function [x_n] = KoopFun(x, u, world, K, Q)
     Nx = length(x);
     Nw = length(world);
@@ -133,6 +156,15 @@ function [x_n] = KoopFun(x, u, world, K, Q)
     x_n = psi_n(1:Nx);
 end
 
+function [o] = ModelToSphere(x, world)
+    Nw = length(world);
+
+    o = NaN(1,Nw);
+
+    for i = 1:Nw
+        o(i) = distance(world(i), [x(1), x(2)]);
+    end
+end
 
 
 
