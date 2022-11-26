@@ -61,7 +61,7 @@ Q = 1;
 observation = @(x, u) observables(x, u, world, Q);
 Nk = length(observation([0,0,0,0], [0,0]));
 
-[K, acc, ~, ~] = KoopmanWithControl(observation, x_train, x0, u_train);
+[K, acc, ind, ~] = KoopmanWithControl(observation, x_train, x0, u_train);
 fprintf("L-2 norm: %.3s\n\n", acc)
 
 

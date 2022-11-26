@@ -7,7 +7,7 @@ addpath ../../.
 addpath ../sphereworld
 addpath ./data
 
-load sphereworld world xStart;
+load sphereworld world;
 Nw = length(world);
 
 load K_11x11
@@ -20,3 +20,6 @@ tspan = (0:dt:T*dt)';
 
 %% create test environment
 x0 = [0, -8, 0, 0];
+xG = [5, 6];
+
+

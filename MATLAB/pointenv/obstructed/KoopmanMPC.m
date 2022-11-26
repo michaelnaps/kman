@@ -1,17 +1,11 @@
-function [u] = KoopmanMPC(x0, obsFun, K, Np, Nw, u_def)
+function [u] = KoopmanMPC(xG, x0, K, Np, Nw, observableFunc)
 
     Ns = length(x0);
     Nu = round(Ns/2);
     Nk = length(K);
 
-    if nargin < 4
-        u_def = zeros(Np, Nu);
-    end
-
     psi = NaN(Np, Nk);
-    psi(1,:) = obsFun(x0, u_def);
-
-    x = NaN(Np, Ns+Nu+Nw);
+    psi(1,:) = observableFunc(x0, uD);
 
     for i = 2:Np
 
@@ -20,5 +14,7 @@ function [u] = KoopmanMPC(x0, obsFun, K, Np, Nw, u_def)
     end
 
     x = psi(:,1:Ns+Nu+Nw);
+
+    
 
 end
