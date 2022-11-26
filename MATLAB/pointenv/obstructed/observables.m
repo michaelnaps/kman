@@ -14,7 +14,7 @@ function [psi] = observables(x, u, world, Q, env)
     Ns = length(x);
     Nu = length(u);
     Nw = length(world);
-    Nk = (Ns + Nu + Nw)*Q + 1;
+    Nk = (Ns + Nu + 3*Nw)*Q + 1;
 
     xpos = x(1);  xvel = x(3);
     ypos = x(2);  yvel = x(4);
@@ -24,9 +24,12 @@ function [psi] = observables(x, u, world, Q, env)
     lv = env.maxVel;
 
     % obstacle distances
-    dist = NaN(1,Nw);
+    dist = NaN(1, Nw);
+    grad = NaN(Nw, 2);
+
     for i = 1:Nw
         dist(i) = distance(world(i), [xpos, ypos]);
+        grad(i,:) = distance_grad(world(i), [xpos, ypos], dist(i));
     end
 
     psi = NaN(1, Nk);
@@ -34,16 +37,17 @@ function [psi] = observables(x, u, world, Q, env)
     k = 1;
     for i_x  = 1:Q
 
-        psi(k:k+Ns+Nu+Nw-1) = [
+        psi(k:k+Ns+Nu+3*Nw-1) = [
             (xpos/lx),...
             (ypos/ly),...
             (xvel/lv),...
             (yvel/lv),...
             u,...
-            dist
+            dist,...
+            reshape(grad, [1, 2*Nw])
         ].^i_x;
 
-        k = k + Ns + Nu + Nw;
+        k = k + Ns + Nu + 3*Nw;
     end
 
     psi(end) = 1;

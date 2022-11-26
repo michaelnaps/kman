@@ -149,7 +149,7 @@ end
 %% Functions for modeling comparisons
 function [x_n] = KoopFun(x, u, world, K, Q)
     Nx = length(x);
-    Nw = length(world);
+%     Nw = length(world);
 
     psi = observables(x, u, world, Q);
     psi_n = (K'*psi')';
