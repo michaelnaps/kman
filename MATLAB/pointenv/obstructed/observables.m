@@ -14,7 +14,7 @@ function [psi] = observables(x, u, world, Q, env)
     Ns = length(x);
     Nu = length(u);
     Nw = length(world);
-    Nk = (Ns + Nu + Nw)*Q + 2;
+    Nk = (Ns + Nu + Nw)*Q + 1;
 
     xpos = x(1);  xvel = x(3);
     ypos = x(2);  yvel = x(4);
@@ -46,6 +46,6 @@ function [psi] = observables(x, u, world, Q, env)
         k = k + Ns + Nu + Nw;
     end
 
-    psi(end-1:end) = [1,1];
+    psi(end) = 1;
 
 end
