@@ -6,14 +6,14 @@
 
 clean;
 
-plot_results = 0;
-anim_results = plot_results;
+plot_results = 1;
+anim_results = ~plot_results;
 
 addpath ../.
 addpath ../../.
 addpath ../sphereworld;
 
-load sphereworld world xStart;
+load sphereworld world;
 Nw = length(world);
 
 
@@ -23,11 +23,11 @@ modelFun = @(x, u) model(x, u, dt);
 
 
 %% Initialize training data
-Nrand = 20;
+Ntest = 100;
+Ncasc = Ntest/2;
+Nrand = Ntest/2;
 x0 = [
-    xStart', zeros(size(xStart'));
-    20*rand(Nrand, 2), 10*rand(Nrand, 2) - 5;
-    0, 0, 20, 10
+    20*rand(Ntest, 2), 10*rand(Ntest, 2) - 5;
 ];
 [Nx, Ns] = size(x0);
 Nu = round(Ns/2);
@@ -39,15 +39,18 @@ Nt = length(tspan);
 
 % create list of inputs
 u0 = 20*rand(Nx, Nu) - 10;
-u_generate = NaN(Nt, Nx*Nu);
+u_generate = NaN(Nt, Ncasc*Nu);
 
 k = 1;
-for i = 1:Nx
+for i = 1:Ncasc
     u_generate(:,k:k+Nu-1) = [
-        linspace(u0(i,1),0,Nt)', linspace(u0(i,2),0,Nt)'
+        linspace(u0(i,1),0,round(Nt/2))', linspace(u0(i,2),0,round(Nt/2))';
+        zeros(Nt-round(Nt/2), 2)
     ];
     k = k + Nu;
 end
+
+u_generate = [u_generate, 5*rand(Nt, Nrand*Nu)-10];
 
 % generate model data
 data_train = generate_data(modelFun, tspan, x0, u_generate);
@@ -61,7 +64,7 @@ Q = 1;
 observation = @(x, u) observables(x, u, world, Q);
 Nk = length(observation([0,0,0,0], [0,0]));
 
-[K, acc, ind, ~] = KoopmanWithControl(observation, x_train, x0, u_train);
+[K, acc, ind, err] = KoopmanWithControl(observation, x_train, x0, u_train);
 fprintf("L-2 norm: %.3s\n\n", acc)
 
 
