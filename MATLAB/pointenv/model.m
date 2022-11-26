@@ -1,10 +1,10 @@
 function [xn] = model(x, u, dt)
 
-    if nargin < 2
+    if nargin < 3
         dt = 1e-3;
     end
 
-    c = 0.5;
+    c = 0.75;
 
     xn = x + dt*[
         x(3);
