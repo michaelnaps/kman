@@ -16,7 +16,7 @@ function [fig] = animate(robot, x_list, tspan, world, xGoal, x_comp)
     for i = 1:N
         clf(fig);
 
-        plot_sphereworld(world, xGoal, fig);
+        plot_sphereworld(world, xGoal', fig);
 
         robot.xCenter = [x1(i); x2(i)];
         plot_sphere(robot, robot.color);

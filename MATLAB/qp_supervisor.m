@@ -1,13 +1,3 @@
-%function [uOpt,deltaOpt]=qp_minEffort(AAttr,bAttr,ABarrier,bBarrier,m,varargin)
-%Solves the optimization problem
-%   min_u 0.5*||u-u_ref||^2
-%   subject to
-%       AAttr*u+bAttr<=0
-%Optional arguments
-%   'method',name   Select the method to use to formulate and solve the QP
-%       'cvx'       Use CVX. Easier to write, but slower
-%       'quadprog'  Use Matlab's quadprog. Requires explicit matrices and
-%                   vectors for the cost, but faster.
 function [uOpt]=qp_supervisor(ABarrier,bBarrier,uRef,varargin)
 method='quadprog';
 
