@@ -8,7 +8,8 @@ function [u] = ModelMPC(Np, x0, xG, uref, world)
 %     P = eye(Nu);
 %     R = eye(Nx);
 
-    H = eye(Np*(Nx+Nu)+Nx, Np*(Nx+Nu)+Nx);
+    H = eye(Np*(Nx+Nu)+Nx);
+    f = zeros(Np*(Nx+Nu)+Nx, 1);
 
     x = NaN(1, Np*Nx);
     x(1:4) = x0;
@@ -20,8 +21,6 @@ function [u] = ModelMPC(Np, x0, xG, uref, world)
        p = p + Nx;
 
     end
-
-    x'
 
     u = [0,0];
 
