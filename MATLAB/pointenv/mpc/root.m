@@ -7,8 +7,11 @@ addpath ../../.
 addpath ../sphereworld
 addpath ./data
 
-load sphereworld world;
+load sphereworld_minimal world;
 Nw = length(world);
+
+run /home/michaelnaps/Downloads/cvx/cvx_setup
+clc;
 
 load K_11x11
 
@@ -21,10 +24,12 @@ tspan = (0:dt:T)';
 
 %% create test environment
 x0 = [0, -8, 0, 0];
-xG = [5, 6];
+xG = [5, 6, 0, 0];
 Nx = length(x0);
 uref = [0, 0];
 
+observation = @(x,u) observables(x, u, world, Q);
+u = KoopmanMPC(xG, x0, K, Np, Nw, observation)
 
 %% run simulation
 % xm = NaN(Nt, Nx);

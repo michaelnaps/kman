@@ -1,20 +1,11 @@
-function [u] = KoopmanMPC(xG, x0, K, Np, Nw, observableFunc)
+function [u] = KoopmanMPC(xG, x0, K, Np, Nw, obsFun)
 
     Ns = length(x0);
     Nu = round(Ns/2);
-    Nk = length(K);
+    [Nk,~] = size(K);
 
-    psi = NaN(Np, Nk);
-    psi(1,:) = observableFunc(x0, uD);
-
-    for i = 2:Np
-
-        psi(i,:) = (K'*psi(i-1,:)')';
-
-    end
-
-    x = psi(:,1:Ns+Nu+Nw);
-
-    
+    cvx_begin
+        variable u(Nk,Nu)
+    cvx_end
 
 end
