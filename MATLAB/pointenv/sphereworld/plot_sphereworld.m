@@ -13,14 +13,20 @@ end
 
 nbSpheres=size(world,2);
 for iSphere=1:nbSpheres
-    plot_sphere(world(iSphere),'b');
+    plot_sphere(world(iSphere), [0 0.4470 0.7410]);
     hold on
 end
 
 if ~isempty(xGoal)
     if exist('xGoal','var')
-        plot(xGoal(1,:),xGoal(2,:),'r*');
+        plot(xGoal(1,:),xGoal(2,:),...
+            'marker', 'square',...
+            'color', [0.4660 0.6740 0.1880],...
+            'linewidth', 2,...
+            'markersize', 8);
     end
 end
 
 axis equal
+
+end

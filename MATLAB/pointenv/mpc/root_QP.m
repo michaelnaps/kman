@@ -34,9 +34,14 @@ for i = 2:Nt
 end
 
 bernard = struct;
-bernard.xCenter = [0,0];
+bernard.xCenter = x(1,1:2);
 bernard.radius = 0.25;
 bernard.distInfluence = 0.25;
-bernard.color = 'k';
+bernard.color = [0.4940, 0.1840, 0.5560];
 
-[~] = plot_path(bernard, x, world, xG);
+[path_fig] = plot_path(world, bernard, xG, x);
+
+if 1
+    figure_path = "/home/michaelnaps/prog/bu_research/literature/koopman_collision_avoidance/figures/";
+    exportgraphics(path_fig, figure_path + "prop_environment.png", 'resolution', 600);
+end

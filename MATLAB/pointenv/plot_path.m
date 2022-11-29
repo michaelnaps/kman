@@ -1,16 +1,20 @@
-function [fig] = plot_path(robot, xList, world, xGoal, xComp)
+function [fig] = plot_path(world, robot, xGoal, xList, xComp)
 
     if nargin < 5
         xComp = [];
     end
-
-    robot.xCenter = xList(1,:)';
+  
 
     fig = figure;
     hold on
+
+    if ~isempty(xList)
+        robot.xCenter = xList(1,:)';
+        plot(xList(:,1), xList(:,2), 'linewidth', 2);
+    end
+
     plot_sphereworld(world, xGoal', fig);
     plot_sphere(robot, robot.color);
-    plot(xList(:,1), xList(:,2), 'linewidth', 2);
 
     if ~isempty(xComp)
         plot(xComp(:,1), xList(:,2), '--');
