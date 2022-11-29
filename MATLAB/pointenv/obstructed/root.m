@@ -23,7 +23,7 @@ modelFun = @(x, u) model(x, u, dt);
 
 
 %% Initialize training data
-Ntest = 100;
+Ntest = 20;
 Ncasc = Ntest/2;
 Nrand = Ntest/2;
 x0 = [
@@ -109,7 +109,7 @@ xc = x0(1,:);
 
 for i = 1:Nt
     psi = observation(xc, u_test(i,1:Nu));
-    psi = (K'*psi')';
+    psi = psi*K;
 
     obs_koop(i,:) = psi(Nx+Nu:Nx+Nu+Nw-1);
 
@@ -152,11 +152,8 @@ end
 %% Functions for modeling comparisons
 function [x_n] = KoopFun(x, u, world, K, Q)
     Nx = length(x);
-%     Nw = length(world);
-
     psi = observables(x, u, world, Q);
-    psi_n = (K'*psi')';
-    x_n = psi_n(1:Nx);
+    x_n= psi*K(:,1:Nx);
 end
 
 function [o] = ModelToSphere(x, world)
