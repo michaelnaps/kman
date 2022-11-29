@@ -7,7 +7,7 @@ addpath ../../.
 addpath ../sphereworld
 addpath ./data
 
-load sphereworld world;
+load sphereworld_minimal world;
 Nw = length(world);
 
 load K_19x19
@@ -35,8 +35,8 @@ end
 
 bernard = struct;
 bernard.xCenter = x(1,1:2);
-bernard.radius = 0.25;
-bernard.distInfluence = 0.25;
+bernard.radius = 0.40;
+bernard.distInfluence = 0;
 bernard.color = [0.4940, 0.1840, 0.5560];
 
 [path_fig] = plot_path(world, bernard, xG, x);
