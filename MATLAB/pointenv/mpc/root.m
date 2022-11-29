@@ -10,7 +10,7 @@ addpath ./data
 load sphereworld world;
 Nw = length(world);
 
-load K_19x19
+load K_11x11
 
 
 %% time parameters
@@ -24,9 +24,6 @@ x0 = [0, -8, 0, 0];
 xG = [5, 6];
 Nx = length(x0);
 uref = [0, 0];
-
-controlledModel = @(x) model(x, ModelMPC(Np, x0, xG, uref, world), dt);
-controlledModel(x0);
 
 
 %% run simulation

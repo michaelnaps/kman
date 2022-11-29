@@ -13,6 +13,9 @@ addpath ../.
 addpath ../../.
 addpath ../sphereworld;
 
+run /home/michaelnaps/Downloads/cvx/cvx_setup
+clc;
+
 load sphereworld world;
 Nw = length(world);
 
