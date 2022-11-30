@@ -17,8 +17,8 @@ load K_11x11
 
 
 %% time parameters
-Np = 10;
-T = 30;  Nt = T/dt + 1;
+Np = 3;
+T = 30;  Nt = T/dt+1;
 tspan = (0:dt:T)';
 
 
@@ -29,7 +29,7 @@ Nx = length(x0);
 uref = [0, 0];
 
 observation = @(x,u) observables(x, u, world, Q);
-u = KoopmanMPC(xG, x0, K, Np, Nw, observation)
+[u, x] = KoopmanMPC(xG, x0, K, Np, Nw, observation);
 
 %% run simulation
 % xm = NaN(Nt, Nx);

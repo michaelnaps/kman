@@ -13,8 +13,8 @@ addpath ../.
 addpath ../../.
 addpath ../sphereworld;
 
-run /home/michaelnaps/Downloads/cvx/cvx_setup
-clc;
+% run /home/michaelnaps/Downloads/cvx/cvx_setup
+% clc;
 
 load sphereworld world;
 Nw = length(world);
@@ -26,7 +26,7 @@ modelFun = @(x, u) model(x, u, dt);
 
 
 %% Initialize training data
-Ntest = 20;
+Ntest = 50;
 Ncasc = Ntest/2;
 Nrand = Ntest/2;
 x0 = [
@@ -80,7 +80,7 @@ Nt = length(t_koop);
 % introduce variance into the initial conditions
 x0 = x0(Nx-4:end,:);
 [Nx, Ns] = size(x0);
-x0 = x0 + [20*(rand(Nx-1, Ns) - 10); zeros(1, Ns)];
+x0 = x0 + [20*rand(Nx-1, Ns) - 10; zeros(1, Ns)];
 
 % create list of inputs
 u0 = 20*rand(Nx, Nu) - 10;
