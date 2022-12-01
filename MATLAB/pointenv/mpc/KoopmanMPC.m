@@ -1,5 +1,6 @@
 function [u, x] = KoopmanMPC(xg, x0, K, Np, Nw, obsFun)
 
+    [Nk, ~] = size(K);
     Nx = length(x0);
     Nu = round(Nx/2);
 
@@ -7,29 +8,22 @@ function [u, x] = KoopmanMPC(xg, x0, K, Np, Nw, obsFun)
 %     Ku = K(:,Nx+1:Nx+Nu);
 %     Kd = K(:,Nx+Nu+1:Nx+Nu+Nw);
 
-    xU = [0,0,0,0];
-    uX = [0,0];
+    Psig = obsFun(xg, [0,0]);
+    Psi0 = obsFun(x0, [0,0]);
 
     cvx_begin
-
-        variable x(Np, Nx)
+        variable Psi(Np, Nk);
+        variable x(Np, Nx);
         variable u(Np-1, Nu);
 
-        minimize( cost(u,x,xg,Np) );
+        minimize( cost(u,Psi,Psig,Np) );
 
         subject to
-
-            x(1,:) == x0;
-
-            ku = 1;
+            xk(1,:) == Psi0;
+            
             for i = 1:Np-1
-    
-                x(i+1,:) == obsFun(x(i,:), u(i,:))*Kx;
-                % x(i+1,:) == obsFun(x(i,:), uX)*Kx + obsFun(xU, u(i,:))*Kx;
-                ku = ku + Nu;
-                
+                xk(i+1,:) == Psi(i,:)*K(:,1:Nx) + Psi(i,:)*K(:,1:Nx);
             end
-
     cvx_end
 
 end
