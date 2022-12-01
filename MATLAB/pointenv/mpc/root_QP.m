@@ -10,7 +10,7 @@ addpath ./data
 load sphereworld_minimal world;
 Nw = length(world);
 
-load K_19x19
+load K_11x11
 
 
 %% time parameters
@@ -41,7 +41,7 @@ bernard.color = [0.4940, 0.1840, 0.5560];
 
 [path_fig] = plot_path(world, bernard, xG, x);
 
-if 1
+if 0
     figure_path = "/home/michaelnaps/prog/bu_research/literature/koopman_collision_avoidance/figures/";
     exportgraphics(path_fig, figure_path + "prop_environment.png", 'resolution', 600);
 end

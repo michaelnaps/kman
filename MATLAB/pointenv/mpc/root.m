@@ -17,31 +17,35 @@ load K_11x11
 
 
 %% time parameters
-Np = 3;
+Np = 10;
 T = 30;  Nt = T/dt+1;
 tspan = (0:dt:T)';
 
 
 %% create test environment
-x0 = [0, -8, 0, 0];
 xG = [5, 6, 0, 0];
+x0 = [0, -8, 0, 0];
 Nx = length(x0);
+
 uref = [0, 0];
+Nu = length(uref);
 
 observation = @(x,u) observables(x, u, world, Q);
-[u, x] = KoopmanMPC(xG, x0, K, Np, Nw, observation);
+u = KoopmanMPC(xG, x0, K, Np, Nw, observation);
+u = reshape(u, [Nu, Np-1])';
+
+xkoop = NaN(Np, Nx);
+xkoop(1,:) = x0;
+for i = 1:Np-1
+    xkoop(i+1,:) = observation(xkoop(i,:),u(i,:))*K(:,1:Nx);
+end
+
 
 %% run simulation
-% xm = NaN(Nt, Nx);
-% xm(1,:) = x0;
-% for i = 2:Nt
-%     xm(i,:) = controlledModel(xm(i-1,:));
-% end
-% 
-% bernard = struct;
-% bernard.xCenter = [0,0];
-% bernard.radius = 0.25;
-% bernard.distInfluence = 0.25;
-% bernard.color = 'k';
-% 
-% [~] = plot_path(bernard, xm, world, xG);
+bernard = struct;
+bernard.xCenter = [0,0];
+bernard.radius = 0.25;
+bernard.distInfluence = 0.25;
+bernard.color = 'k';
+
+[~] = plot_path(world, bernard, xG, xkoop);
