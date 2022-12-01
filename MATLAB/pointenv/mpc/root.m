@@ -31,7 +31,7 @@ uref = [0, 0];
 Nu = length(uref);
 
 observation = @(x,u) observables(x, u, world, Q);
-u = KoopmanMPC(xG, x0, K, Np, Nw, observation);
+[u, xmpc] = KoopmanMPC(xG, x0, K, Np, Nw, observation);
 u = reshape(u, [Nu, Np-1])';
 
 xkoop = NaN(Np, Nx);
@@ -48,4 +48,4 @@ bernard.radius = 0.25;
 bernard.distInfluence = 0.25;
 bernard.color = 'k';
 
-[~] = plot_path(world, bernard, xG, xkoop);
+% [~] = plot_path(world, bernard, xG, xkoop);

@@ -8,6 +8,9 @@ function [u, x] = KoopmanMPC(xg, x0, K, Np, Nw, obsFun)
 %     Ku = K(:,Nx+1:Nx+Nu);
     Kd = K(:,Nx+Nu+1:Nx+Nu+Nw);
 
+    xU = [0,0,0,0];
+    uX = [0,0];
+
 %     % create goal vector for cost function
 %     xG = NaN(1,Np*Nx);
 %     k = 1;
@@ -20,10 +23,10 @@ function [u, x] = KoopmanMPC(xg, x0, K, Np, Nw, obsFun)
 
     cvx_begin
 
-        expression x(Np, Nx)
-        variable u(1,Nu*(Np-1));
+        variable x(Np, Nx)
+        variable u(Np-1, Nu);
 
-        minimize( u*u' + (x(end,:) - xg)*(x(end,:) - xg)' );
+        minimize( cost(u,x,xg,Np) );
 
         subject to
 
@@ -32,11 +35,23 @@ function [u, x] = KoopmanMPC(xg, x0, K, Np, Nw, obsFun)
             ku = 1;
             for i = 1:Np-1
     
-                x(i+1,:) == obsFun(x(i,:), u(ku:ku+Nu-1))*Kx;
+                x(i+1,:) == obsFun(x(i,:), u(i,:))*Kx;
+%                 x(i+1,:) == obsFun(x(i,:), uX)*Kx + obsFun(xU, u(i,:))*Kx;
                 ku = ku + Nu;
                 
             end
 
     cvx_end
 
+end
+
+function [C] = cost(u, x, xg, Np)
+%     C = u*u' + (x(end,:) - xg)*(x(end,:) - xg)';
+    
+    C = 0;
+    for i = 1:Np-1
+        C = C + x(i,:)*x(i,:)' + u(i,:)*u(i,:)';
+    end
+
+    C = C + (x(end,:) - xg)*(x(end,:) - xg)';
 end
