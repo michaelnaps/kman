@@ -8,16 +8,12 @@ addpath ../sphereworld
 addpath ./data
 
 load sphereworld_minimal world;
-Nw = length(world);
-
-% run /home/michaelnaps/Downloads/cvx/cvx_setup
-% clc;
 
 load K_11x11
 
 
 %% xU and uX
-Nt = 100;
+Nt = 1000;
 xU = [0,0,0,0];
 uX = [0,0];
 obsFun = @(x, u) observables(x, u, world, Q);
@@ -32,6 +28,7 @@ uPsi = obsFun([0,0,0,0], u);
 
 
 %% dimension variables
+Nw = length(world);
 Nx = length(x0);
 Nu = length(u);
 Nk = length(K);
@@ -39,21 +36,24 @@ Nk = length(K);
 
 %% koopman operator modification
 Kx = K(:,1:Nx);
-Ku = K(:,Nx+1:Nx+Nu);
+Ku = K(Nx+1:Nx+Nu,1:Nx);
 
 
 %% state matrices
-x = NaN(Nt, Nx);
+xModl = NaN(Nt, Nx);
+xKoop = NaN(Nt, Nx);
 xPsi = NaN(Nt, Nk);
 
-x(1,:) = x0;
+xModl(1,:) = x0;
+xKoop(1,:) = x0;
 xPsi(1,:) = Psi0;
 
 for i = 1:Nt-1
-    x(i+1,:) = obsFun(x(i,:), u)*Kx;
-    xPsi(i+1,:) = xPsi(i,:)*K + uPsi*K;
+    xModl(i+1,:) = obsFun(xModl(i,:), u)*Kx;
 
-    disp(sum(x(i+1,:)-xPsi(i+1,1:Nx) < TOL, 'all') == 4)
+    xKoop(i+1,:) = xPsi(i,:)*Kx + u*Ku;
+    xPsi(i+1,:) = obsFun(xKoop(i+1,:), [0,0]);
 end
 
-disp([x, NaN(Nt,1), xPsi(:,1:Nx)])
+disp([xModl, NaN(Nt,1), xPsi(:,1:Nx)])
+disp(sum(abs(xModl - xKoop) < TOL, 'all') == Nt*Nx)
