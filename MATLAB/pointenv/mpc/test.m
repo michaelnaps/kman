@@ -9,7 +9,7 @@ addpath ./data
 
 load sphereworld_minimal world;
 
-load K_11x11
+load K_19x19
 
 
 %% xU and uX
@@ -23,37 +23,54 @@ obsFun = @(x, u) observables(x, u, world, Q);
 TOL = 1e-6;
 x0 = [0,0,0,0];
 Psi0 = obsFun(x0, [0,0]);
-u  = [0.3,0.5];
-uPsi = obsFun([0,0,0,0], u);
+u  = [0.3, 0.5];
 
 
 %% dimension variables
 Nw = length(world);
 Nx = length(x0);
-Nu = length(u);
+Nu = length(u)/2;
 Nk = length(K);
 
 
-%% koopman operator modification
-Kx = K(:,1:Nx);
-Ku = K(Nx+1:Nx+Nu,1:Nx);
+%% model propagation functions
+modelFun = @(x,u) model(x, u, dt);
+Kx = K(1:Q*Nx,1:Q*Nx);
+Ku = K(end-Nu-1:end-1,1:Q*Nx);
 
 
 %% state matrices
 xModl = NaN(Nt, Nx);
-xKoop = NaN(Nt, Nx);
+xKoop = NaN(Nt, Q*Nx);
 xPsi = NaN(Nt, Nk);
 
 xModl(1,:) = x0;
-xKoop(1,:) = x0;
-xPsi(1,:) = Psi0;
+xKoop(1,:) = Psi0(1:Q*Nx);
 
 for i = 1:Nt-1
-    xModl(i+1,:) = obsFun(xModl(i,:), u)*Kx;
 
-    xKoop(i+1,:) = xPsi(i,:)*Kx + u*Ku;
-    xPsi(i+1,:) = obsFun(xKoop(i+1,:), [0,0]);
+    xModl(i+1,:) = modelFun(xModl(i,:), u);
+    xKoop(i+1,:) = xKoop(i,:)*Kx + u*Ku;
+
 end
 
-disp([xModl, NaN(Nt,1), xPsi(:,1:Nx)])
-disp(sum(abs(xModl - xKoop) < TOL, 'all') == Nt*Nx)
+disp([xModl, NaN(Nt,1), xKoop(:,1:Nx)])
+disp(sum(abs(xModl - xKoop(:,1:Nx)) < TOL, 'all') == Nt*Nx)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

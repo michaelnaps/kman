@@ -9,12 +9,11 @@ clean;
 plot_results = 1;
 anim_results = ~plot_results;
 
+save_data = 1;
+
 addpath ../.
 addpath ../../.
 addpath ../sphereworld;
-
-% run /home/michaelnaps/Downloads/cvx/cvx_setup
-% clc;
 
 load sphereworld world;
 Nw = length(world);
@@ -26,11 +25,11 @@ modelFun = @(x, u) model(x, u, dt);
 
 
 %% Initialize training data
-Ntest = 50;
+Ntest = 20;
 Ncasc = Ntest/2;
 Nrand = Ntest/2;
 x0 = [
-    20*rand(Ntest, 2), 10*rand(Ntest, 2) - 5;
+    20*rand(Ntest, 2) - 10, 10*rand(Ntest, 2) - 5;
 ];
 [Nx, Ns] = size(x0);
 Nu = round(Ns/2);
@@ -62,7 +61,7 @@ u_train = stack_data(u_generate, Nx, Nu, Nt);
 
 
 %% Evaluate for the observation function
-Q = 1;
+Q = 2;
 
 observation = @(x, u) observables(x, u, world, Q);
 Nk = length(observation([0,0,0,0], [0,0]));
@@ -82,6 +81,8 @@ x0 = x0(Nx-4:end,:);
 [Nx, Ns] = size(x0);
 x0 = x0 + [20*rand(Nx-1, Ns) - 10; zeros(1, Ns)];
 
+Psi0 = NaN(Nx, Nk);
+
 % create list of inputs
 u0 = 20*rand(Nx, Nu) - 10;
 u_test = NaN(Nt, Nx*Nu);
@@ -90,36 +91,46 @@ N0 = Nt - Nl;
 
 k = 1;
 for i = 1:Nx
+
+    Psi0(i,:) = observation(x0(i,:), [0,0]);
+
     u_test(:,k:k+Nu-1) = [
         linspace(u0(i,1),0,Nl)', linspace(0,u0(i,2),Nl)';
         zeros(N0, Nu);
     ];
+
     k = k + Nu;
+
 end
+
+Psi0 = Psi0(:,1:Q*Ns);
 
 
 %% generate data for new initial conditions
-KoopModel = @(x, u) KoopFun(x, u, world, K, Q);
+Kx = K(1:Q*Nx,1:Q*Nx);
+Ku = K(end-Q*Nu-1:end-1,1:Q*Nx);
+
+KoopModel = @(x,u) x*Kx + u*Ku;
 x_koop = generate_data(KoopModel, t_koop, x0, u_test);
 x_test = generate_data(modelFun, t_koop, x0, u_test);
 
 
 %% generate obstacle distance comparison data
-obs_koop = NaN(Nt, Nw);
-obs_test = NaN(Nt, Nw);
-
-xc = x0(1,:);
-
-for i = 1:Nt
-    psi = observation(xc, u_test(i,1:Nu));
-    psi = psi*K;
-
-    obs_koop(i,:) = psi(Nx+Nu:Nx+Nu+Nw-1);
-
-    xc = psi(1:Ns);
-
-    obs_test(i,:) = ModelToSphere(x_test(i,1:Ns), world);
-end
+% obs_koop = NaN(Nt, Nw);
+% obs_test = NaN(Nt, Nw);
+% 
+% xc = x0(1,:);
+% 
+% for i = 1:Nt
+% 
+%     psi = observation(xc, u_test(i,1:Nu));
+%     psi = psi*Kd;
+% 
+%     xc = psi(1:Ns);
+% 
+%     obs_test(i,:) = ModelToSphere(x_test(i,1:Ns), world);
+%     
+% end
 
 
 %% plot results
@@ -128,7 +139,7 @@ if ~isnan(acc)
     if plot_results
         
         plot_comparisons(x_test, x_koop, x0, t_koop);
-        plot_comparisons(obs_test, obs_koop, obs_test(1,:), t_koop);
+        % plot_comparisons(obs_test, obs_koop, obs_test(1,:), t_koop);
 
     elseif anim_results
 
@@ -145,20 +156,16 @@ if ~isnan(acc)
 
     end
 
-%     keyboard;
-
 end
 
-% end
+
+%% save data
+if save_data
+    save("./data/K_"+Nk+"x"+Nk, "K", "Nk", "dt", "Q", "acc", "ind", "Nw")
+end
 
 
 %% Functions for modeling comparisons
-function [x_n] = KoopFun(x, u, world, K, Q)
-    Nx = length(x);
-    psi = observables(x, u, world, Q);
-    x_n= psi*K(:,1:Nx);
-end
-
 function [o] = ModelToSphere(x, world)
     Nw = length(world);
 
