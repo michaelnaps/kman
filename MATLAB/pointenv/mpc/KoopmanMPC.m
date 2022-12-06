@@ -1,40 +1,55 @@
-function [u, x] = KoopmanMPC(xg, x0, K, Np, Nw, obsFun)
+function [u, x, Psi] = KoopmanMPC(xg, x0, Np, K, Q, obsFun, world, Rs)
 
-    [Nk, ~] = size(K);
-    Nx = length(x0);
-    Nu = round(Nx/2);
+    Nx = 4;
+    Nu = 2;
+    Nw = 4;
+    Nk = Nx*Q + Nw + Nu;
+    idx_w = Nx*Q + 1;
 
-    Kx = K(:,1:Nx);
-%     Ku = K(:,Nx+1:Nx+Nu);
-%     Kd = K(:,Nx+Nu+1:Nx+Nu+Nw);
-
-    Psig = obsFun(xg, [0,0]);
     Psi0 = obsFun(x0, [0,0]);
 
-    cvx_begin
-        variable Psi(Np, Nk);
-        variable x(Np, Nx);
-        variable u(Np-1, Nu);
+    dKx = diag([ones(1,Nk-Nu), zeros(1,Nu)]);
+    dKu = diag([zeros(1,Nk-Nu), ones(1,Nu)]);
 
-        minimize( cost(u,Psi,Psig,Np) );
+    cvx_begin
+        variable Psi(Np,Nk);
+        variable u(Np-1,Nu);
+
+        minimize( cost(u, Psi(:,1:Nx), xg, Np) );
 
         subject to
-            xk(1,:) == Psi0;
+            % initial position constraint
+            Psi(1,:) == Psi0;
             
+            % dynamics constraints
             for i = 1:Np-1
-                xk(i+1,:) == Psi(i,:)*K(:,1:Nx) + Psi(i,:)*K(:,1:Nx);
+                uPsi = [zeros(1,Nk-Nu), u(i,:)];
+                Psi(i+1,:) == Psi(i,:)*dKx*K + uPsi*dKu*K;
             end
+
+            % boundary constraints
+            for i = Np
+                for j = 1:Nw
+                    Psi(i,idx_w+j) >= Rs
+                end
+            end
+
+            % final position constraint
+            Psi(end,1:Nx) == xg;
     cvx_end
+
+    x = Psi(:,1:Nx);
 
 end
 
+%% local functions
 function [C] = cost(u, x, xg, Np)
-%     C = u*u' + (x(end,:) - xg)*(x(end,:) - xg)';
     
     C = 0;
     for i = 1:Np-1
-        C = C + x(i,:)*x(i,:)' + u(i,:)*u(i,:)';
+        C = C + u(i,:)*u(i,:)';
     end
 
     C = C + (x(end,:) - xg)*(x(end,:) - xg)';
+
 end

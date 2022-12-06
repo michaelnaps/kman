@@ -1,9 +1,3 @@
-% function root(plot_results)
-% 
-% if nargin < 1
-%     plot_results = 1;
-% end
-
 clean;
 
 plot_results = 1;
@@ -15,7 +9,7 @@ addpath ../.
 addpath ../../.
 addpath ../sphereworld;
 
-load sphereworld world;
+load sphereworld;
 Nw = length(world);
 
 
@@ -25,11 +19,11 @@ modelFun = @(x, u) model(x, u, dt);
 
 
 %% Initialize training data
-Ntest = 20;
-Ncasc = Ntest/2;
-Nrand = Ntest/2;
+Nrand = 50;
 x0 = [
-    20*rand(Ntest, 2) - 10, 10*rand(Ntest, 2) - 5;
+    xStart', zeros(size(xStart'));
+    20*rand(Nrand, 2), 10*rand(Nrand, 2) - 5;
+    0, 0, 20, 10
 ];
 [Nx, Ns] = size(x0);
 Nu = round(Ns/2);
@@ -41,18 +35,15 @@ Nt = length(tspan);
 
 % create list of inputs
 u0 = 20*rand(Nx, Nu) - 10;
-u_generate = NaN(Nt, Ncasc*Nu);
+u_generate = NaN(Nt, Nx*Nu);
 
 k = 1;
-for i = 1:Ncasc
+for i = 1:Nx
     u_generate(:,k:k+Nu-1) = [
-        linspace(u0(i,1),0,round(Nt/2))', linspace(u0(i,2),0,round(Nt/2))';
-        zeros(Nt-round(Nt/2), 2)
+        linspace(u0(i,1),0,Nt)', linspace(u0(i,2),0,Nt)'
     ];
     k = k + Nu;
 end
-
-u_generate = [u_generate, 5*rand(Nt, Nrand*Nu)-10];
 
 % generate model data
 data_train = generate_data(modelFun, tspan, x0, u_generate);
@@ -61,13 +52,13 @@ u_train = stack_data(u_generate, Nx, Nu, Nt);
 
 
 %% Evaluate for the observation function
-Q = 2;
+Q = 1;
+Nk = Ns*Q + Nw + Nu;
 
-observation = @(x, u) observables(x, u, world, Q);
-Nk = length(observation([0,0,0,0], [0,0]));
+observation = @(x, u) observables(x, u, Q, world);
 
 [K, acc, ind, err] = KoopmanWithControl(observation, x_train, x0, u_train);
-fprintf("L-2 norm: %.3s\n\n", acc)
+fprintf("L-2 norm: %.3f\n\n", acc)
 
 
 %% test koopman operator on new data
@@ -79,58 +70,34 @@ Nt = length(t_koop);
 % introduce variance into the initial conditions
 x0 = x0(Nx-4:end,:);
 [Nx, Ns] = size(x0);
-x0 = x0 + [20*rand(Nx-1, Ns) - 10; zeros(1, Ns)];
-
-Psi0 = NaN(Nx, Nk);
+x0 = x0 + [(rand(Nx-1, Ns) - 0.5); 0, 0, 0, 0];
+Psi0 = NaN(Nx,Nk);
 
 % create list of inputs
-u0 = 20*rand(Nx, Nu) - 10;
-u_test = NaN(Nt, Nx*Nu);
+u0 = 20*rand(Nx,Nu) - 10;
+u_test = NaN(Nt,Nx*Nu);
 Nl = round(Nt/4);
 N0 = Nt - Nl;
 
+% create input matrices for time-frame
 k = 1;
 for i = 1:Nx
-
-    Psi0(i,:) = observation(x0(i,:), [0,0]);
-
     u_test(:,k:k+Nu-1) = [
         linspace(u0(i,1),0,Nl)', linspace(0,u0(i,2),Nl)';
         zeros(N0, Nu);
     ];
+    
+    Psi0(i,:) = observation(x0(i,:), [0,0]);
 
     k = k + Nu;
-
 end
-
-Psi0 = Psi0(:,1:Q*Ns);
 
 
 %% generate data for new initial conditions
-Kx = K(1:Q*Nx,1:Q*Nx);
-Ku = K(end-Q*Nu-1:end-1,1:Q*Nx);
+koop = @(x, u) KoopFun(x, u, K, Q, world);
 
-KoopModel = @(x,u) x*Kx + u*Ku;
-x_koop = generate_data(KoopModel, t_koop, x0, u_test);
-x_test = generate_data(modelFun, t_koop, x0, u_test);
-
-
-%% generate obstacle distance comparison data
-% obs_koop = NaN(Nt, Nw);
-% obs_test = NaN(Nt, Nw);
-% 
-% xc = x0(1,:);
-% 
-% for i = 1:Nt
-% 
-%     psi = observation(xc, u_test(i,1:Nu));
-%     psi = psi*Kd;
-% 
-%     xc = psi(1:Ns);
-% 
-%     obs_test(i,:) = ModelToSphere(x_test(i,1:Ns), world);
-%     
-% end
+Psi_koop = generate_data(koop, t_koop, Psi0, u_test, Nu);
+x_test = generate_data(modelFun, t_koop, x0, u_test, Nu);
 
 
 %% plot results
@@ -138,10 +105,11 @@ if ~isnan(acc)
 
     if plot_results
         
-        plot_comparisons(x_test, x_koop, x0, t_koop);
-        % plot_comparisons(obs_test, obs_koop, obs_test(1,:), t_koop);
+        fig_modelcomp = plot_comparisons(x_test, Psi_koop, x0, t_koop, Psi0);
 
-    elseif anim_results
+    end
+
+    if anim_results
 
         bernard = struct;
         bernard.xCenter = [0,0];
@@ -150,9 +118,9 @@ if ~isnan(acc)
         bernard.color = 'k';
 
         x_test_anim = x_test(:,end-(Ns-1):end);
-        x_koop_anim = x_koop(:,end-(Ns-1):end);
+        x_koop_anim = Psi_koop(:,end-(Ns-1):end);
 
-        animate(bernard, x_koop_anim, tspan, world, [0,0], x_test_anim);
+        animate(bernard, x_koop_anim, tspan, world, xGoal(:,1), x_test_anim);
 
     end
 
@@ -165,22 +133,17 @@ if save_data
 end
 
 
-%% Functions for modeling comparisons
-function [o] = ModelToSphere(x, world)
+%% local functions
+function [Psi_n] = KoopFun(Psi, u, K, Q, world)
+    Nx = 4;
+    Nu = 2;
     Nw = length(world);
+    Nk = Q*Nx + Nw + Nu;
 
-    o = NaN(1,Nw);
-    for i = 1:Nw
-        o(i) = distance(world(i), [x(1), x(2)]);
-    end
+    dKx = diag([ones(1,Nk-Nu), zeros(1,Nu)]);
+    dKu = diag([zeros(1,Nk-Nu), ones(1,Nu)]);
+
+    uPsi = [zeros(1,Nk-Nu), u];
+
+    Psi_n = Psi*dKx*K + uPsi*dKu*K;
 end
-
-
-
-
-
-
-
-
-
-

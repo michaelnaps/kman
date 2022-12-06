@@ -45,7 +45,7 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
     
     %% perform lest-squares
     % create least-squares matrices
-    eps = 1e-6;
+    eps = 1e-12;
     G = 1/Mx * (psiX')*psiX;
     A = 1/Mx * (psiX')*psiY;
 

@@ -1,11 +1,14 @@
-function [xlist] = generate_data(F, tspan, x0, ulist)
+function [xlist] = generate_data(F, tspan, x0, ulist, Nu)
     
     % inputs: F, tspan, x0, ulist
     % where function, F, is a discrete dynamics function
     
     [Nx, Ns] = size(x0);
-    Nu = round(Ns/2);
     Nt = length(tspan);
+    
+    if nargin < 5
+        Nu = round(Ns/2);
+    end
     
     xlist = NaN(Nt, Nx*Ns);
 
