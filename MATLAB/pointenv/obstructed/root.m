@@ -9,8 +9,7 @@ addpath ../.
 addpath ../../.
 addpath ../sphereworld;
 
-load sphereworld;
-Nw = length(world);
+load sphereworld_minimal;
 
 
 %% Model function
@@ -19,9 +18,8 @@ modelFun = @(x, u) model(x, u, dt);
 
 
 %% Initialize training data
-Nrand = 20;
+Nrand = 30;
 x0 = [
-    xStart', zeros(size(xStart'));
     20*rand(Nrand, 2), 10*rand(Nrand, 2) - 5;
     0, 0, 20, 10
 ];
@@ -52,7 +50,7 @@ u_train = stack_data(u_generate, N0, Nu, Nt);
 
 
 %% Evaluate for the observation function
-Q = 2;
+Q = 1;
 Nk = (Nx + Nw)*Q + Nu;
 
 observation = @(x, u) observables(x, u, Q, world);

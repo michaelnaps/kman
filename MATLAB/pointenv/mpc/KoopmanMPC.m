@@ -1,10 +1,10 @@
-function [u, x, Psi] = KoopmanMPC(xg, x0, Np, K, Q, obsFun, world, Rs)
+function [u, x, Psi] = KoopmanMPC(xg, x0, Np, K, Q, obsFun, Rs)
 
     Nx = 4;
     Nu = 2;
     Nw = 4;
-    Nk = Nx*Q + Nw + Nu;
-    idx_w = Nx*Q + 1;
+    Nk = (Nx + Nw)*Q + Nu;
+    iw = Nx*Q + 1;
 
     Psi0 = obsFun(x0, [0,0]);
 
@@ -30,7 +30,7 @@ function [u, x, Psi] = KoopmanMPC(xg, x0, Np, K, Q, obsFun, world, Rs)
             % boundary constraints
             for i = Np
                 for j = 1:Nw
-                    Psi(i,idx_w+j) >= Rs
+                    Psi(i,iw+j) >= Rs;
                 end
             end
 
@@ -42,12 +42,12 @@ function [u, x, Psi] = KoopmanMPC(xg, x0, Np, K, Q, obsFun, world, Rs)
 
 end
 
-%% local functions
+%% objective function
 function [C] = cost(u, x, xg, Np)
     
     C = 0;
     for i = 1:Np-1
-        C = C + u(i,:)*u(i,:)';
+        C = C + u(i,:)*u(i,:)' + (x(i,:) - xg)*(x(i,:) - xg)';
     end
 
     C = C + (x(end,:) - xg)*(x(end,:) - xg)';

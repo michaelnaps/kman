@@ -32,14 +32,12 @@ Nx = length(x0);
 
 observationFun = @(x, u) observables(x, u, Q, world);
 
-% [u, x] = KoopmanMPC(xG, x0, Np, K, Q, observationFun);
-
 
 %% run simulation
 xm = NaN(Nt,Nx);
 xm(1,:) = x0;
 
-[uKoop, x, Psi] = KoopmanMPC(xG, x0, Np, K, Q, observationFun, world, 0.50);
+[uKoop, x, Psi] = KoopmanMPC(xG, x0, Np, K, Q, observationFun, 0.50);
 
 % for i = 1:Nt-1
 
