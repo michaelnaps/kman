@@ -6,7 +6,7 @@ function [dist] = distance(sphere, point)
         neg = -1;
     end
         
-    dist = sqrt(sum((point - sphere.xCenter').^2));
+    dist = norm(point - sphere.xCenter');
     dist = neg*dist - sphere.radius;
 
 end

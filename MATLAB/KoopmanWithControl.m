@@ -1,5 +1,9 @@
-function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data)
+function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data, eps)
     %% Create structure variable for errors
+    if nargin < 5
+        eps = 1e-6;
+    end
+
     err = struct;
 
     %% evaluate for the observation function
@@ -45,11 +49,14 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
     
     %% perform lest-squares
     % create least-squares matrices
-    eps = 1e-12;
     G = 1/Mx * (psiX')*psiX;
     A = 1/Mx * (psiX')*psiY;
 
     [U,S,V] = svd(G);
+
+    if nargin < 5
+        eps = 1e-12*max(diag(S));
+    end
 
     ind = diag(S) > eps;
 
@@ -82,5 +89,13 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
         err.A = A;
         err.K = K;
 
+    else
+
+        err.U = U;
+        err.S = S;
+        err.V = V;
+        err.eps = eps;
+
     end
+
 end
