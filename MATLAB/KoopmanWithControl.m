@@ -1,9 +1,5 @@
 function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data, eps)
     %% Create structure variable for errors
-    if nargin < 5
-        eps = 1e-6;
-    end
-
     err = struct;
 
     %% evaluate for the observation function

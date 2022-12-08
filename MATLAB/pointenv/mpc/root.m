@@ -18,7 +18,7 @@ load K_10x10;
 
 
 %% time parameters
-Np = 20;
+Np = 100;
 T = 2;
 tspan = (0:dt:T)';
 Nt = length(tspan);
@@ -36,15 +36,15 @@ observationFun = @(x, u) observables(x, u, Q, world);
 %% run simulation
 xm = NaN(Nt,Nx);
 xm(1,:) = x0;
+[uKoop, xKoop, Psi] = KoopmanMPC(xG, x0, Np, K, Q, observationFun, 0.50);
 
-for i = 1:Nt-1
-    [uKoop, xKoop, Psi] = KoopmanMPC(xG, xm(i,:), Np, K, Q, observationFun, 0.50);
-    xm(i+1,:) = model(xm(i,:), uKoop(1,:), dt);
-
-    fprintf("time: %.3f\n", i*dt);
-    fprintf("uKoop: %.3f, %.3f\n", uKoop(1,:));
-    fprintf("xModl: %.3f, %.3f\n\n", xm(i+1,1:Nx/2));
-end
+% for i = 1:Nt-1
+%     xm(i+1,:) = model(xm(i,:), uKoop(1,:), dt);
+% 
+%     fprintf("time: %.3f\n", i*dt);
+%     fprintf("uKoop: %.3f, %.3f\n", uKoop(1,:));
+%     fprintf("xModl: %.3f, %.3f\n\n", xm(i+1,1:Nx/2));
+% end
 
 
 %% plot results

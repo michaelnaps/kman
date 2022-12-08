@@ -28,14 +28,12 @@ function [u, x, Psi] = KoopmanMPC(xg, x0, Np, K, Q, obsFun, Rs)
             end
 
             % boundary constraints
-            for i = Np
-                for j = 1:Nw
-                    Psi(i,iw+j) >= Rs;
-                end
+            for i = 1:Np
+                Psi(i,Q*Nx+1:Q*Nx+Nw) >= Rs*ones(1,Nw);
             end
 
             % final position constraint
-%             Psi(end,1:Nx) == xg;
+            Psi(end,1:Nx) == xg;
     cvx_end
 
     x = Psi(:,1:Nx);
