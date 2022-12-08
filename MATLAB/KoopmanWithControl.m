@@ -2,19 +2,14 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
     %% Create structure variable for errors
     err = struct;
 
+
     %% evaluate for the observation function
     Nx = length(x0(:,1));                                % number of initial points
     Mx = round(length(x_data(:,1))/Nx);                  % number of data points
     Nk = length(observation(x_data(1,:), u_data(1,:)));  % number of obs. functions
 
-    psiX = NaN(Mx*(Nx-1), Nk);
-    psiY = NaN(Mx*(Nx-1), Nk);
-
-    size(x_data)
-    size(u_data)
-
-    size(psiX)
-    size(psiY)
+    psiX = NaN(Nx*(Mx-1), Nk);
+    psiY = NaN(Nx*(Mx-1), Nk);
 
     i = 0;
     j = 0;
@@ -35,9 +30,6 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
         j = n*(Mx-1);
 
     end
-
-    size(psiX)
-    size(psiY)
 
     if (sum(isnan(psiX), 'all') > 0 || sum(isnan(psiY), 'all') > 0)
         err.psiX = psiX;
