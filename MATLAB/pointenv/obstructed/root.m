@@ -20,7 +20,7 @@ modelFun = @(x, u) model(x, u, dt);
 %% Initialize training data
 Nrand = 30;
 x0 = [
-    20*rand(Nrand, 2), 10*rand(Nrand, 2) - 5;
+    20*rand(Nrand, 2)-10, 10*rand(Nrand, 2) - 5;
     0, 0, 20, 10
 ];
 [N0, Nx] = size(x0);
@@ -32,7 +32,7 @@ tspan = 0:dt:T;
 Nt = length(tspan);
 
 % create list of inputs
-u0 = 20*rand(N0, Nu) - 10;
+u0 = 5*rand(N0, Nu) - 2.5;
 u_generate = NaN(Nt, N0*Nu);
 
 k = 1;
@@ -50,7 +50,7 @@ u_train = stack_data(u_generate, N0, Nu, Nt);
 
 
 %% Evaluate for the observation function
-Q = 1;
+Q = 2;
 Nk = (Nx + Nw)*Q + Nu;
 
 observation = @(x, u) observables(x, u, Q, world);
@@ -72,7 +72,7 @@ x0 = x0 + [(rand(N0-1, Nx) - 0.5); 0, 0, 0, 0];
 Psi0 = NaN(N0,Nk);
 
 % create list of inputs
-u0 = 20*rand(N0,Nu) - 10;
+u0 = 5*rand(N0,Nu) - 2.5;
 u_test = NaN(Nt,N0*Nu);
 
 Nl = round(Nt/4);
@@ -114,7 +114,7 @@ if ~isnan(acc)
 
     if plot_results
         
-%         fig_modelcomp = plot_comparisons(x_test, Psi_koop, x0, t_koop, Psi0);
+        fig_modelcomp = plot_comparisons(x_test, Psi_koop, x0, t_koop, Psi0);
         fig_obscomp   = plot_comparisons(obs_test, obs_koop, obs_test(1,:), t_koop);
 
     end
@@ -127,10 +127,10 @@ if ~isnan(acc)
         bernard.distInfluence = 0.25;
         bernard.color = 'k';
 
-        x_test_anim = x_test(:,end-(Nx-1):end);
-        x_koop_anim = Psi_koop(:,end-(Nx-1):end);
+        x_test_anim = x_test(:,1:Nx);
+        x_koop_anim = Psi_koop(:,1:Nx);
 
-        animate(bernard, x_koop_anim, tspan, world, xGoal(:,1), x_test_anim);
+        animate(bernard, x_test_anim, tspan, world, [0,0], x_koop_anim);
 
     end
 

@@ -11,8 +11,14 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
     Mx = round(length(x_data(:,1))/Nx);                  % number of data points
     Nk = length(observation(x_data(1,:), u_data(1,:)));  % number of obs. functions
 
-    psiX = NaN(Mx-Nx, Nk);
-    psiY = NaN(Mx-Nx, Nk);
+    psiX = NaN(Mx*(Nx-1), Nk);
+    psiY = NaN(Mx*(Nx-1), Nk);
+
+    size(x_data)
+    size(u_data)
+
+    size(psiX)
+    size(psiY)
 
     i = 0;
     j = 0;
@@ -33,6 +39,9 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
         j = n*(Mx-1);
 
     end
+
+    size(psiX)
+    size(psiY)
 
     if (sum(isnan(psiX), 'all') > 0 || sum(isnan(psiY), 'all') > 0)
         err.psiX = psiX;
@@ -71,7 +80,7 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
     acc = 0;
     for n = 1:Nk
     
-        acc = acc + norm(psiY(n,:)' - K'*psiX(n,:)');
+        acc = acc + norm(psiY(n,:) - psiX(n,:)*K);
     
     end
     
