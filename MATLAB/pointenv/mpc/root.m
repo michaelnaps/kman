@@ -8,7 +8,7 @@ addpath ../../.
 addpath ../sphereworld
 addpath ./data
 
-load sphereworld world;
+load sphereworld_minimal;
 Nw = length(world);
 
 run /home/michaelnaps/Downloads/cvx/cvx_setup
@@ -18,7 +18,7 @@ load K_10x10;
 
 
 %% time parameters
-Np = 100;
+Np = 20;
 T = 2;
 tspan = (0:dt:T)';
 Nt = length(tspan);
@@ -37,7 +37,7 @@ observationFun = @(x, u) observables(x, u, Q, world);
 xm = NaN(Nt,Nx);
 xm(1,:) = x0;
 
-[uKoop, x, Psi] = KoopmanMPC(xG, x0, Np, K, Q, observationFun, 0.50);
+[uKoop, xKoop, Psi] = KoopmanMPC(xG, x0, Np, K, Q, observationFun, 0.50);
 
 % for i = 1:Nt-1
 
@@ -56,4 +56,4 @@ bernard.radius = 0.25;
 bernard.distInfluence = 0.25;
 bernard.color = 'k';
 
-[~] = plot_path(world, bernard, xG, x);
+[~] = plot_path(world, bernard, xG, xKoop);
