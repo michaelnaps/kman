@@ -35,7 +35,7 @@ function [u, x, Psi] = KoopmanMPC(xg, x0, Np, K, Q, obsFun, Rs)
             end
 
             % final position constraint
-            Psi(end,1:Nx) == xg;
+%             Psi(end,1:Nx) == xg;
     cvx_end
 
     x = Psi(:,1:Nx);
@@ -44,10 +44,12 @@ end
 
 %% objective function
 function [C] = cost(u, x, xg, Np)
+    [~, Nu] = size(u);
+    U = 0.10*eye(Nu);
     
     C = 0;
     for i = 1:Np-1
-        C = C + u(i,:)*u(i,:)' + (x(i,:) - xg)*(x(i,:) - xg)';
+        C = C + u(i,:)*U*u(i,:)' + (x(i,:) - xg)*(x(i,:) - xg)';
     end
 
     C = C + (x(end,:) - xg)*(x(end,:) - xg)';

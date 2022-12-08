@@ -37,16 +37,14 @@ observationFun = @(x, u) observables(x, u, Q, world);
 xm = NaN(Nt,Nx);
 xm(1,:) = x0;
 
-[uKoop, xKoop, Psi] = KoopmanMPC(xG, x0, Np, K, Q, observationFun, 0.50);
+for i = 1:Nt-1
+    [uKoop, xKoop, Psi] = KoopmanMPC(xG, xm(i,:), Np, K, Q, observationFun, 0.50);
+    xm(i+1,:) = model(xm(i,:), uKoop(1,:), dt);
 
-% for i = 1:Nt-1
-
-%     xm(i+1,:) = model(xm(i,:), uKoop(1,:), dt);
-% 
-%     fprintf("time: %.3f\n", i*dt);
-%     fprintf("uKoop: %.3f, %.3f\n", uKoop(1,:));
-%     fprintf("xModl: %.3f, %.3f\n\n", xm(i+1,1:Nx/2));
-% end
+    fprintf("time: %.3f\n", i*dt);
+    fprintf("uKoop: %.3f, %.3f\n", uKoop(1,:));
+    fprintf("xModl: %.3f, %.3f\n\n", xm(i+1,1:Nx/2));
+end
 
 
 %% plot results
