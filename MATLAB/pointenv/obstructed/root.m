@@ -18,7 +18,7 @@ modelFun = @(x, u) model(x, u, dt);
 
 
 %% Initialize training data
-Nrand = 30;
+Nrand = 10;
 x0 = [
     20*rand(Nrand, 2)-10;
     0, 0
@@ -93,6 +93,7 @@ end
 
 %% generate data for new initial conditions
 koop = @(Psi, u) KoopFun(Psi, u, K, Q, INDEX);
+koop2 = @(Psi, u) KoopFun2(Psi, u, K, INDEX);
 
 PsiKoop = generate_data(koop, t_koop, Psi0, u_test, Nu);
 xTest = generate_data(modelFun, t_koop, x0, u_test, Nu);
@@ -121,9 +122,8 @@ if ~isnan(acc)
     if anim_results
 
         bernard = struct;
-        bernard.xCenter = [0,0];
-        bernard.radius = 0.25;
-        bernard.distInfluence = 0.25;
+        bernard.x = PsiKoop(:,INDEX.x1);
+        bernard.r = 0.25;
         bernard.color = 'k';
 
         x_test_anim = xTest(:,1:Nx);
@@ -144,21 +144,59 @@ end
 
 %% local functions
 function [Psi_n] = KoopFun(Psi, u, K, Q, INDEX)
-    Nx = 2;
-    Nw = 3;
-    Nu = 2;
-    Nxu = (Nx+Nu)*Nx;
-%     Nk = (Nx + 2*Nw)*Q + Nu;
+    Nx = length(INDEX.x1);
+    Nw = length(INDEX.d);
+    Nu = length(INDEX.u);
+    Nxu = length(INDEX.xu);
+    No = Nw*length(INDEX.o1);
+    Nk = Q*Nx + Nw + Nu + Nxu + No + 1;
 
-    dKx = diag([ones(1,Q*Nx), ones(1,Nw), zeros(1,Nu), zeros(1,Nxu+1)]);
-    dKu = diag([zeros(1,Q*Nx), zeros(1,Nw), ones(1,Nu), ones(1,Nxu+1)]);
+    dKx = diag([
+        1, 1,...
+        1, 1,...
+        1, 1, 1,...
+        0, 0,...
+        1, 1,...
+        0, 0,...
+        1, 1,...
+        0, 0,...
+        0,...
+        1, 1,...
+        1, 1,...
+        1, 1,...
+    ]);
 
-    uPsi = [zeros(1,Q*Nx), zeros(1,Nw), u, zeros(1,Nxu+1)];
+    dKu = diag([
+        0, 0,...
+        0, 0,...
+        1, 1, 1,...
+        1, 1,...
+        1, 1,...
+        1, 1,...
+        1, 1,...
+        1, 1,...
+        0,...
+        0, 0,...
+        0, 0,...
+        0, 0,...
+    ]);
 
-%     size(K)
-%     size(dKx)
-%     size(dKu)
-%     size(uPsi)
+    uPsi = zeros(1,Nk);
+    uPsi(INDEX.u) = u;
 
     Psi_n = Psi*dKx*K + uPsi*dKu*K;
 end
+
+function [Psi_n] = KoopFun2(Psi, u, K, INDEX)
+    Psi(INDEX.u) = u;
+    Psi_n = Psi*K;
+end
+
+
+
+
+
+
+
+
+

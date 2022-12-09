@@ -4,12 +4,17 @@ function [Psi, Nk, INDEX] = observables(x, u, Q, world)
         Q = 3;
     end
 
+    % for tracking of observable placement in other programs
     INDEX = struct;
 
     Nx = length(x);
-    Nu = length(u);
     Nw = length(world);
-    Nk = Nx*Q + Nw + Nu + (Nx+Nu)*Nx + 1;
+    No = 2*Nw;
+    Nu = length(u);
+    Nxu = (Nx+Nu)*Nu;
+
+    % for tracking dimensions in other programs
+    Nk = Q*Nx + Nw + Nu + Nxu + No + 1;
 
     % obstacle distances
     dist = NaN(1, Nw);
@@ -41,5 +46,13 @@ function [Psi, Nk, INDEX] = observables(x, u, Q, world)
 
     INDEX.("c") = k;
     Psi(INDEX.("c")) = 1;
+    k = k + 1;
+
+    for i = 1:Nw
+        INDEX.("o"+i) = k:k+1;
+        Psi(INDEX.("o"+i)) = world(i).x;
+        k = k + 2;
+    end
+
 
 end

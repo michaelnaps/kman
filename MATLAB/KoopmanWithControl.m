@@ -5,7 +5,7 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
     %% evaluate for the observation function
     Nx = length(x0(:,1));                                % number of initial points
     Mx = round(length(x_data(:,1))/Nx);                  % number of data points
-    [~, Nk, INDEX] = observation(x0(1,:), u_data(1,:));  % observables meta-data
+    [~, Nk, ~] = observation(x0(1,:), u_data(1,:));      % observables meta-data
 
     PsiX = NaN(Nx*(Mx-1), Nk);
     PsiY = NaN(Nx*(Mx-1), Nk);
