@@ -14,7 +14,7 @@ function [Psi] = observables(x, u, Q, world)
 
     j = 1;
     for i = 1:Nw
-        dist(j:j+1) = (world(i).xCenter' - x(1:2));
+        dist(j:j+1) = (world(i).x - x(1:2));
         j = j + 2;
     end
 

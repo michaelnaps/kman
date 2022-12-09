@@ -9,7 +9,7 @@ addpath ../.
 addpath ../../.
 addpath ../sphereworld;
 
-load sphereworld_minimal;
+load sphereworld_nowall;
 
 
 %% Model function
@@ -94,12 +94,12 @@ end
 %% generate data for new initial conditions
 koop = @(x, u) KoopFun(x, u, K, Q);
 
-Psi_koop = generate_data(koop, t_koop, Psi0, u_test, Nu);
+PsiKoop = generate_data(koop, t_koop, Psi0, u_test, Nu);
 x_test = generate_data(modelFun, t_koop, x0, u_test, Nu);
 
 
 %% obstacle distance comparison
-obs_koop = Psi_koop(:,Q*Nx+1:Q*Nx+2*Nw);
+obs_koop = PsiKoop(:,Q*Nx+1:Q*Nx+2*Nw);
 obs_test = NaN(Nt,2*Nw);
 
 for i = 1:Nt
@@ -113,7 +113,7 @@ if ~isnan(acc)
 
     if plot_results
         
-        fig_modelcomp = plot_comparisons(x_test, Psi_koop, x0, t_koop, Psi0);
+        fig_modelcomp = plot_comparisons(x_test, PsiKoop, x0, t_koop, Psi0);
         fig_obscomp   = plot_comparisons(obs_test, obs_koop, obs_test(1,:), t_koop);
 
     end
@@ -127,7 +127,7 @@ if ~isnan(acc)
         bernard.color = 'k';
 
         x_test_anim = x_test(:,1:Nx);
-        x_koop_anim = Psi_koop(:,1:Nx);
+        x_koop_anim = PsiKoop(:,1:Nx);
 
         animate(bernard, x_test_anim, tspan, world, [0,0], x_koop_anim);
 
@@ -145,8 +145,8 @@ end
 %% local functions
 function [Psi_n] = KoopFun(Psi, u, K, Q)
     Nx = 4;
+    Nw = 3;
     Nu = 2;
-    Nw = 4;
     Nk = (Nx + 2*Nw)*Q + Nu;
 
     dKx = diag([ones(1,Nk-Nu), zeros(1,Nu)]);

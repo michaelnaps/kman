@@ -1,10 +1,9 @@
-function [u, x, Psi] = KoopmanMPC(xg, x0, Np, K, Q, obsFun, Rs)
+function [u, x, Psi] = KoopmanMPC(xg, x0, Np, K, Q, obsFun, world, R)
 
     Nx = 4;
     Nu = 2;
-    Nw = 4;
-    Nk = (Nx + Nw)*Q + Nu;
-    iw = Nx*Q + 1;
+    Nw = 3;
+    Nk = (Nx + 2*Nw)*Q + Nu;
 
     Psi0 = obsFun(x0, [0,0]);
 
@@ -29,7 +28,10 @@ function [u, x, Psi] = KoopmanMPC(xg, x0, Np, K, Q, obsFun, Rs)
 
             % boundary constraints
             for i = 1:Np
-                Psi(i,Q*Nx+1:Q*Nx+Nw) >= Rs*ones(1,Nw);
+                dist = reshape(Psi(i,Q*Nx+1:Q*Nx+2*Nw), [2,Nw])';
+                for j = 1:Nw
+                    dist(j,:)*dist(j,:)' >= world(j).r + R;
+                end
             end
 
             % final position constraint

@@ -8,13 +8,13 @@ addpath ../../.
 addpath ../sphereworld
 addpath ./data
 
-load sphereworld_minimal;
+load sphereworld_nowall;
 Nw = length(world);
 
 run /home/michaelnaps/Downloads/cvx/cvx_setup
 clc;
 
-load K_10x10;
+load K_22x22;
 
 
 %% time parameters
@@ -25,6 +25,7 @@ Nt = length(tspan);
 
 
 %% create test environment
+robotRadius = 0.40;
 uref = [0, 0];
 x0 = [0, -8, 0, 0];
 xG = [5, 6, 0, 0];
@@ -36,7 +37,7 @@ observationFun = @(x, u) observables(x, u, Q, world);
 %% run simulation
 xm = NaN(Nt,Nx);
 xm(1,:) = x0;
-[uKoop, xKoop, Psi] = KoopmanMPC(xG, x0, Np, K, Q, observationFun, 0.50);
+[uKoop, xKoop, Psi] = KoopmanMPC(xG, x0, Np, K, Q, observationFun, world, robotRadius);
 
 % for i = 1:Nt-1
 %     xm(i+1,:) = model(xm(i,:), uKoop(1,:), dt);
@@ -49,9 +50,13 @@ xm(1,:) = x0;
 
 %% plot results
 bernard = struct;
-bernard.xCenter = [0,0];
-bernard.radius = 0.25;
-bernard.distInfluence = 0.25;
+bernard.x = xKoop(1,:);
+bernard.r = robotRadius;
 bernard.color = 'k';
+
+wallsphere = struct;
+wallsphere.x = [0,0];
+wallsphere.r = -10;
+world = [wallsphere, world];
 
 [~] = plot_path(world, bernard, xG, xKoop);
