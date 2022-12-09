@@ -7,12 +7,15 @@ function [Psi] = observables(x, u, Q, world)
     Nx = length(x);
     Nu = length(u);
     Nw = length(world);
-    Nk = (Nx + Nw)*Q + Nu;
+    Nk = (Nx + 2*Nw)*Q + Nu;
 
     % obstacle distances
-    dist = NaN(1, Nw);
-    for q = 1:Nw
-        dist(q) = distance(world(q), [x(1), x(2)]);
+    dist = NaN(1, 2*Nw);
+
+    j = 1;
+    for i = 1:Nw
+        dist(j:j+1) = (world(i).xCenter' - x(1:2));
+        j = j + 2;
     end
 
     Psi = NaN(1, Nk);
@@ -24,8 +27,8 @@ function [Psi] = observables(x, u, Q, world)
     end
 
     for q = 1:Q
-        Psi(k:k+Nw-1) = dist.^q;
-        k = k + Nw;
+        Psi(k:k+2*Nw-1) = dist.^q;
+        k = k + 2*Nw;
     end
 
     Psi(k:k+Nu-1) = u;

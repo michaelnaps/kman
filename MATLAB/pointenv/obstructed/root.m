@@ -51,9 +51,8 @@ u_train = stack_data(u_generate, N0, Nu, Nt);
 
 %% Evaluate for the observation function
 Q = 2;
-Nk = (Nx + Nw)*Q + Nu;
-
 observation = @(x, u) observables(x, u, Q, world);
+Nk = length(observation([0,0,0,0], [0,0]));
 
 [K, acc, ind, err] = KoopmanWithControl(observation, x_train, x0, u_train);
 fprintf("L-2 norm: %.3f\n\n", acc)
@@ -100,12 +99,12 @@ x_test = generate_data(modelFun, t_koop, x0, u_test, Nu);
 
 
 %% obstacle distance comparison
-obs_koop = Psi_koop(:,Q*Nx+1:Q*Nx+Nw);
-obs_test = NaN(Nt,Nw);
+obs_koop = Psi_koop(:,Q*Nx+1:Q*Nx+2*Nw);
+obs_test = NaN(Nt,2*Nw);
 
 for i = 1:Nt
      psi_temp = observation(x_test(i,1:Nx), [0,0]);
-     obs_test(i,:) = psi_temp(Q*Nx+1:Q*Nx+Nw);
+     obs_test(i,:) = psi_temp(Q*Nx+1:Q*Nx+2*Nw);
 end
 
 
@@ -148,7 +147,7 @@ function [Psi_n] = KoopFun(Psi, u, K, Q)
     Nx = 4;
     Nu = 2;
     Nw = 4;
-    Nk = (Nx + Nw)*Q + Nu;
+    Nk = (Nx + 2*Nw)*Q + Nu;
 
     dKx = diag([ones(1,Nk-Nu), zeros(1,Nu)]);
     dKu = diag([zeros(1,Nk-Nu), ones(1,Nu)]);
