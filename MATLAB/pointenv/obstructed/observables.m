@@ -1,8 +1,10 @@
-function [Psi] = observables(x, u, Q, world)
+function [Psi, Nk, INDEX] = observables(x, u, Q, world)
 
     if nargin < 3
         Q = 3;
     end
+
+    INDEX = struct;
 
     Nx = length(x);
     Nu = length(u);
@@ -19,20 +21,25 @@ function [Psi] = observables(x, u, Q, world)
 
     k = 1;
     for q = 1:Q
-        Psi(k:k+Nx-1) = x.^q;
+        INDEX.("x"+q) = k:k+Nx-1;
+        Psi(INDEX.("x"+q)) = x.^q;
         k = k + Nx;
     end
 
-    Psi(k:k+Nw-1) = dist.^2;
+    INDEX.("d") = k:k+Nw-1;
+    Psi(INDEX.("d")) = dist.^2;
     k = k + Nw;
 
-    Psi(k:k+Nu-1) = u;
+    INDEX.("u") = k:k+Nu-1;
+    Psi(INDEX.("u")) = u;
     k = k + Nu;
 
+    INDEX.("xu") = k:k+(Nx+Nu)*Nu-1;
     xu = [x, u]'*u;
-    Psi(k:k+(Nx+Nu)*Nu-1) = xu(:)';
+    Psi(INDEX.("xu")) = xu(:)';
     k = k + (Nx+Nu)*Nu;
 
-    Psi(k) = 1;
+    INDEX.("c") = k;
+    Psi(INDEX.("c")) = 1;
 
 end
