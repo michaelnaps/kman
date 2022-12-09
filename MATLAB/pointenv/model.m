@@ -7,10 +7,8 @@ function [xn] = model(x, u, dt)
     c = 0.75;
 
     xn = x + dt*[
-        x(3);
-        x(4);
-        u(1) - c*x(3);
-        u(2) - c*x(4);
+        u(1);
+        u(2)
     ]';
 
 end

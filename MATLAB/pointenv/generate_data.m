@@ -7,7 +7,7 @@ function [xlist] = generate_data(F, tspan, x0, ulist, Nu)
     Nt = length(tspan);
     
     if nargin < 5
-        Nu = round(Ns/2);
+        Nu = Ns;
     end
     
     xlist = NaN(Nt, Nx*Ns);

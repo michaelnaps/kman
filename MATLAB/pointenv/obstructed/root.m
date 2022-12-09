@@ -20,11 +20,11 @@ modelFun = @(x, u) model(x, u, dt);
 %% Initialize training data
 Nrand = 30;
 x0 = [
-    20*rand(Nrand, 2)-10, 10*rand(Nrand, 2) - 5;
-    0, 0, 20, 10
+    20*rand(Nrand, 2)-10;
+    0, 0
 ];
 [N0, Nx] = size(x0);
-Nu = round(Nx/2);
+Nu = Nx;
 
 % simulation variables
 T = 10;
@@ -52,7 +52,7 @@ u_train = stack_data(u_generate, N0, Nu, Nt);
 %% Evaluate for the observation function
 Q = 2;
 observation = @(x, u) observables(x, u, Q, world);
-Nk = length(observation([0,0,0,0], [0,0]));
+Nk = length(observation(x0(1,:), [0,0]));
 
 [K, acc, ind, err] = KoopmanWithControl(observation, x_train, x0, u_train);
 fprintf("L-2 norm: %.3f\n\n", acc)
@@ -67,7 +67,7 @@ Nt = length(t_koop);
 % introduce variance into the initial conditions
 x0 = x0(N0-4:end,:);
 [N0, Nx] = size(x0);
-x0 = x0 + [(rand(N0-1, Nx) - 0.5); 0, 0, 0, 0];
+x0 = x0 + [(rand(N0-1, Nx) - 0.5); zeros(1,Nx)];
 Psi0 = NaN(N0,Nk);
 
 % create list of inputs
@@ -99,12 +99,12 @@ x_test = generate_data(modelFun, t_koop, x0, u_test, Nu);
 
 
 %% obstacle distance comparison
-obs_koop = PsiKoop(:,Q*Nx+1:Q*Nx+2*Nw);
-obs_test = NaN(Nt,2*Nw);
+obs_koop = PsiKoop(:,Q*Nx+1:Q*Nx+Nw);
+obs_test = NaN(Nt,Nw);
 
 for i = 1:Nt
      psi_temp = observation(x_test(i,1:Nx), [0,0]);
-     obs_test(i,:) = psi_temp(Q*Nx+1:Q*Nx+2*Nw);
+     obs_test(i,:) = psi_temp(Q*Nx+1:Q*Nx+Nw);
 end
 
 
@@ -144,15 +144,21 @@ end
 
 %% local functions
 function [Psi_n] = KoopFun(Psi, u, K, Q)
-    Nx = 4;
+    Nx = 2;
     Nw = 3;
     Nu = 2;
-    Nk = (Nx + 2*Nw)*Q + Nu;
+    Nxu = (Nx+Nu)*Nx;
+%     Nk = (Nx + 2*Nw)*Q + Nu;
 
-    dKx = diag([ones(1,Nk-Nu), zeros(1,Nu)]);
-    dKu = diag([zeros(1,Nk-Nu), ones(1,Nu)]);
+    dKx = diag([ones(1,Q*Nx), ones(1,Nw), zeros(1,Nu), zeros(1,Nxu+1)]);
+    dKu = diag([zeros(1,Q*Nx), zeros(1,Nw), ones(1,Nu), ones(1,Nxu+1)]);
 
-    uPsi = [zeros(1,Nk-Nu), u];
+    uPsi = [zeros(1,Q*Nx), zeros(1,Nw), u, zeros(1,Nxu+1)];
+
+%     size(K)
+%     size(dKx)
+%     size(dKu)
+%     size(uPsi)
 
     Psi_n = Psi*dKx*K + uPsi*dKu*K;
 end

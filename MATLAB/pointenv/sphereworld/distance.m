@@ -1,12 +1,12 @@
 function [dist] = distance(sphere, point)
 
-    if sphere.radius > 0
+    if sphere.r > 0
         neg = 1;
     else
         neg = -1;
     end
         
-    dist = norm(point - sphere.xCenter');
-    dist = neg*dist - sphere.radius;
+    dist = norm(point - sphere.x);
+    dist = neg*dist - sphere.r;
 
 end
