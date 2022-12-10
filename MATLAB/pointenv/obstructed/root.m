@@ -95,17 +95,17 @@ end
 koop = @(Psi, u) KoopFun(Psi, u, K, Q, INDEX);
 koop2 = @(Psi, u) KoopFun2(Psi, u, K, INDEX);
 
-PsiKoop = generate_data(koop, t_koop, Psi0, u_test, Nu);
+PsiKoop = generate_data(koop2, t_koop, Psi0, u_test, Nu);
 xTest = generate_data(modelFun, t_koop, x0, u_test, Nu);
 
 
 %% obstacle distance comparison
-obs_koop = PsiKoop(:,Q*Nx+1:Q*Nx+Nw);
+obs_koop = PsiKoop(:,INDEX.d);
 obs_test = NaN(Nt,Nw);
 
 for i = 1:Nt
      psi_temp = observation(xTest(i,1:Nx), [0,0]);
-     obs_test(i,:) = psi_temp(Q*Nx+1:Q*Nx+Nw);
+     obs_test(i,:) = psi_temp(INDEX.d);
 end
 
 
