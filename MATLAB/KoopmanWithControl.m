@@ -66,10 +66,8 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
     
     % calculate residual error
     acc = 0;
-    for n = 1:Nx*(Mx-1)
-    
+    for n = 1:Nx*(Mx-1)    
         acc = acc + norm(PsiY(n,:) - PsiX(n,:)*K);
-    
     end
     
     if isnan(acc)

@@ -1,4 +1,4 @@
-function [fig] = animate(robot, x_list, tspan, world, xGoal, x_comp)
+function [fig] = animate(world, robot, xGoal, tspan, x_list, x_comp)
 
     if nargin < 6
         x_comp = [];
@@ -18,7 +18,7 @@ function [fig] = animate(robot, x_list, tspan, world, xGoal, x_comp)
 
         plot_sphereworld(world, xGoal', fig);
 
-        robot.xCenter = [x1(i); x2(i)];
+        robot.x = [x1(i); x2(i)];
         plot_sphere(robot, robot.color);
 
         if ~isempty(x_comp)

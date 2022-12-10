@@ -8,13 +8,14 @@ function [Psi, Nk, META] = observables(x, u, Q, world)
     META = struct;
 
     Nx = length(x);
+    Nxx = Nx*Nx;
     Nw = length(world);
     Nu = length(u);
     Nxu = (Nx+Nu)*Nu;
     Nxr = 2*Nx;
 
     % for tracking dimensions in other programs
-    Nk = Q*Nx + Nw + Nu + Nxu + 0*Nw*Nxr + 1;
+    Nk = Nx + Nxx + Nw + Nu + Nxu + 0*Nw*Nxr + 1;
 
     % obstacle distances
     dist = NaN(1, Nw);
@@ -25,15 +26,15 @@ function [Psi, Nk, META] = observables(x, u, Q, world)
     Psi = NaN(1, Nk);
 
     k = 1;
-    for q = 1:Q
-        META.("x"+q) = k:k+Nx-1;
-        Psi(META.("x"+q)) = x.^q;
-        k = k + Nx;
-    end
 
-    META.("d") = k:k+Nw-1;
-    Psi(META.("d")) = dist;
-    k = k + Nw;
+    META.("x") = k:k+Nx-1;
+    Psi(META.("x")) = x;
+    k = k + Nx;
+
+    META.("xx") = k:k+Nxx-1;
+    xx = x'*x;
+    Psi(META.("xx")) = xx(:);
+    k = k + Nxx;
 
     META.("u") = k:k+Nu-1;
     Psi(META.("u")) = u;
@@ -53,6 +54,10 @@ function [Psi, Nk, META] = observables(x, u, Q, world)
 %         
 %         k = k + Nxr;
 %     end
+
+    META.("d") = k:k+Nw-1;
+    Psi(META.("d")) = dist;
+    k = k + Nw;
 
     META.("c") = k;
     Psi(META.("c")) = 1;
