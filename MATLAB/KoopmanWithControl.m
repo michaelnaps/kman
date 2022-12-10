@@ -5,7 +5,7 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
     %% evaluate for the observation function
     Nx = length(x0(:,1));                                % number of initial points
     Mx = round(length(x_data(:,1))/Nx);                  % number of data points
-    [~, Nk, ~] = observation(x0(1,:), u_data(1,:));      % observables meta-data
+    [~, Nk, META] = observation(x0(1,:), u_data(1,:));      % observables meta-data
 
     PsiX = NaN(Nx*(Mx-1), Nk);
     PsiY = NaN(Nx*(Mx-1), Nk);
@@ -38,7 +38,7 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
         acc = NaN;
         ind = NaN;
 
-        fprintf("ERROR: psiX or psiY contain NaN value.\n\n")
+        fprintf("ERROR: PsiX or PsiY contain NaN value.\n\n")
 
         return;
     end
@@ -66,7 +66,7 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
     
     % calculate residual error
     acc = 0;
-    for n = 1:Nk
+    for n = 1:Nx*(Mx-1)
     
         acc = acc + norm(PsiY(n,:) - PsiX(n,:)*K);
     
