@@ -52,7 +52,7 @@ uTrain = stack_data(uGenerate, N0, Nu, Nt);
 %% Evaluate for the observation function
 Q = 2;
 observation = @(x, u) observables(x, u, Q, world);
-[~, Nk, INDEX] = observation(x0(1,:), u0(1,:));
+[~, Nk, META] = observation(x0(1,:), u0(1,:));
 
 [K, acc, ind, err] = KoopmanWithControl(observation, xTrain, x0, uTrain);
 fprintf("L-2 norm: %.3f\n\n", acc)
@@ -92,20 +92,20 @@ end
 
 
 %% generate data for new initial conditions
-koop = @(Psi, u) KoopFun(Psi, u, K, Q, INDEX);
-koop2 = @(Psi, u) KoopFun2(Psi, u, K, INDEX);
+koop = @(Psi, u) KoopFun(Psi, u, K, Q, META);
+koop2 = @(Psi, u) KoopFun2(Psi, u, K, META);
 
-PsiKoop = generate_data(koop, t_koop, Psi0, u_test, Nu);
+PsiKoop = generate_data(koop2, t_koop, Psi0, u_test, Nu);
 xTest = generate_data(modelFun, t_koop, x0, u_test, Nu);
 
 
 %% obstacle distance comparison
-obs_koop = PsiKoop(:,Q*Nx+1:Q*Nx+Nw);
+obs_koop = PsiKoop(:,META.d);
 obs_test = NaN(Nt,Nw);
 
 for i = 1:Nt
      psi_temp = observation(xTest(i,1:Nx), [0,0]);
-     obs_test(i,:) = psi_temp(Q*Nx+1:Q*Nx+Nw);
+     obs_test(i,:) = psi_temp(META.d);
 end
 
 
@@ -122,7 +122,7 @@ if ~isnan(acc)
     if anim_results
 
         bernard = struct;
-        bernard.x = PsiKoop(:,INDEX.x1);
+        bernard.x = PsiKoop(:,META.x1);
         bernard.r = 0.25;
         bernard.color = 'k';
 
@@ -143,13 +143,12 @@ end
 
 
 %% local functions
-function [Psi_n] = KoopFun(Psi, u, K, Q, INDEX)
-    Nx = length(INDEX.x1);
-    Nw = length(INDEX.d);
-    Nu = length(INDEX.u);
-    Nxu = length(INDEX.xu);
-    No = Nw*length(INDEX.o1);
-    Nk = Q*Nx + Nw + Nu + Nxu + No + 1;
+function [Psi_n] = KoopFun(Psi, u, K, Q, META)
+    Nx = length(META.x1);
+    Nw = length(META.d);
+    Nu = length(META.u);
+    Nxu = length(META.xu);
+    Nk = Q*Nx + Nw + Nu + Nxu + 1;
 
     dKx = diag([
         1, 1,...
@@ -161,9 +160,6 @@ function [Psi_n] = KoopFun(Psi, u, K, Q, INDEX)
         1, 1,...
         0, 0,...
         0,...
-        1, 1,...
-        1, 1,...
-        1, 1,...
     ]);
 
     dKu = diag([
@@ -176,19 +172,21 @@ function [Psi_n] = KoopFun(Psi, u, K, Q, INDEX)
         1, 1,...
         1, 1,...
         0,...
-        0, 0,...
-        0, 0,...
-        0, 0,...
     ]);
 
+    size(Psi)
+    Nk
+    size(dKx)
+    size(dKu)
+
     uPsi = zeros(1,Nk);
-    uPsi(INDEX.u) = u;
+    uPsi(META.u) = u;
 
     Psi_n = Psi*dKx*K + uPsi*dKu*K;
 end
 
-function [Psi_n] = KoopFun2(Psi, u, K, INDEX)
-    Psi(INDEX.u) = u;
+function [Psi_n] = KoopFun2(Psi, u, K, META)
+    Psi(META.u) = u;
     Psi_n = Psi*K;
 end
 
