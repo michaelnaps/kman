@@ -9,7 +9,7 @@ addpath ../.
 addpath ../../.
 addpath ../sphereworld;
 
-load sphereworld_nowall;
+load sphereworld_minimal;
 
 
 %% Model function
