@@ -111,7 +111,7 @@ if ~isnan(acc)
 
     if plot_results
 
-        col = META.xx;
+        col = META.d;
         fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tKoop);
 
     end
@@ -143,14 +143,8 @@ end
 function [Psi_n] = KoopFun(Psi, u, K, world, META)
 
     [dPsix, dPsiu] = observables_partial(Psi(META.x), u, world);
-
-%     size(K)
-%     size(dKx)
-%     size(dKu)
-%     size(Psi)
-
     Psi_n = Psi(META.x)*dPsix*K + u*dPsiu*K;
-    
+
 end
 
 

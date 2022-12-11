@@ -25,8 +25,7 @@ function [fig] = plot_comparisons(x1_list, x2_list, x0, tspan, x0_2)
             if i == 1 && j == N1
                 legend('Model Func.', 'Koopman op.')
             end
-
-            ylim([min(x2_list(:,k2+j))-1, max(x2_list(:,k2+j))+1])
+            
             hold off
             
 
