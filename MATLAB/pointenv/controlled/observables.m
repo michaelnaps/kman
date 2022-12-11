@@ -1,21 +1,39 @@
-function [psi] = observables(x, u, Q)
+function [Psi, Nk, META] = observables(x, u)
+    % for tracking of observable placement in other programs
+    META = struct;
 
-    if nargin < 3
-        Q = 3;
-    end
-
-    Ns = length(x);
+    Nx = length(x);
+    Nxx = Nx*Nx;
     Nu = length(u);
-    Nk = Ns*Q + Nu;
+    Nxu = (Nx+Nu)*Nu;
 
-    psi = NaN(1, Nk);
+    % for tracking dimensions in other programs
+    Nk = Nx + Nxx + Nu + Nxu + 1;
+    META.Nk = Nk;
 
     k = 1;
-    for i = 1:Q
-        psi(k:k+Ns-1) = x.^i;
-        k = k + Ns;
-    end
+    Psi = NaN(1, Nk);
 
-    psi(k:k+Nu-1) = u;
+    META.("x") = k:k+Nx-1;
+    Psi(META.("x")) = x;
+    k = k + Nx;
+
+    META.("xx") = k:k+Nxx-1;
+    xx = x'*x;
+    Psi(META.("xx")) = xx(:);
+    k = k + Nxx;
+
+    META.("u") = k:k+Nu-1;
+    Psi(META.("u")) = u;
+    k = k + Nu;
+
+    META.("xu") = k:k+(Nx+Nu)*Nu-1;
+    xu = [x, u]'*u;
+    Psi(META.("xu")) = xu(:)';
+    k = k + (Nx+Nu)*Nu;
+
+    META.("c") = k;
+    Psi(META.("c")) = 1;
+%     k = k + 1;
 
 end

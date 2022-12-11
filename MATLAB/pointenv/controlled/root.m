@@ -3,13 +3,13 @@ clean;
 plot_results = 1;
 anim_results = ~plot_results;
 
-save_data = 1;
+save_data = 0;
 
 addpath ../.
 addpath ../../.
 addpath ../sphereworld;
 
-load sphereworld;
+load sphereworld_minimal;
 Nw = length(world);
 
 
@@ -21,12 +21,11 @@ modelFun = @(x, u) model(x, u, dt);
 %% Initialize training data
 Nrand = 20;
 x0 = [
-    xStart', zeros(size(xStart'));
-    20*rand(Nrand, 2), 10*rand(Nrand, 2) - 5;
-    0, 0, 20, 10
+    20*rand(Nrand, 2);
+    0, 0
 ];
-[Nx, Ns] = size(x0);
-Nu = round(Ns/2);
+[N0, Nx] = size(x0);
+Nu = Nx;
 
 % simulation variables
 T = 10;
@@ -34,11 +33,11 @@ tspan = 0:dt:T;
 Nt = length(tspan);
 
 % create list of inputs
-u0 = 20*rand(Nx, Nu) - 10;
-u_generate = NaN(Nt, Nx*Nu);
+u0 = 20*rand(N0, Nu) - 10;
+u_generate = NaN(Nt, N0*Nu);
 
 k = 1;
-for i = 1:Nx
+for i = 1:N0
     u_generate(:,k:k+Nu-1) = [
         linspace(u0(i,1),0,Nt)', linspace(u0(i,2),0,Nt)'
     ];
@@ -47,15 +46,15 @@ end
 
 % generate model data
 data_train = generate_data(modelFun, tspan, x0, u_generate);
-x_train = stack_data(data_train, Nx, Ns, Nt);
-u_train = stack_data(u_generate, Nx, Nu, Nt);
+x_train = stack_data(data_train, N0, Nx, Nt);
+u_train = stack_data(u_generate, N0, Nu, Nt);
 
 
 %% Evaluate for the observation function
 Q = 5;
-Nk = Ns*Q + Nu;
+[~, Nk, META] = observables(zeros(1,Nx), zeros(1,Nx));
 
-observation = @(x, u) observables(x, u, Q);
+observation = @(x, u) observables(x, u);
 
 [K, acc, ind, err] = KoopmanWithControl(observation, x_train, x0, u_train);
 fprintf("L-2 norm: %.3f\n\n", acc)
@@ -63,28 +62,29 @@ fprintf("L-2 norm: %.3f\n\n", acc)
 
 %% test koopman operator on new data
 % time variables
-T_koop = 20;
-t_koop = (0:dt:T_koop)';
-Nt = length(t_koop);
+TKoop = 20;
+tKoop = (0:dt:TKoop)';
+Nt = length(tKoop);
 
 % introduce variance into the initial conditions
-x0 = x0(Nx-4:end,:);
-[Nx, Ns] = size(x0);
-x0 = x0 + [(rand(Nx-1, Ns) - 0.5); 0, 0, 0, 0];
-Psi0 = NaN(Nx,Nk);
+x0 = x0(N0-4:end,:);
+[N0, Nx] = size(x0);
+x0 = x0 + [(rand(N0-1, Nx) - 0.5); zeros(1,Nx)];
+Psi0 = NaN(N0,Nk);
 
 % create list of inputs
-u0 = 20*rand(Nx,Nu) - 10;
-u_test = NaN(Nt,Nx*Nu);
+u0 = 5*rand(N0,Nu) - 2.5;
+uTest = NaN(Nt,N0*Nu);
+
 Nl = round(Nt/4);
-N0 = Nt - Nl;
+Nz = Nt - Nl;
 
 % create input matrices for time-frame
 k = 1;
-for i = 1:Nx
-    u_test(:,k:k+Nu-1) = [
+for i = 1:N0
+    uTest(:,k:k+Nu-1) = [
         linspace(u0(i,1),0,Nl)', linspace(0,u0(i,2),Nl)';
-        zeros(N0, Nu);
+        zeros(Nz, Nu);
     ];
     
     Psi0(i,:) = observation(x0(i,:), [0,0]);
@@ -94,33 +94,38 @@ end
 
 
 %% generate data for new initial conditions
-koop = @(x, u) KoopFun(x, u, K, Q);
+koop = @(x, u) KoopFun(x, u, K, META);
 
-Psi_koop = generate_data(koop, t_koop, Psi0, u_test, Nu);
-x_test = generate_data(modelFun, t_koop, x0, u_test, Nu);
+PsiKoop = generate_data(koop, tKoop, Psi0, uTest, Nu);
+xTest = generate_data(modelFun, tKoop, x0, uTest, Nu);
+
+PsiTest = NaN(size(PsiKoop(:,1:Nk)));
+for i = 1:Nt
+    PsiTest(i,:) = observation(xTest(i,1:Nx), uTest(i,1:Nu));
+end
 
 
 %% plot results
 if ~isnan(acc)
 
     if plot_results
-        
-        fig_modelcomp = plot_comparisons(x_test, Psi_koop, x0, t_koop, Psi0);
+
+        col = META.xx;
+        fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tKoop);
 
     end
 
     if anim_results
 
         bernard = struct;
-        bernard.xCenter = [0,0];
-        bernard.radius = 0.25;
-        bernard.distInfluence = 0.25;
+        bernard.x = PsiKoop(:,META.x1);
+        bernard.r = 0.25;
         bernard.color = 'k';
 
-        x_test_anim = x_test(:,end-(Ns-1):end);
-        x_koop_anim = Psi_koop(:,end-(Ns-1):end);
+        x_test_anim = xTest(:,META.x1);
+        x_koop_anim = PsiKoop(:,META.x1);
 
-        animate(bernard, x_koop_anim, tspan, world, xGoal(:,1), x_test_anim);
+        animate(world, bernard, [0,0], tspan, x_test_anim, x_koop_anim);
 
     end
 
@@ -134,14 +139,25 @@ end
 
 
 %% local functions
-function [Psi_n] = KoopFun(Psi, u, K, Q)
-    Nx = 4;
-    Nu = 2;
+function [Psi_n] = KoopFun(Psi, u, K, META)
+    Nx = length(META.x);
+    Nxx = length(META.xx);
+    Nu = length(META.u);
+    Nxu = length(META.xu);
+    Nc = length(META.c);
+    Nk = META.Nk;
 
-    dKx = diag([ones(1,Q*Nx), zeros(1,Nu)]);
-    dKu = diag([zeros(1,Q*Nx), ones(1,Nu)]);
+    dKx = diag([ones(1,Nx+Nxx), zeros(1,Nu), ones(1,Nxu+Nc)]);
+    dKu = diag([zeros(1,Nx+Nxx), ones(1,Nu), ones(1,Nxu+Nc)]);
 
-    uPsi = [zeros(1,Q*Nx), u];
+    uPsi = zeros(1,Nk);
+    uPsi(META.u) = u;
+
+%     size(K)
+%     size(dKx)
+%     size(dKu)
+%     size(Psi)
+%     size(uPsi)
 
     Psi_n = Psi*dKx*K + uPsi*dKu*K;
 end
