@@ -5,10 +5,12 @@ function [Psi, Nk, META] = observables(x, u)
     Nx = length(x);
     Nxx = Nx*Nx;
     Nu = length(u);
-    Nxu = (Nx+Nu)*Nu;
+    Nuu = Nu*Nu;
+    Nxu = Nx*Nu;
+    Nc = 1;
 
     % for tracking dimensions in other programs
-    Nk = Nx + Nxx + Nu + Nxu + 1;
+    Nk = Nx + Nxx + Nu + Nuu + Nxu + Nc;
     META.Nk = Nk;
 
     k = 1;
@@ -27,10 +29,15 @@ function [Psi, Nk, META] = observables(x, u)
     Psi(META.("u")) = u;
     k = k + Nu;
 
-    META.("xu") = k:k+(Nx+Nu)*Nu-1;
-    xu = [x, u]'*u;
+    META.("uu") = k:k+Nuu-1;
+    uu = u'*u;
+    Psi(META.("uu")) = uu(:)';
+    k = k + Nuu;
+
+    META.("xu") = k:k+Nxu-1;
+    xu = x'*u;
     Psi(META.("xu")) = xu(:)';
-    k = k + (Nx+Nu)*Nu;
+    k = k + Nxu;
 
     META.("c") = k;
     Psi(META.("c")) = 1;

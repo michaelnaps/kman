@@ -19,9 +19,9 @@ modelFun = @(x, u) model(x, u, dt);
 
 
 %% Initialize training data
-Nrand = 20;
+Nrand = 50;
 x0 = [
-    20*rand(Nrand, 2);
+    20*rand(Nrand, 2) - 10;
     0, 0
 ];
 [N0, Nx] = size(x0);
@@ -83,11 +83,10 @@ Nz = Nt - Nl;
 k = 1;
 for i = 1:N0
     uTest(:,k:k+Nu-1) = [
-        linspace(u0(i,1),0,Nl)', linspace(0,u0(i,2),Nl)';
-        zeros(Nz, Nu);
+        linspace(u0(i,1),0,Nt)', linspace(0,u0(i,2),Nt)';
     ];
     
-    Psi0(i,:) = observation(x0(i,:), [0,0]);
+    Psi0(i,:) = observation(x0(i,:), uTest(1,k:k+Nu-1));
 
     k = k + Nu;
 end
@@ -110,8 +109,8 @@ if ~isnan(acc)
 
     if plot_results
 
-        col = META.xx;
-        fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tKoop);
+        col = META.xu;
+        fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col)/2, Psi0(1,col), tKoop);
 
     end
 
@@ -134,32 +133,22 @@ end
 
 %% save data
 if save_data
-    save("./data/K_"+Nk+"x"+Nk, "K", "Nk", "dt", "Q", "acc", "ind", "Nw")
+    save("./data/K_"+Nk+"x"+Nk, "K", "Nk", "dt", "acc", "META", "Nw")
 end
 
 
 %% local functions
 function [Psi_n] = KoopFun(Psi, u, K, META)
-    Nx = length(META.x);
-    Nxx = length(META.xx);
-    Nu = length(META.u);
-    Nxu = length(META.xu);
-    Nc = length(META.c);
-    Nk = META.Nk;
 
-    dKx = diag([ones(1,Nx+Nxx), zeros(1,Nu), ones(1,Nxu+Nc)]);
-    dKu = diag([zeros(1,Nx+Nxx), ones(1,Nu), ones(1,Nxu+Nc)]);
-
-    uPsi = zeros(1,Nk);
-    uPsi(META.u) = u;
+    [dKx, dKu] = observables_partial(Psi(META.x), u);
 
 %     size(K)
 %     size(dKx)
 %     size(dKu)
 %     size(Psi)
-%     size(uPsi)
 
-    Psi_n = Psi*dKx*K + uPsi*dKu*K;
+    Psi_n = Psi(META.x)*dKx*K + u*dKu*K;
+    
 end
 
 
