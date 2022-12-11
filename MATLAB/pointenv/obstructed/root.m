@@ -64,10 +64,10 @@ tKoop = (0:dt:TKoop)';
 Nt = length(tKoop);
 
 % introduce variance into the initial conditions
-x0 = x0(N0-4:end,:);
+x0 = 20*rand(1,Nx) - 10;
 [N0, Nx] = size(x0);
-x0 = x0 + [(rand(N0-1, Nx) - 0.5); zeros(1,Nx)];
-Psi0 = NaN(N0,Nk);
+
+Psi0 = NaN(N0, Nk);
 
 % create list of inputs
 u0 = 5*rand(N0,Nu) - 2.5;
