@@ -10,6 +10,7 @@ addpath ../../.
 addpath ../sphereworld;
 
 load sphereworld_minimal;
+Nw = length(world);
 
 
 %% Model function
@@ -18,9 +19,9 @@ modelFun = @(x, u) model(x, u, dt);
 
 
 %% Initialize training data
-Nrand = 10;
+Nrand = 50;
 x0 = [
-    20*rand(Nrand, 2)-10;
+    20*rand(Nrand, 2) - 10;
     0, 0
 ];
 [N0, Nx] = size(x0);
@@ -32,32 +33,31 @@ tspan = 0:dt:T;
 Nt = length(tspan);
 
 % create list of inputs
-u0 = 5*rand(N0, Nu) - 2.5;
-uGenerate = NaN(Nt, N0*Nu);
+u0 = 20*rand(N0, Nu) - 10;
+u_generate = NaN(Nt, N0*Nu);
 
 k = 1;
 for i = 1:N0
-    uGenerate(:,k:k+Nu-1) = [
+    u_generate(:,k:k+Nu-1) = [
         linspace(u0(i,1),0,Nt)', linspace(u0(i,2),0,Nt)'
     ];
     k = k + Nu;
 end
 
 % generate model data
-dataTrain = generate_data(modelFun, tspan, x0, uGenerate);
-xTrain = stack_data(dataTrain, N0, Nx, Nt);
-uTrain = stack_data(uGenerate, N0, Nu, Nt);
+data_train = generate_data(modelFun, tspan, x0, u_generate);
+x_train = stack_data(data_train, N0, Nx, Nt);
+u_train = stack_data(u_generate, N0, Nu, Nt);
 
 
 %% Evaluate for the observation function
-Q = 2;
-observation = @(x, u) observables(x, u, Q, world);
-[~, Nk, META] = observation(x0(1,:), zeros(1,Nu));
-        
-disp(META)
+Q = 5;
+[~, Nk, META] = observables(zeros(1,Nx), zeros(1,Nx), world);
 
-[K, acc, ind, err] = KoopmanWithControl(observation, xTrain, x0, uTrain);
-fprintf("L-2 norm: %.3f\n\n", acc)
+observation = @(x, u) observables(x, u, world);
+
+[K, acc, ind, err] = KoopmanWithControl(observation, x_train, x0, u_train);
+% fprintf("L-2 norm: %.3f\n\n", acc)
 
 
 %% test koopman operator on new data
@@ -76,7 +76,7 @@ Psi0 = NaN(N0,Nk);
 u0 = 5*rand(N0,Nu) - 2.5;
 uTest = NaN(Nt,N0*Nu);
 
-Nl = round(Nt/4);
+Nl = round(Nt/2);
 Nz = Nt - Nl;
 
 % create input matrices for time-frame
@@ -87,15 +87,14 @@ for i = 1:N0
         zeros(Nz, Nu);
     ];
     
-    Psi0(i,:) = observation(x0(i,:), [0,0]);
+    Psi0(i,:) = observation(x0(i,:), uTest(1,k:k+Nu-1));
 
     k = k + Nu;
 end
 
 
 %% generate data for new initial conditions
-koop = @(Psi, u) KoopFun(Psi, u, K, Q, META);
-koop2 = @(Psi, u) KoopFun2(Psi, u, K, META);
+koop = @(x, u) KoopFun(x, u, K, observation, META);
 
 PsiKoop = generate_data(koop, tKoop, Psi0, uTest, Nu);
 xTest = generate_data(modelFun, tKoop, x0, uTest, Nu);
@@ -111,8 +110,8 @@ if ~isnan(acc)
 
     if plot_results
 
-        col = META.xx;
-        fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tKoop);
+        col = META.d;
+        fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col)/2, Psi0(1,col), tKoop);
 
     end
 
@@ -135,39 +134,25 @@ end
 
 %% save data
 if save_data
-    save("./data/K_"+Nk+"x"+Nk, "K", "Nk", "dt", "Q", "acc", "ind", "Nw")
+    save("./data/K_"+Nk+"x"+Nk, "K", "Nk", "dt", "acc", "META", "Nw")
 end
 
 
 %% local functions
-function [Psi_n] = KoopFun(Psi, u, K, Q, META)
-    Nx = length(META.x);
-    Nxx = length(META.xx);
-    Nu = length(META.u);
-    Nxu = length(META.xu);
-    Nd = length(META.d);
-    Nc = length(META.c);
-    Nk = Nx + Nxx + Nu + Nxu + Nd + Nc;
+function [Psi_n] = KoopFun(Psi, u, K, obsFun, META)
 
-    uPsi = zeros(1,Nk);
-    uPsi(META.u) = u;
-
-    dKx = diag([ones(1,Nx+Nxx), zeros(1,Nu), ones(1,Nxu), ones(1,Nd), 0]);
-    dKu = diag([zeros(1,Nx+Nxx), ones(1,Nu), ones(1,Nxu), zeros(1,Nd), 0]);
+    [dKx, dKu] = observables_partial(Psi(META.x), u, obsFun);
 
 %     size(K)
 %     size(dKx)
 %     size(dKu)
 %     size(Psi)
-%     size(uPsi)
 
-    Psi_n = Psi*dKx*K + uPsi*dKu*K;
+    Psi_n = Psi(META.x)*dKx*K + u*dKu*K;
+    
 end
 
-function [Psi_n] = KoopFun2(Psi, u, K, META)
-    Psi(META.u) = u;
-    Psi_n = Psi*K;
-end
+
 
 
 
