@@ -51,13 +51,10 @@ u_train = stack_data(u_generate, N0, Nu, Nt);
 
 
 %% Evaluate for the observation function
-Q = 5;
 [~, Nk, META] = observables(zeros(1,Nx), zeros(1,Nx), world);
-
 observation = @(x, u) observables(x, u, world);
 
 [K, acc, ind, err] = KoopmanWithControl(observation, x_train, x0, u_train);
-% fprintf("L-2 norm: %.3f\n\n", acc)
 
 
 %% test koopman operator on new data
@@ -94,7 +91,7 @@ end
 
 
 %% generate data for new initial conditions
-koop = @(x, u) KoopFun(x, u, K, observation, META);
+koop = @(x, u) KoopFun(x, u, K, world, META);
 
 PsiKoop = generate_data(koop, tKoop, Psi0, uTest, Nu);
 xTest = generate_data(modelFun, tKoop, x0, uTest, Nu);
@@ -104,14 +101,18 @@ for i = 1:Nt
     PsiTest(i,:) = observation(xTest(i,1:Nx), uTest(i,1:Nu));
 end
 
+col = META.xx;
+PsiError = PsiTest(:,col)-PsiKoop(:,col) < 1e-3;
+SumError = sum(PsiError, 'all');
+
 
 %% plot results
 if ~isnan(acc)
 
     if plot_results
 
-        col = META.d;
-        fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col)/2, Psi0(1,col), tKoop);
+        col = META.xx;
+        fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tKoop);
 
     end
 
@@ -139,16 +140,16 @@ end
 
 
 %% local functions
-function [Psi_n] = KoopFun(Psi, u, K, obsFun, META)
+function [Psi_n] = KoopFun(Psi, u, K, world, META)
 
-    [dKx, dKu] = observables_partial(Psi(META.x), u, obsFun);
+    [dPsix, dPsiu] = observables_partial(Psi(META.x), u, world);
 
 %     size(K)
 %     size(dKx)
 %     size(dKu)
 %     size(Psi)
 
-    Psi_n = Psi(META.x)*dKx*K + u*dKu*K;
+    Psi_n = Psi(META.x)*dPsix*K + u*dPsiu*K;
     
 end
 

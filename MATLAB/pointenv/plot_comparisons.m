@@ -1,6 +1,6 @@
 function [fig] = plot_comparisons(x1_list, x2_list, x0, tspan, x0_2)
 
-    [Nx, N1] = size(x0);
+    [N0, N1] = size(x0);
 
     if nargin < 5
         N2 = N1;
@@ -12,11 +12,11 @@ function [fig] = plot_comparisons(x1_list, x2_list, x0, tspan, x0_2)
     k2 = 0;
 
     fig = figure;
-    for i = 1:Nx
+    for i = 1:N0
 
         for j = 1:N1
 
-            subplot(Nx,N1,k1+j)
+            subplot(N0,N1,k1+j)
             hold on
             plot(tspan, x1_list(:,k1+j), 'linewidth', 2)
             plot(tspan, x2_list(:,k2+j), '--', 'linewidth', 1.5)
@@ -26,7 +26,7 @@ function [fig] = plot_comparisons(x1_list, x2_list, x0, tspan, x0_2)
                 legend('Model Func.', 'Koopman op.')
             end
 
-            ylim([min(x1_list(:,k1+j))-1, max(x1_list(:,k1+j))+1])
+            ylim([min(x2_list(:,k2+j))-1, max(x2_list(:,k2+j))+1])
             hold off
             
 

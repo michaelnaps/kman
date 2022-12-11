@@ -31,8 +31,8 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
     end
 
     if (sum(isnan(PsiX), 'all') > 0 || sum(isnan(PsiY), 'all') > 0)
-        err.psiX = PsiX;
-        err.psiY = PsiY;
+        err.PsiX = PsiX;
+        err.PsiY = PsiY;
 
         K   = NaN;
         acc = NaN;
@@ -46,8 +46,8 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
     %% perform lest-squares
     % create least-squares matrices
     % (according to abraham, model-based)
-    G = 1/Mx * (PsiX')*PsiX;
-    A = 1/Mx * (PsiX')*PsiY;
+    G = 1/(Nx*(Mx-1)) * (PsiX')*PsiX;
+    A = 1/(Nx*(Mx-1)) * (PsiX')*PsiY;
 
     [U,S,V] = svd(G);
 

@@ -3,15 +3,15 @@ function [Psi, Nk, META] = observables(x, u, world)
     META = struct;
 
     Nx = length(x);
-    Nxx = Nx*Nx;
+    Nxx = Nx*Nx - 1;
     Nu = length(u);
-    Nuu = Nu*Nu;
+    Nuu = Nu*Nu - 1;
     Nxu = Nx*Nu;
     Nw = length(world);
-    Nc = 1;
+%     Nc = 1;
 
     % for tracking dimensions in other programs
-    Nk = Nx + Nxx + Nu + Nuu + Nxu + Nw + Nc;
+    Nk = Nx + Nxx + Nu + Nuu + Nxu + Nw;
     META.Nk = Nk;
 
     k = 1;
@@ -23,7 +23,8 @@ function [Psi, Nk, META] = observables(x, u, world)
 
     META.("xx") = k:k+Nxx-1;
     xx = x'*x;
-    Psi(META.("xx")) = xx(:);
+%     Psi(META.("xx")) = xx(:);
+    Psi(META.("xx")) = [xx(1), xx(2), xx(4)];
     k = k + Nxx;
 
     META.("u") = k:k+Nu-1;
@@ -32,7 +33,8 @@ function [Psi, Nk, META] = observables(x, u, world)
 
     META.("uu") = k:k+Nuu-1;
     uu = u'*u;
-    Psi(META.("uu")) = uu(:)';
+%     Psi(META.("uu")) = uu(:)';
+    Psi(META.("uu")) = [uu(1), uu(2), uu(4)];
     k = k + Nuu;
 
     META.("xu") = k:k+Nxu-1;
@@ -47,10 +49,10 @@ function [Psi, Nk, META] = observables(x, u, world)
 
     META.("d") = k:k+Nw-1;
     Psi(META.("d")) = d;
-    k = k + Nw;
-
-    META.("c") = k;
-    Psi(META.("c")) = 1;
-%     k = k + 1;
+%     k = k + Nw;
+% 
+%     META.("c") = k;
+%     Psi(META.("c")) = 1;
+% %     k = k + 1;
 
 end
