@@ -3,7 +3,7 @@ clean;
 plot_results = 1;
 anim_results = ~plot_results;
 
-save_data = 0;
+save_data = 1;
 
 addpath ../.
 addpath ../../.
@@ -53,7 +53,6 @@ u_train = stack_data(u_generate, N0, Nu, Nt);
 %% Evaluate for the observation function
 [~, Nk, META] = observables(zeros(1,Nx), zeros(1,Nx), world);
 observation = @(x, u) observables(x, u, world);
-
 [K, acc, ind, err] = KoopmanWithControl(observation, x_train, x0, u_train);
 
 
@@ -73,7 +72,7 @@ Psi0 = NaN(N0, Nk);
 u0 = 5*rand(N0,Nu) - 2.5;
 uTest = NaN(Nt,N0*Nu);
 
-Nl = round(Nt/2);
+Nl = round(3/4*Nt);
 Nz = Nt - Nl;
 
 % create input matrices for time-frame
@@ -111,7 +110,7 @@ if ~isnan(acc)
 
     if plot_results
 
-        col = META.d;
+        col = META.x;
         fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tKoop);
 
     end
@@ -119,12 +118,12 @@ if ~isnan(acc)
     if anim_results
 
         bernard = struct;
-        bernard.x = PsiKoop(:,META.x1);
+        bernard.x = PsiKoop(:,META.x);
         bernard.r = 0.25;
         bernard.color = 'k';
 
-        x_test_anim = xTest(:,META.x1);
-        x_koop_anim = PsiKoop(:,META.x1);
+        x_test_anim = xTest(:,META.x);
+        x_koop_anim = PsiKoop(:,META.x);
 
         animate(world, bernard, [0,0], tspan, x_test_anim, x_koop_anim);
 
