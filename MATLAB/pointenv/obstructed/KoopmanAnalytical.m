@@ -1,5 +1,10 @@
-function [K] = KoopmanAnalytical(alpha, world, META)
-    % 
+function [K] = KoopmanAnalytical(world, META, alpha)
+
+    if nargin < 3
+        alpha = 1;
+    end
+    
+    % term dimensions
     Nx  = length(META.x);
     Nxx = length(META.xx);
     Nu  = length(META.u);
@@ -14,6 +19,7 @@ function [K] = KoopmanAnalytical(alpha, world, META)
     r13 = world(3).x(1);  r23 = world(3).x(2);
     r14 = world(4).x(1);  r24 = world(4).x(2);
 
+    % initialize operator
     K = NaN(Nk);
     
     % state terms: x
@@ -35,7 +41,7 @@ function [K] = KoopmanAnalytical(alpha, world, META)
    K(META.xu, META.xu) = eye(Nxu);
    K(META.uu, META.xu) = eye(Nuu);
 
-   % distance terms
+   % distance terms: d(x) = (x - r)(x - r)'
    K(META.x, META.d) = -2*[
        r11, r12, r13, r14;
        r21, r22, r23, r24
@@ -47,11 +53,8 @@ function [K] = KoopmanAnalytical(alpha, world, META)
    ];
    K(META.uu, META.d) = eye(Nuu);
    K(META.xu, META.d) = 2*eye(Nxu);
-   K(META.c, META.d) = [
-       r11^2 + r21^2,...
-       r12^2 + r22^2,...
-       r13^2 + r23^2,...
-       r14^2 + r24^2,...
+   K(META.c, META.d) = -[
+       (r11^2 + r21^2), (r12^2 + r22^2), (r13^2 + r23^2), (r14^2 + r24^2)
    ];
 
    % constant term and resolve NaN elements

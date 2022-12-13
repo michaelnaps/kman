@@ -1,7 +1,7 @@
 function [xn] = model(x, u, dt)
 
     if nargin < 3
-        dt = 1e-2;
+        dt = 1;
     end
 
     xn = x + dt*[

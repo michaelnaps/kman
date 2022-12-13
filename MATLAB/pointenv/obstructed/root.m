@@ -14,7 +14,7 @@ Nw = length(world);
 
 
 %% Model function
-dt = 0.01;
+dt = 1;
 modelFun = @(x, u) model(x, u, dt);
 
 
@@ -99,8 +99,9 @@ PsiKoop = generate_data(koop, tKoop, Psi0, uTest, Nu);
 xTest = generate_data(modelFun, tKoop, x0, uTest, Nu);
 
 PsiTest = NaN(Nt, Nk);
-for i = 1:Nt
-    PsiTest(i,:) = observation(xTest(i,1:Nx), uTest(i,1:Nu));
+PsiTest(1,:) = observation(xTest(1,META.x), [0,0]);
+for i = 2:Nt
+    PsiTest(i,:) = observation(xTest(i,1:Nx), uTest(i-1,1:Nu));
 end
 
 col = META.xx;
