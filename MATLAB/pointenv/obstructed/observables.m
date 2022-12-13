@@ -49,8 +49,7 @@ function [Psi, META] = observables(x, u, world)
 
     META.("c") = k;
     Psi(META.("c")) = 1;
-    k = k + 1;
 
-    META.Nk = k - 1;
+    META.Nk = k;
 
 end

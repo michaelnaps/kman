@@ -55,7 +55,8 @@ u_train = stack_data(u_generate, N0, Nu, Nt);
 Nk = META.Nk;
 
 observation = @(x, u) observables(x, u, world);
-[K, acc, ind, err] = KoopmanWithControl(observation, x_train, x0, u_train);
+% [K, acc, ind, err] = KoopmanWithControl(observation, x_train, x0, u_train);
+[K] = KoopmanAnalytical(world, META);  acc = 1;
 
 
 %% test koopman operator on new data
