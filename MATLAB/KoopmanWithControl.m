@@ -3,17 +3,19 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
     err = struct;
 
     %% evaluate for the observation function
-    Nx = length(x0(:,1));                                % number of initial points
-    Mx = round(length(x_data(:,1))/Nx);                  % number of data points
+    N0 = length(x0(:,1));                                % number of initial points
+    Mx = round(length(x_data(:,1))/N0);                  % number of data points
     [~, Nk, META] = observation(x0(1,:), u_data(1,:));      % observables meta-data
 
-    PsiX = NaN(Nx*(Mx-1), Nk);
-    PsiY = NaN(Nx*(Mx-1), Nk);
+
+    Nu = length(META.u);
+    PsiX = NaN(N0*(Mx-1), Nk);
+    PsiY = NaN(N0*(Mx-1), Nk);
 
     i = 0;
     j = 0;
 
-    for n = 1:Nx
+    for n = 1:N0
 
         for m = 1:Mx-1
 
@@ -21,7 +23,8 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
             j = j + 1;
 
             PsiX(j,:) = observation(x_data(i,:), u_data(i,:));
-            PsiY(j,:) = observation(x_data(i+1,:), u_data(i+1,:));
+%             PsiY(j,:) = observation(x_data(i+1,:), u_data(i+1,:));
+            PsiY(j,:) = observation(x_data(i+1,:), zeros(1,Nu));
 
         end
 
@@ -46,8 +49,8 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
     %% perform lest-squares
     % create least-squares matrices
     % (according to abraham, model-based)
-    G = 1/(Nx*(Mx-1)) * (PsiX')*PsiX;
-    A = 1/(Nx*(Mx-1)) * (PsiX')*PsiY;
+    G = 1/(N0*(Mx-1)) * (PsiX')*PsiX;
+    A = 1/(N0*(Mx-1)) * (PsiX')*PsiY;
 
     [U,S,V] = svd(G);
 
@@ -66,7 +69,7 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
     
     % calculate residual error
     acc = 0;
-    for n = 1:Nx*(Mx-1)    
+    for n = 1:N0*(Mx-1)    
         acc = acc + norm(PsiY(n,:) - PsiX(n,:)*K);
     end
     

@@ -110,7 +110,7 @@ if ~isnan(acc)
 
     if plot_results
 
-        col = META.x;
+        col = META.xx;
         fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tKoop);
 
     end
