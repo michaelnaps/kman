@@ -26,11 +26,11 @@ Nu = Nx;
 x0 = 20*rand(N0, Nx) - 10;
 
 % simulation variables
-T = 100;  tspan = 0:dt:T;
+T = 1000;  tspan = 0:dt:T;
 Nt = length(tspan);
 
 % create list of inputs
-u0 = 20*rand(N0, Nu) - 10;
+u0 = 5*rand(N0, Nu) - 2.5;
 uList = u0.*ones(Nt,Nu);
 
 % generate model data
@@ -79,7 +79,7 @@ if ~isnan(acc)
 
     if plot_results
 
-        col = META.x;
+        col = META.d;
         fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tspan);
 
     end
