@@ -51,7 +51,9 @@ u_train = stack_data(u_generate, N0, Nu, Nt);
 
 
 %% Evaluate for the observation function
-[~, Nk, META] = observables(zeros(1,Nx), zeros(1,Nx), world);
+[~, META] = observables(zeros(1,Nx), zeros(1,Nx), world);
+Nk = META.Nk;
+
 observation = @(x, u) observables(x, u, world);
 [K, acc, ind, err] = KoopmanWithControl(observation, x_train, x0, u_train);
 
@@ -95,7 +97,7 @@ koop = @(x, u) KoopFun(x, u, K, world, META);
 PsiKoop = generate_data(koop, tKoop, Psi0, uTest, Nu);
 xTest = generate_data(modelFun, tKoop, x0, uTest, Nu);
 
-PsiTest = NaN(size(PsiKoop(:,1:Nk)));
+PsiTest = NaN(Nt, Nk);
 for i = 1:Nt
     PsiTest(i,:) = observation(xTest(i,1:Nx), uTest(i,1:Nu));
 end
@@ -110,7 +112,7 @@ if ~isnan(acc)
 
     if plot_results
 
-        col = META.xx;
+        col = META.x;
         fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tKoop);
 
     end

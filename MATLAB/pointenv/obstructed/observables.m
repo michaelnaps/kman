@@ -1,21 +1,17 @@
-function [Psi, Nk, META] = observables(x, u, world)
+function [Psi, META] = observables(x, u, world)
     % for tracking of observable placement in other programs
     META = struct;
 
     Nx = length(x);
     Nxx = Nx*Nx;
+%     Nxx = Nx*Nx - 1;
     Nu = length(u);
     Nuu = Nu*Nu;
+%     Nuu = Nu*Nu - 1;
     Nxu = Nx*Nu;
     Nw = length(world);
-%     Nc = 1;
-
-    % for tracking dimensions in other programs
-    Nk = Nx + Nxx + Nu + Nuu + Nxu + Nw;
-    META.Nk = Nk;
 
     k = 1;
-    Psi = NaN(1, Nk);
 
     META.("x") = k:k+Nx-1;
     Psi(META.("x")) = x;
@@ -49,10 +45,12 @@ function [Psi, Nk, META] = observables(x, u, world)
 
     META.("d") = k:k+Nw-1;
     Psi(META.("d")) = d;
-%     k = k + Nw;
-% 
-%     META.("c") = k;
-%     Psi(META.("c")) = 1;
-% %     k = k + 1;
+    k = k + Nw;
+
+    META.("c") = k;
+    Psi(META.("c")) = 1;
+    k = k + 1;
+
+    META.Nk = k - 1;
 
 end
