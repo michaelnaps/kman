@@ -14,7 +14,7 @@ Nw = length(world);
 
 
 %% Model function
-dt = 0.01;
+dt = 1;
 modelFun = @(x, u) model(x, u, dt);
 
 
@@ -26,7 +26,7 @@ Nu = Nx;
 x0 = 20*rand(N0, Nx) - 10;
 
 % simulation variables
-T = 10;  tspan = 0:dt:T;
+T = 100;  tspan = 0:dt:T;
 Nt = length(tspan);
 
 % create list of inputs
