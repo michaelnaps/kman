@@ -31,14 +31,8 @@ Nt = length(tspan);
 
 % create list of inputs
 u0 = 5*rand(N0, Nu) - 2.5;
-uList = u0.*ones(Nt,Nu);
-
-% generate model data
-data_train = generate_data(modelFun, tspan, x0, uList);
-
-% stack data
-xTrain = stack_data(data_train, N0, Nx, Nt);
-uList = stack_data(uList, N0, Nu, Nt);
+% uList = u0.*ones(Nt,Nu);
+uList = u0 + (0.50*rand(Nt,Nu) - 0.25);
 
 
 %% Evaluate for the observation function

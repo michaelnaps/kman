@@ -27,35 +27,36 @@ function [K] = KoopmanAnalytical(world, META, alpha)
     K(META.u, META.x) = eye(Nx);
 
     % state term expansion: x'x
-    K(META.xx, META.xx) = eye(Nxx);
+    K(META.xx, META.xx) = 1/2*eye(Nxx);
     K(META.uu, META.xx) = eye(Nuu);
-    K(META.xu, META.xx) = 2*eye(Nxu);
+    K(META.xu, META.xx) = ones(Nxu, Nxx);
 
    % input terms: u
    K(META.u, META.u) = eye(Nu);
 
    % input term expansion: u'u
-   K(META.uu, META.uu) = eye(Nuu);
+   K(META.uu, META.uu) = 1/2*eye(Nuu);
 
    % input-state term expansion: x'u
-   K(META.xu, META.xu) = eye(Nxu);
+   K(META.xu, META.xu) = 1/2*eye(Nxu);
    K(META.uu, META.xu) = eye(Nuu);
 
    % distance terms: d(x) = (x - r)(x - r)'
-   K(META.x, META.d) = -2*[
-       r11, r12, r13, r14;
-       r21, r22, r23, r24
-   ];
-   K(META.xx, META.d) = eye(Nxx);
+   K(META.d, META.d) = 1/2*eye(Nw);
+%    K(META.x, META.d) = -2*[
+%        r11, r12, r13, r14;
+%        r21, r22, r23, r24
+%    ];
+%    K(META.xx, META.d) = eye(Nxx);
    K(META.u, META.d) = -2*[
        r11, r12, r13, r14;
        r21, r22, r23, r24
    ];
    K(META.uu, META.d) = eye(Nuu);
    K(META.xu, META.d) = 2*eye(Nxu);
-   K(META.c, META.d) = -[
-       (r11^2 + r21^2), (r12^2 + r22^2), (r13^2 + r23^2), (r14^2 + r24^2)
-   ];
+%    K(META.c, META.d) = -[
+%        (r11^2 + r21^2), (r12^2 + r22^2), (r13^2 + r23^2), (r14^2 + r24^2)
+%    ];
 
    % constant term and resolve NaN elements
    K(META.c, META.c) = 1;
