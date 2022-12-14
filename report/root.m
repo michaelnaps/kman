@@ -38,7 +38,8 @@ T = 100;  tspan = (0:dt:T)';
 Nt = length(tspan);
 
 % initial state
-x0 = 10*rand(N0,Nx) - 5;
+x0 = [-6, -4];
+% x0 = 10*rand(N0,Nx) - 5;
 
 % input list
 A = 2.5;                                   % maximum input
@@ -78,158 +79,169 @@ end
 %% plot comparison results
 % line colors (for consistency)
 ModelColor = [0 0.4470 0.7410];
+ModelLineWidth = 2.5;
 AnalyticalColor = [0.8500 0.3250 0.0980];
 DataDrivenColor = [0.4660 0.6740 0.1880];
 
 
-% %% results for x propagation (position)
-% idx = META.x;
-% x_fig = figure('Position', [1921,397,1080,592]);
-% subplot(2,2,1);
-%     hold on
-%     plot(tspan, PsiList_Model(:,idx(1)), 'LineWidth', 2.5, 'Color', ModelColor);
-%     plot(tspan, PsiList_Analytical(:,idx(1)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(1)), ':', 'Color', DataDrivenColor);
-%     hold off
-% subplot(2,2,2);
-%     hold on
-%     plot(tspan, PsiList_Model(:,idx(2)), 'Color', ModelColor);
-%     plot(tspan, PsiList_Analytical(:,idx(2)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(2)), ':', 'Color', DataDrivenColor);
-%     legend("Model", "Analytical", "Data-Driven")
-%     hold off
-% subplot(2,2,3);
-%     hold on
-%     plot(tspan, PsiList_Analytical(:,idx(1))-PsiList_Model(:,idx(1)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(1))-PsiList_Model(:,idx(1)), ':', 'Color', DataDrivenColor);
-%     hold off
-% subplot(2,2,4);
-%     hold on
-%     plot(tspan, PsiList_Analytical(:,idx(2))-PsiList_Model(:,idx(2)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(2))-PsiList_Model(:,idx(2)), ':', 'Color', DataDrivenColor);
-%     legend("Analytical", "Data-Driven")
-%     hold off
-% 
-% %% results for x'x propagation
-% idx = META.xx;
-% xx_fig = figure('Position', [1921,397,1080,592]);
-% sgtitle("Elements of x^Tx")
-% subplot(2,4,1);
-%     hold on
-%     plot(tspan, PsiList_Model(:,idx(1)), 'LineWidth', 2.5, 'Color', ModelColor);
-%     plot(tspan, PsiList_Analytical(:,idx(1)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(1)), ':', 'Color', DataDrivenColor);
-%     title(META.labels(idx(1)))
-%     hold off
-% subplot(2,4,2);
-%     hold on
-%     plot(tspan, PsiList_Model(:,idx(2)), 'Color', ModelColor);
-%     plot(tspan, PsiList_Analytical(:,idx(2)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(2)), ':', 'Color', DataDrivenColor);
-%     title(META.labels(idx(2)));
-%     hold off
-% subplot(2,4,3);
-%     hold on
-%     plot(tspan, PsiList_Model(:,idx(3)), 'LineWidth', 2.5, 'Color', ModelColor);
-%     plot(tspan, PsiList_Analytical(:,idx(3)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(3)), ':', 'Color', DataDrivenColor);
-%     title(META.labels(idx(3)));
-%     hold off
-% subplot(2,4,4);
-%     hold on
-%     plot(tspan, PsiList_Model(:,idx(4)), 'Color', ModelColor);
-%     plot(tspan, PsiList_Analytical(:,idx(4)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(4)), ':', 'Color', DataDrivenColor);
-%     title(META.labels(idx(4)));
-%     legend("Model", "Analytical", "Data-Driven")
-%     hold off
-% 
-% subplot(2,4,5);
-%     hold on
-%     plot(tspan, PsiList_Analytical(:,idx(1))-PsiList_Model(:,idx(1)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(1))-PsiList_Model(:,idx(1)), ':', 'Color', DataDrivenColor);
-%     title("Error");
-%     hold off
-% subplot(2,4,6);
-%     hold on
-%     plot(tspan, PsiList_Analytical(:,idx(2))-PsiList_Model(:,idx(2)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(2))-PsiList_Model(:,idx(2)), ':', 'Color', DataDrivenColor);
-%     title("Error");
-%     hold off
-% subplot(2,4,7);
-%     hold on
-%     plot(tspan, PsiList_Analytical(:,idx(3))-PsiList_Model(:,idx(3)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(3))-PsiList_Model(:,idx(3)), ':', 'Color', DataDrivenColor);
-%     title("Error");
-%     hold off
-% subplot(2,4,8);
-%     hold on
-%     plot(tspan, PsiList_Analytical(:,idx(4))-PsiList_Model(:,idx(4)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(4))-PsiList_Model(:,idx(4)), ':', 'Color', DataDrivenColor);
-%     title("Error");
-%     legend("Analytical", "Data-Driven")
-%     hold off
-% 
-% 
-% %% results for d propagation
-% idx = META.d;
-% d_fig = figure('Position', [1921,397,1080,592]);
-% sgtitle("Elements of O(x)")
-% subplot(2,4,1);
-%     hold on
-%     plot(tspan, PsiList_Model(:,idx(1)), 'LineWidth', 2.5, 'Color', ModelColor);
-%     plot(tspan, PsiList_Analytical(:,idx(1)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(1)), ':', 'Color', DataDrivenColor);
-%     title("d(x,"+META.labels(idx(1))+")");
-%     hold off
-% subplot(2,4,2);
-%     hold on
-%     plot(tspan, PsiList_Model(:,idx(2)), 'Color', ModelColor);
-%     plot(tspan, PsiList_Analytical(:,idx(2)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(2)), ':', 'Color', DataDrivenColor);
-%     title("d(x,"+META.labels(idx(2))+")");
-%     hold off
-% subplot(2,4,3);
-%     hold on
-%     plot(tspan, PsiList_Model(:,idx(3)), 'LineWidth', 2.5, 'Color', ModelColor);
-%     plot(tspan, PsiList_Analytical(:,idx(3)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(3)), ':', 'Color', DataDrivenColor);
-%     title("d(x,"+META.labels(idx(3))+")");
-%     hold off
-% subplot(2,4,4);
-%     hold on
-%     plot(tspan, PsiList_Model(:,idx(4)), 'Color', ModelColor);
-%     plot(tspan, PsiList_Analytical(:,idx(4)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(4)), ':', 'Color', DataDrivenColor);
-%     title("d(x,"+META.labels(idx(4))+")");
-%     legend("Model", "Analytical", "Data-Driven")
-%     hold off
-% 
-% subplot(2,4,5);
-%     hold on
-%     plot(tspan, PsiList_Analytical(:,idx(1))-PsiList_Model(:,idx(1)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(1))-PsiList_Model(:,idx(1)), ':', 'Color', DataDrivenColor);
-%     title("Error");
-%     hold off
-% subplot(2,4,6);
-%     hold on
-%     plot(tspan, PsiList_Analytical(:,idx(2))-PsiList_Model(:,idx(2)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(2))-PsiList_Model(:,idx(2)), ':', 'Color', DataDrivenColor);
-%     title("Error");
-%     hold off
-% subplot(2,4,7);
-%     hold on
-%     plot(tspan, PsiList_Analytical(:,idx(3))-PsiList_Model(:,idx(3)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(3))-PsiList_Model(:,idx(3)), ':', 'Color', DataDrivenColor);
-%     title("Error");
-%     hold off
-% subplot(2,4,8);
-%     hold on
-%     plot(tspan, PsiList_Analytical(:,idx(4))-PsiList_Model(:,idx(4)), '--', 'Color', AnalyticalColor);
-%     plot(tspan, PsiList_DataDriven(:,idx(4))-PsiList_Model(:,idx(4)), ':', 'Color', DataDrivenColor);
-%     title("Error");
-%     legend("Analytical", "Data-Driven")
-%     hold off
+%% results for x propagation (position)
+idx = META.x;
+x_fig = figure('Position', [1921,397,1080,592]);
+subplot(2,2,1);
+    hold on
+    plot(tspan, PsiList_Model(:,idx(1)), 'LineWidth', ModelLineWidth, 'Color', ModelColor);
+    plot(tspan, PsiList_Analytical(:,idx(1)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(1)), ':', 'Color', DataDrivenColor);
+    hold off
+subplot(2,2,2);
+    hold on
+    plot(tspan, PsiList_Model(:,idx(2)), 'LineWidth', ModelLineWidth, 'Color', ModelColor);
+    plot(tspan, PsiList_Analytical(:,idx(2)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(2)), ':', 'Color', DataDrivenColor);
+    legend("Model", "Analytical", "Data-Driven")
+    hold off
+subplot(2,2,3);
+    hold on
+    plot(tspan, PsiList_Analytical(:,idx(1))-PsiList_Model(:,idx(1)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(1))-PsiList_Model(:,idx(1)), ':', 'Color', DataDrivenColor);
+    hold off
+subplot(2,2,4);
+    hold on
+    plot(tspan, PsiList_Analytical(:,idx(2))-PsiList_Model(:,idx(2)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(2))-PsiList_Model(:,idx(2)), ':', 'Color', DataDrivenColor);
+    legend("Analytical", "Data-Driven")
+    hold off
+
+%% results for x'x propagation
+idx = META.xx;
+xx_fig = figure('Position', [1921,397,1080,592]);
+sgtitle("Elements of x^Tx")
+subplot(2,4,1);
+    hold on
+    plot(tspan, PsiList_Model(:,idx(1)), 'LineWidth', ModelLineWidth, 'Color', ModelColor);
+    plot(tspan, PsiList_Analytical(:,idx(1)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(1)), ':', 'Color', DataDrivenColor);
+    title(META.labels(idx(1)))
+    hold off
+subplot(2,4,2);
+    hold on
+    plot(tspan, PsiList_Model(:,idx(2)), 'LineWidth', ModelLineWidth, 'Color', ModelColor);
+    plot(tspan, PsiList_Analytical(:,idx(2)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(2)), ':', 'Color', DataDrivenColor);
+    title(META.labels(idx(2)));
+    hold off
+subplot(2,4,3);
+    hold on
+    plot(tspan, PsiList_Model(:,idx(3)), 'LineWidth', ModelLineWidth, 'Color', ModelColor);
+    plot(tspan, PsiList_Analytical(:,idx(3)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(3)), ':', 'Color', DataDrivenColor);
+    title(META.labels(idx(3)));
+    hold off
+subplot(2,4,4);
+    hold on
+    plot(tspan, PsiList_Model(:,idx(4)), 'LineWidth', ModelLineWidth, 'Color', ModelColor);
+    plot(tspan, PsiList_Analytical(:,idx(4)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(4)), ':', 'Color', DataDrivenColor);
+    title(META.labels(idx(4)));
+    legend("Model", "Analytical", "Data-Driven")
+    hold off
+
+subplot(2,4,5);
+    hold on
+    plot(tspan, PsiList_Analytical(:,idx(1))-PsiList_Model(:,idx(1)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(1))-PsiList_Model(:,idx(1)), ':', 'Color', DataDrivenColor);
+    title("Error");
+    hold off
+subplot(2,4,6);
+    hold on
+    plot(tspan, PsiList_Analytical(:,idx(2))-PsiList_Model(:,idx(2)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(2))-PsiList_Model(:,idx(2)), ':', 'Color', DataDrivenColor);
+    title("Error");
+    hold off
+subplot(2,4,7);
+    hold on
+    plot(tspan, PsiList_Analytical(:,idx(3))-PsiList_Model(:,idx(3)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(3))-PsiList_Model(:,idx(3)), ':', 'Color', DataDrivenColor);
+    title("Error");
+    hold off
+subplot(2,4,8);
+    hold on
+    plot(tspan, PsiList_Analytical(:,idx(4))-PsiList_Model(:,idx(4)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(4))-PsiList_Model(:,idx(4)), ':', 'Color', DataDrivenColor);
+    title("Error");
+    legend("Analytical", "Data-Driven")
+    hold off
+
+
+%% results for d propagation
+idx = META.d;
+d_fig = figure('Position', [1921,397,1080,592]);
+sgtitle("Elements of O(x)")
+subplot(2,4,1);
+    hold on
+    plot(tspan, PsiList_Model(:,idx(1)), 'LineWidth', ModelLineWidth, 'Color', ModelColor);
+    plot(tspan, PsiList_Analytical(:,idx(1)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(1)), ':', 'Color', DataDrivenColor);
+    title("d(x,"+META.labels(idx(1))+")");
+    hold off
+subplot(2,4,2);
+    hold on
+    plot(tspan, PsiList_Model(:,idx(2)), 'LineWidth', ModelLineWidth, 'Color', ModelColor);
+    plot(tspan, PsiList_Analytical(:,idx(2)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(2)), ':', 'Color', DataDrivenColor);
+    title("d(x,"+META.labels(idx(2))+")");
+    hold off
+subplot(2,4,3);
+    hold on
+    plot(tspan, PsiList_Model(:,idx(3)), 'LineWidth', ModelLineWidth, 'Color', ModelColor);
+    plot(tspan, PsiList_Analytical(:,idx(3)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(3)), ':', 'Color', DataDrivenColor);
+    title("d(x,"+META.labels(idx(3))+")");
+    hold off
+subplot(2,4,4);
+    hold on
+    plot(tspan, PsiList_Model(:,idx(4)), 'LineWidth', ModelLineWidth, 'Color', ModelColor);
+    plot(tspan, PsiList_Analytical(:,idx(4)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(4)), ':', 'Color', DataDrivenColor);
+    title("d(x,"+META.labels(idx(4))+")");
+    legend("Model", "Analytical", "Data-Driven")
+    hold off
+
+subplot(2,4,5);
+    hold on
+    plot(tspan, PsiList_Analytical(:,idx(1))-PsiList_Model(:,idx(1)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(1))-PsiList_Model(:,idx(1)), ':', 'Color', DataDrivenColor);
+    title("Error");
+    hold off
+subplot(2,4,6);
+    hold on
+    plot(tspan, PsiList_Analytical(:,idx(2))-PsiList_Model(:,idx(2)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(2))-PsiList_Model(:,idx(2)), ':', 'Color', DataDrivenColor);
+    title("Error");
+    hold off
+subplot(2,4,7);
+    hold on
+    plot(tspan, PsiList_Analytical(:,idx(3))-PsiList_Model(:,idx(3)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(3))-PsiList_Model(:,idx(3)), ':', 'Color', DataDrivenColor);
+    title("Error");
+    hold off
+subplot(2,4,8);
+    hold on
+    plot(tspan, PsiList_Analytical(:,idx(4))-PsiList_Model(:,idx(4)), '--', 'Color', AnalyticalColor);
+    plot(tspan, PsiList_DataDriven(:,idx(4))-PsiList_Model(:,idx(4)), ':', 'Color', DataDrivenColor);
+    title("Error");
+    legend("Analytical", "Data-Driven")
+    hold off
+
+
+%% robot variable for animation and distance
+bernard = struct;
+bernard.x = x0;
+bernard.r = 0.25;
+bernard.color = [0 0.4470 0.7410];
+
+animate(world, bernard, [], tspan(2), PsiList_Model(1,META.x), [], PsiList_Model(1,META.d(2:end)));
+animate(world, bernard, [], tspan(2), PsiList_Analytical(2,META.x), [], PsiList_Analytical(2,META.d(2:end)));
 
 
 %% local functions

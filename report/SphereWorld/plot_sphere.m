@@ -8,9 +8,9 @@ radius=abs(sphere.r);
 %filled-in or hollow
 radiusSign=sign(sphere.r);
 if radiusSign>0
-    faceColor=[0.8 0.8 0.8];
+    faceColor=[0.8 0.8 0.8 1];
 else
-    faceColor=[1 1 1];
+    faceColor=[1 1 1 0];
 end
 %geometry radius of influence
 radiusInfluence=0;

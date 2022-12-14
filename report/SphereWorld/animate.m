@@ -1,18 +1,26 @@
-function [fig] = animate(world, robot, xGoal, tspan, x_list, x_comp)
+function [fig] = animate(world, robot, xGoal, tspan, xList, xComp, dList)
 
-    if nargin < 6
-        x_comp = [];
+    if nargin < 7
+        dList = [];
+    else
+        Nw = size(dList, 2);
     end
 
-    fig = figure;
-%     plot_sphereworld(world, xGoal);
+    if nargin < 6
+        xComp = [];
+    end
     
     N = length(tspan);
-    dt = tspan(2) - tspan(1);
+    if length(tspan) > 1
+        dt = tspan(2) - tspan(1);
+    else
+        dt = 1;
+    end
 
-    x1 = x_list(:,1);
-    x2 = x_list(:,2);
+    x1 = xList(:,1);
+    x2 = xList(:,2);
     
+    fig = figure;
     for i = 1:N
         clf(fig);
 
@@ -21,9 +29,23 @@ function [fig] = animate(world, robot, xGoal, tspan, x_list, x_comp)
         robot.x = [x1(i); x2(i)];
         plot_sphere(robot, robot.color);
 
-        if ~isempty(x_comp)
-            scatter(x_comp(i,1), x_comp(i,2), 'g*');
+        if ~isempty(xComp)
+            scatter(xComp(i,1), xComp(i,2), 'g*');
         end
+
+        if ~isempty(dList)
+            for j = 1:Nw
+                obsDistance = struct;
+                obsDistance.x = robot.x;
+                obsDistance.r = -sqrt(dList(i,j));
+                obsDistance.color = [0.4660 0.6740 0.1880];
+
+                plot_sphere(obsDistance, obsDistance.color);
+            end
+        end
+
+        ylim([world(1).r, -world(1).r])
+        xlim([world(1).r, -world(1).r])
 
         pause(dt);
     end

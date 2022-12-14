@@ -13,8 +13,11 @@ end
 
 nbSpheres=size(world,2);
 for iSphere=1:nbSpheres
-    plot_sphere(world(iSphere), [0 0.4470 0.7410]);
+    plot_sphere(world(iSphere), 'k');
     hold on
+    if world(iSphere).r > 0
+        plot(world(iSphere).x(1), world(iSphere).x(2), 'kx')
+    end
 end
 
 if ~isempty(xGoal)
