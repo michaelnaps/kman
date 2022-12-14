@@ -10,7 +10,6 @@ addpath ../../.
 addpath ../sphereworld;
 
 load sphereworld_minimal;
-Nw = length(world);
 
 
 %% Model function
@@ -23,32 +22,28 @@ N0 = 1;
 Nx = 2;
 Nu = Nx;
 
-x0 = 20*rand(N0, Nx) - 10;
+x0 = 10*rand(N0, Nx) - 5;
 
 % simulation variables
-T = 1000;  tspan = 0:dt:T;
+T = 10;  tspan = 0:dt:T;
 Nt = length(tspan);
 
 % create list of inputs
 u0 = 5*rand(N0, Nu) - 2.5;
-% uList = u0.*ones(Nt,Nu);
-uList = u0 + (0.50*rand(Nt,Nu) - 0.25);
+uList = u0.*ones(Nt,Nu);
+% uList = u0 + (0.50*rand(Nt,Nu) - 0.25);
 
 
 %% Evaluate for the observation function
-[~, META] = observables(zeros(1,Nx), zeros(1,Nx), world);
+[~, META] = observables(zeros(1,Nx), zeros(1,Nu), world);
 Nk = META.Nk(end);
 
 observation = @(x, u) observables(x, u, world);
-% [K, acc, ind, err] = KoopmanWithControl(observation, xTrain, x0, uTrain);
 [K] = KoopmanAnalytical(world, META);  acc = 1;
 
 
 %% initial observables
-Psi0 = NaN(N0,Nk);
-for i = 1:N0
-    Psi0(i,:) = observation(x0(i,:), zeros(1,Nu));
-end
+Psi0 = observation(x0, zeros(1,Nu));
 
 
 %% generate data for new initial conditions
@@ -58,9 +53,8 @@ PsiKoop = generate_data(koop, tspan, Psi0, uList, Nu);
 xTest = generate_data(modelFun, tspan, x0, uList, Nu);
 
 PsiTest = NaN(Nt, Nk);
-PsiTest(1,:) = observation(xTest(1,META.x), [0,0]);
-for i = 2:Nt
-    PsiTest(i,:) = observation(xTest(i,1:Nx), uList(i-1,1:Nu));
+for i = 1:Nt
+    PsiTest(i,:) = observation(xTest(i,:), uList(i,:));
 end
 
 col = META.xx;
@@ -73,7 +67,7 @@ if ~isnan(acc)
 
     if plot_results
 
-        col = META.d;
+        col = META.u;
         fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tspan);
 
     end

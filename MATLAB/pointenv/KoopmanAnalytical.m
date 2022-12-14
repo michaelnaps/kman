@@ -10,6 +10,7 @@ function [K] = KoopmanAnalytical(world, META, alpha)
     Nu  = length(META.u);
     Nuu = length(META.uu);
     Nxu = length(META.xu);
+    Nux = length(META.ux);
     Nw  = length(META.d);
     Nk  = META.Nk;
 
@@ -27,9 +28,10 @@ function [K] = KoopmanAnalytical(world, META, alpha)
     K(META.u, META.x) = eye(Nx);
 
     % state term expansion: x'x
-    K(META.xx, META.xx) = 1/2*eye(Nxx);
+    K(META.xx, META.xx) = eye(Nxx);
     K(META.uu, META.xx) = eye(Nuu);
-    K(META.xu, META.xx) = ones(Nxu, Nxx);
+    K(META.xu, META.xx) = eye(Nxu);
+    K(META.ux, META.xx) = eye(Nux);
 
    % input terms: u
    K(META.u, META.u) = eye(Nu);
@@ -37,9 +39,13 @@ function [K] = KoopmanAnalytical(world, META, alpha)
    % input term expansion: u'u
    K(META.uu, META.uu) = 1/2*eye(Nuu);
 
-   % input-state term expansion: x'u
+   % state-input term expansion: x'u
    K(META.xu, META.xu) = 1/2*eye(Nxu);
    K(META.uu, META.xu) = eye(Nuu);
+
+   % input-state term expansion: u'x
+   K(META.ux, META.ux) = 1/2*eye(Nux);
+   K(META.uu, META.ux) = eye(Nuu);
 
    % distance terms: d(x) = (x - r)(x - r)'
    K(META.d, META.d) = 1/2*eye(Nw);
