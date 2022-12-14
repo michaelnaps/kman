@@ -28,8 +28,8 @@ function [K] = KoopmanAnalytical(world, META, alpha)
     K(META.u, META.x) = eye(Nx);
 
     % state term expansion: x'x
-    K(META.xx, META.xx) = eye(Nxx);
-    K(META.uu, META.xx) = eye(Nuu);
+    K(META.xx, META.xx) = 1/2*eye(Nxx);
+    K(META.uu, META.xx) = 1/2*eye(Nuu);
     K(META.xu, META.xx) = eye(Nxu);
     K(META.ux, META.xx) = eye(Nux);
 

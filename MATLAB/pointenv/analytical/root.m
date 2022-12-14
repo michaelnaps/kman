@@ -3,7 +3,7 @@ clean;
 plot_results = 1;
 anim_results = ~plot_results;
 
-save_data = 1;
+save_data = 0;
 
 addpath ../.
 addpath ../../.
@@ -29,8 +29,8 @@ T = 10;  tspan = 0:dt:T;
 Nt = length(tspan);
 
 % create list of inputs
-u0 = 5*rand(N0, Nu) - 2.5;
-uList = u0.*ones(Nt,Nu);
+u0 = 5*rand(N0,Nu) - 2.5;
+uList = u0.*ones(Nt-1,Nu);
 % uList = u0 + (0.50*rand(Nt,Nu) - 0.25);
 
 
@@ -39,7 +39,7 @@ uList = u0.*ones(Nt,Nu);
 Nk = META.Nk(end);
 
 observation = @(x, u) observables(x, u, world);
-[K] = KoopmanAnalytical(world, META);  acc = 1;
+[K] = KoopmanAnalytical(world, META);
 
 
 %% initial observables
@@ -53,8 +53,9 @@ PsiKoop = generate_data(koop, tspan, Psi0, uList, Nu);
 xTest = generate_data(modelFun, tspan, x0, uList, Nu);
 
 PsiTest = NaN(Nt, Nk);
-for i = 1:Nt
-    PsiTest(i,:) = observation(xTest(i,:), uList(i,:));
+PsiTest(1,:) = observation(xTest(1,:), zeros(1,Nu));
+for i = 2:Nt
+    PsiTest(i,:) = observation(xTest(i,:), uList(i-1,:));
 end
 
 col = META.xx;
@@ -63,35 +64,31 @@ SumError = sum(PsiError, 'all');
 
 
 %% plot results
-if ~isnan(acc)
+if plot_results
 
-    if plot_results
+    col = META.d;
+    fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tspan);
 
-        col = META.u;
-        fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tspan);
+end
 
-    end
+if anim_results
 
-    if anim_results
+    bernard = struct;
+    bernard.x = PsiKoop(:,META.x);
+    bernard.r = 0.25;
+    bernard.color = 'k';
 
-        bernard = struct;
-        bernard.x = PsiKoop(:,META.x);
-        bernard.r = 0.25;
-        bernard.color = 'k';
+    x_test_anim = xTest(:,META.x);
+    x_koop_anim = PsiKoop(:,META.x);
 
-        x_test_anim = xTest(:,META.x);
-        x_koop_anim = PsiKoop(:,META.x);
-
-        animate(world, bernard, [0,0], tspan, x_test_anim, x_koop_anim);
-
-    end
+    animate(world, bernard, [0,0], tspan, x_test_anim, x_koop_anim);
 
 end
 
 
 %% save data
 if save_data
-    save("./data/K_"+Nk+"x"+Nk, "K", "Nk", "dt", "acc", "META", "Nw")
+    save("./data/K_"+Nk+"x"+Nk, "K", "Nk", "dt", "META", "Nw")
 end
 
 
