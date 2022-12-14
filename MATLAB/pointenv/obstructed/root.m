@@ -3,7 +3,7 @@ clean;
 plot_results = 1;
 anim_results = ~plot_results;
 
-save_data = 0;
+save_data = 1;
 
 addpath ../.
 addpath ../../.
@@ -136,7 +136,7 @@ end
 
 %% save data
 if save_data
-    save("./data/K_"+Nk+"x"+Nk, "K", "Nk", "dt", "acc", "META", "Nw")
+    save("./data/K_"+Nk+"x"+Nk, "K", "Nk", "dt", "META", "Nw")
 end
 
 
