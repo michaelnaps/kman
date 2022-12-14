@@ -25,9 +25,12 @@ function [fig] = plot_comparisons(x1_list, x2_list, x0, tspan, x0_2)
             if i == 1 && j == N1
                 legend('Model Func.', 'Koopman op.')
             end
+
+            if sum(x1_list(:,k1+j) - x2_list(:,k2+j), 'all') < 1e-3
+                ylim([min(x1_list(:,k1+j))-0.1, max(x1_list(:,k1+j))+0.1]);
+            end
             
             hold off
-            
 
         end
 
