@@ -3,7 +3,7 @@ clean;
 plot_results = 1;
 anim_results = ~plot_results;
 
-save_data = 1;
+save_data = 0;
 
 addpath ../.
 addpath ../../.
@@ -113,7 +113,7 @@ if ~isnan(acc)
     if plot_results
 
         col = META.xx;
-        fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tKoop);
+        fig_comp = plot_comparisons(PsiTest(2:end,col), PsiKoop(2:end,col), Psi0(1,col), tKoop(2:end));
 
     end
 
