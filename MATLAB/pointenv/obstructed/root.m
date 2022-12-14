@@ -14,53 +14,92 @@ Nw = length(world);
 
 
 %% Model function
-dt = 1;
+dt = 0.01;
 modelFun = @(x, u) model(x, u, dt);
 
 
 %% Initialize training data
-N0 = 1;
-Nx = 2;
+Nrand = 50;
+x0 = [
+    20*rand(Nrand, 2) - 10;
+    0, 0
+];
+[N0, Nx] = size(x0);
 Nu = Nx;
 
-x0 = 20*rand(N0, Nx) - 10;
-
 % simulation variables
-T = 1000;  tspan = 0:dt:T;
+T = 10;
+tspan = 0:dt:T;
 Nt = length(tspan);
 
 % create list of inputs
-u0 = 5*rand(N0, Nu) - 2.5;
-% uList = u0.*ones(Nt,Nu);
-uList = u0 + (0.50*rand(Nt,Nu) - 0.25);
+u0 = 20*rand(N0, Nu) - 10;
+u_generate = NaN(Nt, N0*Nu);
+
+k = 1;
+for i = 1:N0
+    u_generate(:,k:k+Nu-1) = [
+        linspace(u0(i,1),0,Nt)', linspace(u0(i,2),0,Nt)'
+    ];
+    k = k + Nu;
+end
+
+% generate model data
+data_train = generate_data(modelFun, tspan, x0, u_generate);
+x_train = stack_data(data_train, N0, Nx, Nt);
+u_train = stack_data(u_generate, N0, Nu, Nt);
 
 
 %% Evaluate for the observation function
 [~, META] = observables(zeros(1,Nx), zeros(1,Nx), world);
-Nk = META.Nk(end);
+Nk = META.Nk;
 
 observation = @(x, u) observables(x, u, world);
-% [K, acc, ind, err] = KoopmanWithControl(observation, xTrain, x0, uTrain);
-[K] = KoopmanAnalytical(world, META);  acc = 1;
+[K, acc, ind, err] = KoopmanWithControl(observation, x_train, x0, u_train);
 
 
-%% initial observables
-Psi0 = NaN(N0,Nk);
+%% test koopman operator on new data
+% time variables
+TKoop = 20;
+tKoop = (0:dt:TKoop)';
+Nt = length(tKoop);
+
+% introduce variance into the initial conditions
+x0 = 20*rand(1,Nx) - 10;
+[N0, Nx] = size(x0);
+
+Psi0 = NaN(N0, Nk);
+
+% create list of inputs
+u0 = 5*rand(N0,Nu) - 2.5;
+uTest = NaN(Nt,N0*Nu);
+
+Nl = round(3/4*Nt);
+Nz = Nt - Nl;
+
+% create input matrices for time-frame
+k = 1;
 for i = 1:N0
-    Psi0(i,:) = observation(x0(i,:), zeros(1,Nu));
+    uTest(:,k:k+Nu-1) = [
+        linspace(u0(i,1),0,Nl)', linspace(0,u0(i,2),Nl)';
+        zeros(Nz, Nu);
+    ];
+    
+    Psi0(i,:) = observation(x0(i,:), uTest(1,k:k+Nu-1));
+
+    k = k + Nu;
 end
 
 
 %% generate data for new initial conditions
 koop = @(x, u) KoopFun(x, u, K, world, META);
 
-PsiKoop = generate_data(koop, tspan, Psi0, uList, Nu);
-xTest = generate_data(modelFun, tspan, x0, uList, Nu);
+PsiKoop = generate_data(koop, tKoop, Psi0, uTest, Nu);
+xTest = generate_data(modelFun, tKoop, x0, uTest, Nu);
 
-PsiTest = NaN(Nt, Nk);
-PsiTest(1,:) = observation(xTest(1,META.x), [0,0]);
-for i = 2:Nt
-    PsiTest(i,:) = observation(xTest(i,1:Nx), uList(i-1,1:Nu));
+PsiTest = NaN(size(PsiKoop(:,1:Nk)));
+for i = 1:Nt
+    PsiTest(i,:) = observation(xTest(i,1:Nx), uTest(i,1:Nu));
 end
 
 col = META.xx;
@@ -73,8 +112,8 @@ if ~isnan(acc)
 
     if plot_results
 
-        col = META.d;
-        fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tspan);
+        col = META.x;
+        fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tKoop);
 
     end
 
