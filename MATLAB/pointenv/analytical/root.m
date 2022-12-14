@@ -25,7 +25,7 @@ Nu = Nx;
 x0 = 10*rand(N0, Nx) - 5;
 
 % simulation variables
-T = 100;  tspan = 0:dt:T;
+T = 10;  tspan = 0:dt:T;
 Nt = length(tspan);
 
 % create list of inputs
@@ -66,8 +66,9 @@ SumError = sum(PsiError, 'all');
 %% plot results
 if plot_results
 
-    col = META.d;
+    col = META.x;
     fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tspan);
+    disp(META.labels(col));
 
 end
 
