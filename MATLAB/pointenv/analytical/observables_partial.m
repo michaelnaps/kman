@@ -29,7 +29,6 @@ function [dPsix, dPsiu] = observables_partial(x, u, world)
 %         0, 0, 0, 0, 0, 0, 0, 1, 0, 1/2*u1, 1/2*u1, u2, 0, 0, 1/2*x1, 1/2*x2, 0, 0, 0, 0, 0;
 %     ];
 
-
     obs_x = @(x) observables(x, u, world);
     dPsix = naps.fdm(obs_x, x);
 

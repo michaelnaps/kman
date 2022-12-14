@@ -47,10 +47,7 @@ function [Psi, META] = observables(x, u, world)
     Psi(META.("d")) = d;
     k = k + Nw;
 
-    META.("c") = k;
-    Psi(META.("c")) = 1;
-
-    META.Nk = k;
+    META.Nk = k - 1;
 
     META.labels = [
         "x1", "x2", "x1x1", "x1x2", "x2x1", "x2x2",...

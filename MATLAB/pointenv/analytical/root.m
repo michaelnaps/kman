@@ -25,11 +25,11 @@ Nu = Nx;
 x0 = 10*rand(N0, Nx) - 5;
 
 % simulation variables
-T = 10;  tspan = 0:dt:T;
+T = 100;  tspan = 0:dt:T;
 Nt = length(tspan);
 
 % create list of inputs
-u0 = 5*rand(N0,Nu) - 2.5;
+u0 = 5*rand(1,Nu) - 2.5;
 uList = u0.*ones(Nt-1,Nu);
 % uList = u0 + (0.50*rand(Nt,Nu) - 0.25);
 
@@ -50,15 +50,15 @@ Psi0 = observation(x0, zeros(1,Nu));
 koop = @(x, u) KoopFun(x, u, K, world, META);
 
 PsiKoop = generate_data(koop, tspan, Psi0, uList, Nu);
-xTest = generate_data(modelFun, tspan, x0, uList, Nu);
+xList = generate_data(modelFun, tspan, x0, uList, Nu);
 
 PsiTest = NaN(Nt, Nk);
-PsiTest(1,:) = observation(xTest(1,:), zeros(1,Nu));
+PsiTest(1,:) = observation(xList(1,:), zeros(1,Nu));
 for i = 2:Nt
-    PsiTest(i,:) = observation(xTest(i,:), uList(i-1,:));
+    PsiTest(i,:) = observation(xList(i,:), uList(i-1,:));
 end
 
-col = META.xx;
+col = 1:META.Nk;
 PsiError = PsiTest(:,col)-PsiKoop(:,col) < 1e-3;
 SumError = sum(PsiError, 'all');
 
@@ -78,7 +78,7 @@ if anim_results
     bernard.r = 0.25;
     bernard.color = 'k';
 
-    x_test_anim = xTest(:,META.x);
+    x_test_anim = xList(:,META.x);
     x_koop_anim = PsiKoop(:,META.x);
 
     animate(world, bernard, [0,0], tspan, x_test_anim, x_koop_anim);

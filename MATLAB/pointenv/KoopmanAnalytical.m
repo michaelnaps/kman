@@ -58,7 +58,6 @@ function [K] = KoopmanAnalytical(world, META, alpha)
    K(META.xu(4), META.d) = ones(1,Nxu);
 
    % constant term and resolve NaN elements
-   K(META.c, META.c) = 1;
    K(isnan(K)) = 0;
 end
 
