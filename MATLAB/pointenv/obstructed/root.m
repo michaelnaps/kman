@@ -3,7 +3,7 @@ clean;
 plot_results = 1;
 anim_results = ~plot_results;
 
-save_data = 1;
+save_data = 0;
 
 addpath ../.
 addpath ../../.
@@ -14,7 +14,7 @@ Nw = length(world);
 
 
 %% Model function
-dt = 0.01;
+dt = 1;
 modelFun = @(x, u) model(x, u, dt);
 
 
@@ -112,7 +112,7 @@ if ~isnan(acc)
 
     if plot_results
 
-        col = META.x;
+        col = META.xx;
         fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tKoop);
 
     end

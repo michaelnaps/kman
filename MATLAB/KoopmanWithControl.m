@@ -1,5 +1,5 @@
 function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data, eps)
-    %% Create structure variable for errors
+    %% create structure variable for errors
     err = struct;
 
     %% evaluate for the observation function
@@ -7,7 +7,6 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
     Mx = round(length(x_data(:,1))/N0);                  % number of data points
     [~, META] = observation(x0(1,:), u_data(1,:));      % observables meta-data
     Nk = META.Nk;
-
 
     Nu = length(META.u);
     PsiX = NaN(N0*(Mx-1), Nk);
