@@ -33,6 +33,11 @@ function [Psi, META] = observables(x, u, world)
     Psi(META.("xu")) = xu(:);
     k = k + Nxu;
 
+    META.("ux") = k:k+Nxu-1;
+    ux = u'*x;
+    Psi(META.("ux")) = ux(:);
+    k = k + Nxu;
+
     d = NaN(1,Nw);
     for i = 1:Nw
         d(i) = (x - world(i).x)*(x - world(i).x)';
@@ -42,9 +47,14 @@ function [Psi, META] = observables(x, u, world)
     Psi(META.("d")) = d;
     k = k + Nw;
 
-    META.("c") = k;
-    Psi(META.("c")) = 1;
+    META.Nk = k - 1;
 
-    META.Nk = k;
+    META.labels = [
+        "x1", "x2", "x1x1", "x1x2", "x2x1", "x2x2",...
+        "u1", "u2", "u1u1", "u1u2", "u2u1", "u2u2",...
+        "x1u1", "x2u1", "x1u2", "x2u2",...
+        "x1u1", "x1u2", "x2u1", "x2u2",...
+        "d1", "d2", "d3", "d4",...
+    ];
 
 end
