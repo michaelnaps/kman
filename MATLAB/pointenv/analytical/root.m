@@ -25,13 +25,17 @@ Nu = Nx;
 x0 = 10*rand(N0, Nx) - 5;
 
 % simulation variables
-T = 10;  tspan = 0:dt:T;
+T = 1000;  tspan = 0:dt:T;
 Nt = length(tspan);
 
 % create list of inputs
-u0 = 5*rand(1,Nu) - 2.5;
-uList = u0.*ones(Nt-1,Nu);
-% uList = u0 + (0.50*rand(Nt,Nu) - 0.25);
+A = 5;
+% u0 = A*rand(1,Nu) - A/2;
+% uList = u0.*ones(Nt-1,Nu);               % constant input
+% uList = u0 + (0.50*rand(Nt-1,Nu) - 0.25);  % input with noise
+uList = A*[
+    cos(linspace(0, 4*pi, Nt-1)'), cos(linspace(0, 4*pi, Nt-1)')
+] - A/2;
 
 
 %% Evaluate for the observation function
@@ -66,8 +70,8 @@ SumError = sum(PsiError, 'all');
 %% plot results
 if plot_results
 
-    col = META.x;
-    fig_comp = plot_comparisons(PsiTest(:,col), PsiKoop(:,col), Psi0(1,col), tspan);
+    col = META.d;
+    fig_comp = plot_comparisons(PsiTest(2:end,col), PsiKoop(2:end,col), Psi0(1,col), tspan(2:end)/100);
     disp(META.labels(col));
 
 end
