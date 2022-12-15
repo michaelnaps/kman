@@ -2,7 +2,7 @@
 clc;clear;
 close all;
 
-save_figures = 1;
+save_figures = 0;
 figure_path = "/home/michaelnaps/bu_research/literature/koopman_collision_avoidance/figures/";
 
 
