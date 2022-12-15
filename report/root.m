@@ -3,7 +3,7 @@ clc;clear;
 close all;
 
 save_figures = 0;
-figure_path = "/home/michaelnaps/prog/koopman/report/Figures/";
+figure_path = "/home/michaelnaps/bu_research/literature/koopman_collision_avoidance/figures/";
 
 
 %% path environments
@@ -25,8 +25,8 @@ load sphereworld_minimal
 load K_24x24_datadriven
 K_dd = K;
 
-load K_24x24_analytical
-K_an = K;
+% load K_24x24_analytical
+K_an = KoopmanAnalytical(world, META);
 
 
 %% initialize plotting data
@@ -39,7 +39,7 @@ T = 100;  tspan = (0:dt:T)';
 Nt = length(tspan);
 
 % initial state
-x0 = [-6, -4];
+x0 = [0, 0];
 % x0 = 10*rand(N0,Nx) - 5;
 
 % input list
@@ -81,6 +81,9 @@ end
 ModelColor = [0 0.4470 0.7410];
 ModelLineWidth = 2.5;
 
+ReferenceColor = ModelColor;
+ReferenceMarker = "-.";
+
 AnalyticalColor = [0.8500 0.3250 0.0980];
 AnalyticalMarker = "--";
 
@@ -90,15 +93,15 @@ DataDrivenMarker = ":";
 
 %% results for x propagation (position)
 idx = META.x;
-x_fig = figure('Position', [1921,397,1080,592]);
-sgtitle("Propagation of x")
+x_fig = figure('Position', [1921,397,459,320]);
+% sgtitle("Propagation of x")
 subplot(2,2,1);
     hold on
     plot(tspan, PsiList_Model(:,idx(1)), 'LineWidth', ModelLineWidth, 'Color', ModelColor);
     plot(tspan, PsiList_Analytical(:,idx(1)), AnalyticalMarker, 'Color', AnalyticalColor);
     plot(tspan, PsiList_DataDriven(:,idx(1)), DataDrivenMarker, 'Color', DataDrivenColor);
     title(META.labels(idx(1)))
-    ylabel("x")
+    ylabel("x [m]")
     hold off
 subplot(2,2,2);
     hold on
@@ -106,20 +109,23 @@ subplot(2,2,2);
     plot(tspan, PsiList_Analytical(:,idx(2)), AnalyticalMarker, 'Color', AnalyticalColor);
     plot(tspan, PsiList_DataDriven(:,idx(2)), DataDrivenMarker, 'Color', DataDrivenColor);
     title(META.labels(idx(2)));
-    ylabel("y")
+    ylabel("y [m]")
     hold off
 
 subplot(2,2,3);
     hold on
+    plot([0,tspan(end)], [0,0], 'Color', ReferenceColor);
     plot(tspan, PsiList_Analytical(:,idx(1))-PsiList_Model(:,idx(1)), AnalyticalMarker, 'Color', AnalyticalColor);
     plot(tspan, PsiList_DataDriven(:,idx(1))-PsiList_Model(:,idx(1)), DataDrivenMarker, 'Color', DataDrivenColor);
-    title("Error");
+    ylabel("Error [m]");
+    ylim([-0.1, 0.1])
     hold off
 subplot(2,2,4);
     hold on
+    plot([0,tspan(end)], [0,0], 'Color', ReferenceColor);
     plot(tspan, PsiList_Analytical(:,idx(2))-PsiList_Model(:,idx(2)), AnalyticalMarker, 'Color', AnalyticalColor);
     plot(tspan, PsiList_DataDriven(:,idx(2))-PsiList_Model(:,idx(2)), DataDrivenMarker, 'Color', DataDrivenColor);
-    title("Error");
+    ylim([-0.1, 0.1])
     hold off
 
 if save_figures
@@ -131,7 +137,7 @@ end
 %% results for x'x propagation
 idx = META.xx;
 xTx_fig = figure('Position', [1921,-282,1070,599]);
-sgtitle("Propagation of x^Tx")
+% sgtitle("Propagation of x^Tx")
 subplot(2,4,1);
     hold on
     plot(tspan, PsiList_Model(:,idx(1)), 'LineWidth', ModelLineWidth, 'Color', ModelColor);
@@ -165,25 +171,29 @@ subplot(2,4,4);
 
 subplot(2,4,5);
     hold on
+    plot([0,tspan(end)], [0,0], 'Color', ReferenceColor);
     plot(tspan, PsiList_Analytical(:,idx(1))-PsiList_Model(:,idx(1)), AnalyticalMarker, 'Color', AnalyticalColor);
     plot(tspan, PsiList_DataDriven(:,idx(1))-PsiList_Model(:,idx(1)), DataDrivenMarker, 'Color', DataDrivenColor);
     ylabel("Error [m^2]");
     hold off
 subplot(2,4,6);
     hold on
+    plot([0,tspan(end)], [0,0], 'Color', ReferenceColor);
     plot(tspan, PsiList_Analytical(:,idx(2))-PsiList_Model(:,idx(2)), AnalyticalMarker, 'Color', AnalyticalColor);
     plot(tspan, PsiList_DataDriven(:,idx(2))-PsiList_Model(:,idx(2)), DataDrivenMarker, 'Color', DataDrivenColor);
     hold off
 subplot(2,4,7);
     hold on
+    plot([0,tspan(end)], [0,0], 'Color', ReferenceColor);
     plot(tspan, PsiList_Analytical(:,idx(3))-PsiList_Model(:,idx(3)), AnalyticalMarker, 'Color', AnalyticalColor);
     plot(tspan, PsiList_DataDriven(:,idx(3))-PsiList_Model(:,idx(3)), DataDrivenMarker, 'Color', DataDrivenColor);
     hold off
 subplot(2,4,8);
     hold on
+    plot([0,tspan(end)], [0,0], 'Color', ReferenceColor);
     plot(tspan, PsiList_Analytical(:,idx(4))-PsiList_Model(:,idx(4)), AnalyticalMarker, 'Color', AnalyticalColor);
     plot(tspan, PsiList_DataDriven(:,idx(4))-PsiList_Model(:,idx(4)), DataDrivenMarker, 'Color', DataDrivenColor);
-    legend("Analytical", "Data-Driven")
+    legend("Reference", "Analytical", "Data-Driven")
     hold off
 
 if save_figures
@@ -195,7 +205,7 @@ end
 %% results for d propagation
 idx = META.d;
 d_fig = figure('Position', [1921,-836,1070,599]);
-sgtitle("Propagation of O(x)")
+% sgtitle("Propagation of O(x)")
 subplot(2,4,1);
     hold on
     plot(tspan, PsiList_Model(:,idx(1)), 'LineWidth', ModelLineWidth, 'Color', ModelColor);
@@ -229,25 +239,29 @@ subplot(2,4,4);
 
 subplot(2,4,5);
     hold on
+    plot([0,tspan(end)], [0,0], 'Color', ReferenceColor);
     plot(tspan, PsiList_Analytical(:,idx(1))-PsiList_Model(:,idx(1)), AnalyticalMarker, 'Color', AnalyticalColor);
     plot(tspan, PsiList_DataDriven(:,idx(1))-PsiList_Model(:,idx(1)), DataDrivenMarker, 'Color', DataDrivenColor);
     ylabel("Error [m^2]");
     hold off
 subplot(2,4,6);
     hold on
+    plot([0,tspan(end)], [0,0], 'Color', ReferenceColor);
     plot(tspan, PsiList_Analytical(:,idx(2))-PsiList_Model(:,idx(2)), AnalyticalMarker, 'Color', AnalyticalColor);
     plot(tspan, PsiList_DataDriven(:,idx(2))-PsiList_Model(:,idx(2)), DataDrivenMarker, 'Color', DataDrivenColor);
     hold off
 subplot(2,4,7);
     hold on
+    plot([0,tspan(end)], [0,0], 'Color', ReferenceColor);
     plot(tspan, PsiList_Analytical(:,idx(3))-PsiList_Model(:,idx(3)), AnalyticalMarker, 'Color', AnalyticalColor);
     plot(tspan, PsiList_DataDriven(:,idx(3))-PsiList_Model(:,idx(3)), DataDrivenMarker, 'Color', DataDrivenColor);
     hold off
 subplot(2,4,8);
     hold on
+    plot([0,tspan(end)], [0,0], 'Color', ReferenceColor);
     plot(tspan, PsiList_Analytical(:,idx(4))-PsiList_Model(:,idx(4)), AnalyticalMarker, 'Color', AnalyticalColor);
     plot(tspan, PsiList_DataDriven(:,idx(4))-PsiList_Model(:,idx(4)), DataDrivenMarker, 'Color', DataDrivenColor);
-    legend("Analytical", "Data-Driven")
+    legend("Reference", "Analytical", "Data-Driven")
     hold off
 
 if save_figures
