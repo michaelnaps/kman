@@ -1,10 +1,10 @@
-function [xn] = model(x, u, dt)
+function [xn] = model(x, u, alpha)
 
     if nargin < 3
-        dt = 1;
+        alpha = 1;
     end
 
-    xn = x + dt*[
+    xn = x + alpha*[
         u(1);
         u(2)
     ]';
