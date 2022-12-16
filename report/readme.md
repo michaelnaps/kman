@@ -1,1 +1,39 @@
-### To see plots: launch root.m
+### ME 570: Final Project
+Title: An Exploration of the Koopman Operator for Modeling Controlled Dynamics and Distance Propagation
+
+For final results execute: ``main_results.m`` in the root folder.
+
+___
+
+This folder contains the files necessary for testing and plotting the results of a paper submitted as a final project for the class ME 570: Robot Motion Planning at Boston University. It contains two methods for computing the Koopman operator for a system with holonomic dynamics and spherical obstacles; analytically and through the data-driven least-squares approach.
+
+The files are separated into the following folders:
+
+0. Root: main execution files for testing and report
+    - ``main_results.m``
+    - ``analytical.m``
+    - ``datadriven.m``
+    - ``fdm.m``
+    - ``model.m``
+1. Data: pre-computed Koopman operators for use in ``main_results.m``
+    - ``K_24x24_analytical.mat``
+    - ``K_24x24_datadriven.mat``
+2. DataFunctions: for processing and organizing training data
+    - ``generate_data.m``
+    - ``stack_data.m``
+3. KoopFunctions: for observation functions and computing Koopman operators
+    - ``Koopman.m``
+    - ``KoopmanWithControl.m``
+    - ``KoopmanAnalytical.m``
+    - ``observables.m``
+    - ``observables_partial.m``
+4. PlotFunctions: for plotting data (primarily used in testing)
+    - ``plot_comparisons.m``
+    - ``plot_path.m``
+5. SphereWorld: environment functions and data
+    - ``animate.m``
+    - ``distance.m``
+    - ``plot_sphere.m``
+    - ``plot_sphereworld.m``
+    - ``sphereworld.mat``
+    - ``sphereworld_minimal.mat``
