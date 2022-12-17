@@ -7,11 +7,12 @@ figure_path = "/home/michaelnaps/bu_research/literature/koopman_collision_avoida
 
 
 %% path environments
-addpath ./Data
-addpath ./DataFunctions
-addpath ./KoopFunctions
-addpath ./PlotFunctions
-addpath ./SphereWorld
+addpath ..
+addpath ../Data
+addpath ../DataFunctions
+addpath ../KoopFunctions
+addpath ../PlotFunctions
+addpath ../SphereWorld
 
 %% default plotting parameters
 set(groot, 'DefaultLineLineWidth', 2);

@@ -6,11 +6,12 @@ anim_results = ~plot_results;
 save_data = 0;
 
 %% path environments
-addpath ./Data
-addpath ./DataFunctions
-addpath ./KoopFunctions
-addpath ./PlotFunctions
-addpath ./SphereWorld
+addpath ..
+addpath ../Data
+addpath ../DataFunctions
+addpath ../KoopFunctions
+addpath ../PlotFunctions
+addpath ../SphereWorld
 
 %% default plotting parameters
 set(groot, 'DefaultLineLineWidth', 2);
