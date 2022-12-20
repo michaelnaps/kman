@@ -5,7 +5,7 @@ function [K] = KoopmanAnalytical(world, META, alpha)
     end
 
     % coefficient gain
-    w = 1/2;
+    w = 1;
     
     % term dimensions
     Nx  = length(META.x);
