@@ -9,28 +9,29 @@ This folder contains the files necessary for testing and plotting the results of
 
 The files are separated into the following folders:
 
-0. Root: main execution files for testing and report
+0. Root:
+	- ``fdm.m``
+1. HolonomicPoint: main execution files for testing and report
     - ``main_results.m``
     - ``analytical.m``
     - ``datadriven.m``
-    - ``fdm.m``
     - ``model.m``
-1. Data: pre-computed Koopman operators for use in ``main_results.m``
+2. Data: pre-computed Koopman operators for use in ``main_results.m``
     - ``K_24x24_analytical.mat``
     - ``K_24x24_datadriven.mat``
-2. DataFunctions: for processing and organizing training data
+3. DataFunctions: for processing and organizing training data
     - ``generate_data.m``
     - ``stack_data.m``
-3. KoopFunctions: for observation functions and computing Koopman operators
+4. KoopFunctions: for observation functions and computing Koopman operators
     - ``Koopman.m``
     - ``KoopmanWithControl.m``
     - ``KoopmanAnalytical.m``
     - ``observables.m``
     - ``observables_partial.m``
-4. PlotFunctions: for plotting data (primarily used in testing)
+5. PlotFunctions: for plotting data (primarily used in testing)
     - ``plot_comparisons.m``
     - ``plot_path.m``
-5. SphereWorld: environment functions and data
+6. SphereWorld: environment functions and data
     - ``animate.m``
     - ``distance.m``
     - ``plot_sphere.m``
