@@ -1,8 +1,12 @@
-function [fig] = plot_comparisons(x1_list, x2_list, x0, tspan, x0_2)
+function [fig] = plot_comparisons(x1_list, x2_list, x0, tspan, x0_2, labels)
+
+    if nargin < 6
+        labels = [];
+    end
 
     [N0, N1] = size(x0);
 
-    if nargin < 5
+    if nargin < 5 || ~isempty(x0_2)
         N2 = N1;
     else
         [~, N2] = size(x0_2);
@@ -20,15 +24,20 @@ function [fig] = plot_comparisons(x1_list, x2_list, x0, tspan, x0_2)
             hold on
             plot(tspan, x1_list(:,k1+j), 'linewidth', 2)
             plot(tspan, x2_list(:,k2+j), '--', 'linewidth', 1.5)
-            title("x(" + i + "," + j + ")")
+
+            if ~isempty(labels)
+                title("(" + i + ") " + labels(j));
+            else
+                title("x(" + i + "," + j + ")");
+            end
             
             if i == 1 && j == N1
                 legend('Model Func.', 'Koopman op.')
             end
 
-            if sum(x1_list(:,k1+j) - x2_list(:,k2+j), 'all') < 1e-3
-                ylim([min(x1_list(:,k1+j))-0.1, max(x1_list(:,k1+j))+0.1]);
-            end
+%             if sum(x1_list(:,k1+j) - x2_list(:,k2+j), 'all') < 1e-3
+%                 ylim([min(x1_list(:,k1+j))-0.1, max(x1_list(:,k1+j))+0.1]);
+%             end
             
             hold off
 

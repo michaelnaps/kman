@@ -5,7 +5,7 @@ function [K] = KoopmanAnalytical(world, META, alpha)
     end
 
     % coefficient gain
-    w = 1/2;
+    w = 1;
     
     % term dimensions
     Nx  = length(META.x);
@@ -13,7 +13,7 @@ function [K] = KoopmanAnalytical(world, META, alpha)
     Nu  = length(META.u);
     Nuu = length(META.uu);
     Nxu = length(META.xu);
-    Nux = length(META.ux);
+%     Nux = length(META.ux);
     Nw  = length(META.d);
     Nk  = META.Nk;
 
@@ -32,9 +32,8 @@ function [K] = KoopmanAnalytical(world, META, alpha)
 
     % state term expansion: x'x
     K(META.xx, META.xx) = w*eye(Nxx);
-    K(META.uu, META.xx) = w*eye(Nuu);
-    K(META.xu, META.xx) = w*eye(Nxu);
-    K(META.ux, META.xx) = w*eye(Nux);
+    K(META.uu, META.xx) = w*eye(Nuu,Nxx);
+    K(META.xu, META.xx) = w*eye(Nxu,Nxx);
 
    % input terms: u
    K(META.u, META.u) = eye(Nu);
@@ -44,11 +43,7 @@ function [K] = KoopmanAnalytical(world, META, alpha)
 
    % state-input term expansion: x'u
    K(META.xu, META.xu) = w*eye(Nxu);
-   K(META.uu, META.xu) = w*eye(Nuu);
-
-   % input-state term expansion: u'x
-   K(META.ux, META.ux) = w*eye(Nux);
-   K(META.uu, META.ux) = w*eye(Nuu);
+   K(META.uu, META.xu) = w*eye(Nuu,Nxu);
 
    % distance terms: d(x) = (x - r)(x - r)'
    K(META.d, META.d) = w*eye(Nw);
@@ -56,12 +51,10 @@ function [K] = KoopmanAnalytical(world, META, alpha)
        r11, r12, r13, r14;
        r21, r22, r23, r24
    ];
-   K(META.uu(1), META.d) = w*ones(1,Nxu);
-   K(META.uu(4), META.d) = w*ones(1,Nxu);
-   K(META.xu(1), META.d) = w*ones(1,Nxu);
-   K(META.xu(4), META.d) = w*ones(1,Nxu);
-   K(META.ux(1), META.d) = w*ones(1,Nxu);
-   K(META.ux(4), META.d) = w*ones(1,Nxu);
+   K(META.uu(1), META.d) = w*ones(1,Nw);
+   K(META.uu(3), META.d) = w*ones(1,Nw);
+   K(META.xu(1), META.d) = w*ones(1,Nw);
+   K(META.xu(3), META.d) = w*ones(1,Nw);
 
    % resolve NaN elements
    K(isnan(K)) = 0;
