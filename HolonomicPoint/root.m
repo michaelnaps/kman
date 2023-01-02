@@ -81,8 +81,8 @@ SumError = sum(PsiError, 'all');
 %% plot results
 if plot_results
 
-    col = META.d;
-    fig_comp = plot_comparisons(PsiTest(2:end,col), PsiKoop(2:end,col), Psi0(1,col), tspan(2:end), [], META.labels(col));
+    col = META.xx;
+    fig_comp = plot_comparisons(PsiTest(2:end,col), PsiKoop(2:end,col)/2, Psi0(1,col), tspan(2:end), [], META.labels(col));
     disp(META.labels(col));
 
 end
