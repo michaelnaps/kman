@@ -1,4 +1,4 @@
-**NOTE:** Description below is from the submisstion of this repository as a final project for ME570: Robot Motion Planning at Boston University. The description may become out-of-date before the end of the Spring 2023 semester (as the project is ongoing). To see the full results, please refer to the tag titled **v1.0** within this repository.
+**NOTE:** Description below is from the submission of this repository as a final project for ME570: Robot Motion Planning at Boston University. The description may become out-of-date before the end of the Spring 2023 semester (as the project is ongoing). To see the full results, please refer to the tag titled **v1.0** within this repository.
 
 ___
 
