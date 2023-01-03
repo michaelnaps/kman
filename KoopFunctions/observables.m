@@ -6,7 +6,6 @@ function [Psi, meta] = observables(x, u, world)
     Nu = length(u);
     Nuu = Nu*Nu - 1;
     Nxu = Nx*Nu;
-%     Nux = Nu*Nx;
     Nw = length(world);
 
     k = 1;
@@ -17,7 +16,6 @@ function [Psi, meta] = observables(x, u, world)
 
     meta.("xx") = k:k+Nxx-1;
     xx = x'*x;
-%     Psi(meta.("xx")) = xx(:);
     Psi(meta.("xx")) = [xx(1), xx(2), xx(4)];
     k = k + Nxx;
 
@@ -27,7 +25,6 @@ function [Psi, meta] = observables(x, u, world)
 
     meta.("uu") = k:k+Nuu-1;
     uu = u'*u;
-%     Psi(meta.("uu")) = uu(:);
     Psi(meta.("uu")) = [uu(1), uu(2), uu(4)];
     k = k + Nuu;
 
@@ -35,11 +32,6 @@ function [Psi, meta] = observables(x, u, world)
     xu = x'*u;
     Psi(meta.("xu")) = xu(:);
     k = k + Nxu;
-
-%     meta.("ux") = k:k+Nxu-1;
-%     ux = u'*x;
-%     Psi(meta.("ux")) = ux(:);
-%     k = k + Nxu;
 
     d = NaN(1,Nw);
     for i = 1:Nw

@@ -36,7 +36,7 @@ Nu = Nx;
 x0 = 10*rand(N0, Nx) - 5;
 
 % simulation variables
-T = 100;  tspan = 0:dt:T;
+T = 10;  tspan = 0:dt:T;
 Nt = length(tspan);
 
 % create list of inputs
@@ -74,15 +74,15 @@ for i = 2:Nt
     PsiTest(i,:) = observation(xList(i,:), uList(i-1,:));
 end
 
-col = 1:meta.Nk;
-PsiError = PsiTest(:,col)-PsiKoop(:,col) < 1e-3;
-SumError = sum(PsiError, 'all');
+% col = 1:meta.Nk;
+% PsiError = PsiTest(:,col)-PsiKoop(:,col) < 1e-3;
+% SumError = sum(PsiError, 'all');
 
 
 %% plot results
 if plot_results
 
-    col = meta.xx;
+    col = meta.u;
     fig_comp = plot_comparisons(PsiTest(2:end,col), PsiKoop(2:end,col), Psi0(1,col), tspan(2:end), [], meta.labels(col));
     disp(meta.labels(col));
 

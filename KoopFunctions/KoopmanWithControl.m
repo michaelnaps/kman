@@ -1,15 +1,23 @@
-function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data, eps)
+function [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, eps, depend)
+    %% default variables
+    if nargin < 6
+        depend = [];
+    end
+
+    if nargin < 5
+        eps = [];
+    end
+
     %% Create structure variable for errors
     err = struct;
 
     %% evaluate for the observation function
-    N0 = length(x0(:,1));                                % number of initial points
-    Mx = round(length(x_data(:,1))/N0);                  % number of data points
-    [~, META] = observation(x0(1,:), u_data(1,:));      % observables meta-data
-    Nk = META.Nk;
+    N0 = length(x0(:,1));                              % number of initial points
+    Mx = round(length(xData(:,1))/N0);                 % number of data points
+    
+    [~, meta] = observation(x0(1,:), uData(1,:));      % observables meta-data
+    Nk = meta.Nk;
 
-
-    Nu = length(META.u);
     PsiX = NaN(N0*(Mx-1), Nk);
     PsiY = NaN(N0*(Mx-1), Nk);
 
@@ -23,9 +31,8 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
             i = i + 1;
             j = j + 1;
 
-            PsiX(j,:) = observation(x_data(i,:), u_data(i,:));
-            PsiY(j,:) = observation(x_data(i+1,:), u_data(i+1,:));
-%             PsiY(j,:) = observation(x_data(i+1,:), zeros(1,Nu));
+            PsiX(j,:) = observation(xData(i,:), uData(i,:));
+            PsiY(j,:) = observation(xData(i+1,:), uData(i+1,:));
 
         end
 
@@ -55,11 +62,15 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, x_data, x0, u_data
 
     [U,S,V] = svd(G);
 
-    if nargin < 5
+    if isempty(eps)
         eps = 1e-12*max(diag(S));
     end
 
-    ind = diag(S) > eps;
+    if isempty(depend)
+        ind = diag(S) > eps;
+    else
+        ind = depend > eps;
+    end
 
     U = U(:,ind);
     S = S(ind,ind);
