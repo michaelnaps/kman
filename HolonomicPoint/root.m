@@ -41,8 +41,9 @@ Nt = length(tspan);
 
 % create list of inputs
 A = 5;
-u0 = A*rand(1,Nu) - A/2;
+u0 = [1,1];%A*rand(1,Nu) - A/2;
 uList = u0.*ones(Nt-1,Nu);                 % constant input
+
 % uList = u0 + (0.50*rand(Nt-1,Nu) - 0.25);  % input with noise
 % uList = A*[                                % sinusoidal input
 %     cos(linspace(0, 6*pi, Nt-1)'), cos(linspace(0, 4*pi, Nt-1)')
@@ -82,7 +83,7 @@ SumError = sum(PsiError, 'all');
 if plot_results
 
     col = META.xx;
-    fig_comp = plot_comparisons(PsiTest(2:end,col), PsiKoop(2:end,col)/2, Psi0(1,col), tspan(2:end), [], META.labels(col));
+    fig_comp = plot_comparisons(PsiTest(2:end,col), PsiKoop(2:end,col), Psi0(1,col), tspan(2:end), [], META.labels(col));
     disp(META.labels(col));
 
 end
@@ -111,8 +112,11 @@ end
 %% local functions
 function [Psi_n] = KoopFun(Psi, u, K, world, META)
 
-    [dPsix, dPsiu] = observables_partial(Psi(META.x), u, world);
-    Psi_n = Psi(META.x)*dPsix*K + u*dPsiu*K;
+%     [dPsix, dPsiu] = observables_partial(Psi(META.x), u, world);
+%     Psi_n = Psi(META.x)*dPsix*K + u*dPsiu*K;
+    x = Psi(META.x);
+    Psi_input = observables(x, u, world);
+    Psi_n = Psi_input*K;
 
 end
 
