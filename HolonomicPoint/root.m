@@ -41,7 +41,7 @@ Nt = length(tspan);
 
 % create list of inputs
 A = 5;
-u0 = [1,1];%A*rand(1,Nu) - A/2;
+u0 = A*rand(1,Nu) - A/2;
 uList = u0.*ones(Nt-1,Nu);                 % constant input
 
 % uList = u0 + (0.50*rand(Nt-1,Nu) - 0.25);  % input with noise
@@ -82,7 +82,7 @@ SumError = sum(PsiError, 'all');
 %% plot results
 if plot_results
 
-    col = META.xx;
+    col = META.xu;
     fig_comp = plot_comparisons(PsiTest(2:end,col), PsiKoop(2:end,col), Psi0(1,col), tspan(2:end), [], META.labels(col));
     disp(META.labels(col));
 
