@@ -3,8 +3,8 @@ function [dx] = fdm(f, x, h)
         h = 1e-3;
     end
 
-    Nr = length(f(x));
-    Nc = length(x);
+    Nc = length(f(x));
+    Nr = length(x);
     dx = NaN(Nr, Nc);
 
     for i = 1:Nc
@@ -12,14 +12,12 @@ function [dx] = fdm(f, x, h)
         xn1 = x;  xn1(i) = x(i) - h;
         xp1 = x;  xp1(i) = x(i) + h;
         xp2 = x;  xp2(i) = x(i) + 2*h;
-        
+
         yn2 = f(xn2);
         yn1 = f(xn1);
         yp1 = f(xp1);
         yp2 = f(xp2);
 
-        dx(:,i) = (yn2 - yp2 + 8*yp1 - 8*yn1)/(12*h);
+        dx(i,:) = (yn2 - yp2 + 8*yp1 - 8*yn1)/(12*h);
     end
-
-    dx = dx';
 end
