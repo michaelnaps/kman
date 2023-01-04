@@ -1,4 +1,8 @@
-function [fig] = plot_comparisons(x1_list, x2_list, x0, tspan, x0_2, labels)
+function [fig] = plot_comparisons(x1_list, x2_list, x0, tspan, x0_2, labels, pos)
+
+    if nargin < 7
+        pos = [0, 0, 400, 250];
+    end
 
     if nargin < 6
         labels = [];
@@ -15,7 +19,7 @@ function [fig] = plot_comparisons(x1_list, x2_list, x0, tspan, x0_2, labels)
     k1 = 0;
     k2 = 0;
 
-    fig = figure;
+    fig = figure('Position', pos);
     for i = 1:N0
 
         for j = 1:N1
