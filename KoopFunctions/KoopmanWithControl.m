@@ -1,22 +1,25 @@
 function [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, eps, depend)
     %% default variables
+    [~, meta] = observation(x0(1,:), uData(1,:));      % observables meta-data
+    Nk = meta.Nk;
+
     if nargin < 6
-        depend = [];
+        depend = ones(Nk,1);
     end
 
     if nargin < 5
         eps = [];
     end
 
+
     %% Create structure variable for errors
+    TOL = 1e-12;
     err = struct;
+
 
     %% evaluate for the observation function
     N0 = length(x0(:,1));                              % number of initial points
     Mx = round(length(xData(:,1))/N0);                 % number of data points
-    
-    [~, meta] = observation(x0(1,:), uData(1,:));      % observables meta-data
-    Nk = meta.Nk;
 
     PsiX = NaN(N0*(Mx-1), Nk);
     PsiY = NaN(N0*(Mx-1), Nk);
@@ -42,6 +45,7 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, 
     end
 
     if (sum(isnan(PsiX), 'all') > 0 || sum(isnan(PsiY), 'all') > 0)
+
         err.PsiX = PsiX;
         err.PsiY = PsiY;
 
@@ -52,7 +56,9 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, 
         fprintf("ERROR: PsiX or PsiY contain NaN value.\n\n")
 
         return;
+
     end
+
     
     %% perform lest-squares
     % create least-squares matrices
@@ -63,14 +69,11 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, 
     [U,S,V] = svd(G);
 
     if isempty(eps)
-        eps = 1e-12*max(diag(S));
+        eps = TOL*max(diag(S));
     end
 
-    if isempty(depend)
-        ind = diag(S) > eps;
-    else
-        ind = depend > eps;
-    end
+    ind = diag(S) > eps;
+    ind = abs(ind+depend-2) < TOL;
 
     U = U(:,ind);
     S = S(ind,ind);
@@ -107,5 +110,6 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, 
         err.eps = eps;
 
     end
+
 
 end

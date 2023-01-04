@@ -3,7 +3,7 @@ clean;
 plot_results = 1;
 anim_results = ~plot_results;
 
-save_data = 1;
+save_data = 0;
 
 
 %% path environments
@@ -63,7 +63,7 @@ Psi0 = observation(x0, zeros(1,Nu));
 
 
 %% generate data for new initial conditions
-koop = @(x, u) KoopFun(x, u, K, world, meta);
+koop = @(x, u) KoopPropagate(x, u, K, world, meta);
 
 PsiKoop = generate_data(koop, tspan, Psi0, uList, Nu);
 xList = generate_data(modelFun, tspan, x0, uList, Nu);
@@ -124,7 +124,7 @@ end
 
 
 %% local functions
-function [Psi_n] = KoopFun(Psi, u, K, world, meta)
+function [Psi_n] = KoopPropagate(Psi, u, K, world, meta)
 
 %     [dPsix, dPsiu] = observables_partial(Psi(meta.x), u, world);
 %     Psi_n = Psi(meta.x)*dPsix*K + u*dPsiu*K;
@@ -147,14 +147,3 @@ function [Psi_n] = KoopFun(Psi, u, K, world, meta)
     Psi_n = Psi*K;
 
 end
-
-
-
-
-
-
-
-
-
-
-

@@ -5,6 +5,7 @@ anim_results = ~plot_results;
 
 save_data = 1;
 
+
 %% path environments
 addpath ..
 addpath ../Data
@@ -12,6 +13,7 @@ addpath ../DataFunctions
 addpath ../KoopFunctions
 addpath ../PlotFunctions
 addpath ../SphereWorld
+
 
 %% default plotting parameters
 set(groot, 'DefaultLineLineWidth', 2);
@@ -60,8 +62,9 @@ uTrain = stack_data(uGenerate, N0, Nu, Nt);
 [~, meta] = observables(zeros(1,Nx), zeros(1,Nx), world);
 Nk = meta.Nk;
 
-% use meta, ensure d is not factored into observable propagations
-% depend = [1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1]';
+% use meta to ensure d is not factored into observable propagations
+% depend = [1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 2]';
+% depend = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]';
 
 observation = @(x, u) observables(x, u, world);
 [K, acc, ind, err] = KoopmanWithControl(observation, xTrain, x0, uTrain);
@@ -89,7 +92,7 @@ Psi0 = observation(x0, zeros(1,Nu));
 
 
 %% generate data for new initial conditions
-koop = @(x, u) KoopFun(x, u, K, world, meta);
+koop = @(x, u) KoopPropagate(x, u, K, world, meta);
 
 PsiKoop = generate_data(koop, tspan, Psi0, uTest, Nu);
 xTest = generate_data(modelFun, tspan, x0, uTest, Nu);
@@ -154,7 +157,7 @@ end
 
 
 %% local functions
-function [Psi_n] = KoopFun(Psi, u, K, world, meta)
+function [Psi_n] = KoopPropagate(Psi, u, K, world, meta)
 
 %     [dPsix, dPsiu] = observables_partial(Psi(meta.x), u, world);
 %     Psi_n = Psi(meta.x)*dPsix*K + u*dPsiu*K;
