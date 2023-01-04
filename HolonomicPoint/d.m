@@ -22,7 +22,7 @@ load sphereworld_minimal
 
 
 %% Model function
-dt = 1;
+dt = 0.1;
 modelFun = @(x, u) model(x, u, dt);
 
 
@@ -109,11 +109,25 @@ SumError = sum(PsiError, 'all');
 if ~isnan(acc)
 
     if plot_results
-
-        col = meta.u;
-        fig_comp = plot_comparisons(PsiTest(2:end,col), PsiKoop(2:end,col), Psi0(1,col), tspan(2:end), [], meta.labels(col));
-        disp(meta.labels(col));
-
+    
+        fields = fieldnames(meta);
+    
+        def_size = [400, 250];
+        positions = [
+            1921, -70, def_size;
+            2321, -70, def_size;
+            1921, -420, def_size;
+            2321, -413, def_size;
+            1921, -755, def_size;
+            2321, -755, def_size;
+        ];
+    
+        for i = 1:length(fields)-3
+            col = meta.(fields{i});
+            fig_comp = plot_comparisons(PsiTest(2:end,col), PsiKoop(2:end,col), Psi0(1,col), tspan(2:end), [], meta.labels(col), positions(i,:));
+            disp(meta.labels(col));
+        end
+    
     end
 
     if anim_results
