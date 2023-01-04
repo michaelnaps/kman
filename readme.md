@@ -21,8 +21,8 @@ The files are separated into the following folders:
     - ``d.m``
     - ``model.m``
 2. Data: pre-computed Koopman operators for use in ``main_results.m``
-    - ``K_24x24_analytical.mat``
-    - ``K_24x24_datadriven.mat``
+    - ``K_19x19_analytical.mat``
+    - ``K_19x19_datadriven.mat``
 3. DataFunctions: for processing and organizing training data
     - ``generate_data.m``
     - ``stack_data.m``
