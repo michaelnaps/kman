@@ -24,7 +24,7 @@ load sphereworld_minimal
 
 
 %% Model function
-dt = 1;
+dt = 0.1;
 modelFun = @(x, u) model(x, u, dt);
 
 
@@ -55,7 +55,7 @@ uList = A*[                                % sinusoidal input
 Nk = meta.Nk(end);
 
 observation = @(x, u) observables(x, u, world);
-[K] = KoopmanAnalytical(world, meta);
+[K] = KoopmanAnalytical(world, meta, dt);
 
 
 %% initial observables

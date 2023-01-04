@@ -1,7 +1,9 @@
 function [K] = KoopmanAnalytical(world, meta, alpha)
 
     if nargin < 3
-        alpha = 1;
+        a = 1;
+    else
+        a = alpha;
     end
 
     % coefficient gain
@@ -28,12 +30,12 @@ function [K] = KoopmanAnalytical(world, meta, alpha)
     
     % state terms: x
     K(meta.x, meta.x) = eye(Nx);
-    K(meta.u, meta.x) = eye(Nx);
+    K(meta.u, meta.x) = a*eye(Nx);
 
     % state term expansion: x'x
     K(meta.xx, meta.xx) = w*eye(Nxx);
-    K(meta.uu, meta.xx) = w*eye(Nuu);
-    K(meta.xu, meta.xx) = w*[
+    K(meta.uu, meta.xx) = w*a*a*eye(Nuu);
+    K(meta.xu, meta.xx) = w*a*[
         2, 0, 0;
         0, 1, 0;
         0, 1, 0;
@@ -48,7 +50,7 @@ function [K] = KoopmanAnalytical(world, meta, alpha)
 
    % state-input term expansion: x'u
    K(meta.xu, meta.xu) = w*eye(Nxu,Nxu);
-   K(meta.uu, meta.xu) = w*[
+   K(meta.uu, meta.xu) = w*a*a*[
        1, 0, 0, 0;
        0, 1, 1, 0;
        0, 0, 0, 1;
@@ -59,18 +61,18 @@ function [K] = KoopmanAnalytical(world, meta, alpha)
        r11, r21, r31, r41;
        r12, r22, r32, r42
    ];
-   K(meta.u, meta.d) = -w*2*[
+   K(meta.u, meta.d) = -w*2*a*[
        r11, r21, r31, r41;
        r12, r22, r32, r42
    ];
    K(meta.xx(1), meta.d) = w*ones(1,Nw);
    K(meta.xx(3), meta.d) = w*ones(1,Nw);
 
-   K(meta.uu(1), meta.d) = w*ones(1,Nw);
-   K(meta.uu(3), meta.d) = w*ones(1,Nw);
+   K(meta.uu(1), meta.d) = w*a*a*ones(1,Nw);
+   K(meta.uu(3), meta.d) = w*a*a*ones(1,Nw);
 
-   K(meta.xu(1), meta.d) = w*2*ones(1,Nw);
-   K(meta.xu(4), meta.d) = w*2*ones(1,Nw);
+   K(meta.xu(1), meta.d) = w*2*a*ones(1,Nw);
+   K(meta.xu(4), meta.d) = w*2*a*ones(1,Nw);
 
    K(meta.c,meta.d) = [
        r11^2+r12^2, r21^2+r22^2, r31^2+r32^2, r41^2+r42^2
