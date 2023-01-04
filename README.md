@@ -16,9 +16,9 @@ The files are separated into the following folders:
 0. Root:
 	- ``fdm.m``
 1. HolonomicPoint: main execution files for testing and report
-    - ``main_results.m``
-    - ``analytical.m``
-    - ``datadriven.m``
+    - ``root.m``
+    - ``a.m``
+    - ``d.m``
     - ``model.m``
 2. Data: pre-computed Koopman operators for use in ``main_results.m``
     - ``K_24x24_analytical.mat``
