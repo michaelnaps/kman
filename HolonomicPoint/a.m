@@ -3,7 +3,7 @@ clean;
 plot_results = 1;
 anim_results = ~plot_results;
 
-save_data = 0;
+save_data = 1;
 
 
 %% path environments
@@ -40,7 +40,7 @@ T = 10;  tspan = 0:dt:T;
 Nt = length(tspan);
 
 % create list of inputs
-A = 5;
+A = 5*rand - 2.5;
 u0 = A*rand(1,Nu) - A/2;
 % uList = u0.*ones(Nt-1,Nu);                 % constant random input
 
@@ -119,7 +119,7 @@ end
 
 %% save data
 if save_data
-    save("./data/K_"+Nk+"x"+Nk, "K", "Nk", "dt", "meta", "Nw")
+    save("../Data/K_"+Nk+"x"+Nk+"_analytical", "K", "Nk", "dt", "meta", "Nw")
 end
 
 

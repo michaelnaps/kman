@@ -3,7 +3,7 @@ clean;
 plot_results = 1;
 anim_results = ~plot_results;
 
-save_data = 0;
+save_data = 1;
 
 %% path environments
 addpath ..
@@ -79,7 +79,7 @@ T = 10;  tspan = 0:dt:T;
 Nt = length(tspan);
 
 % create list of inputs
-A = 5;
+A = 5*rand - 2.5;
 uTest = A*[                                % sinusoidal input
     cos(linspace(0, 6*pi, Nt-1)'), -cos(linspace(0, 4*pi, Nt-1)')
 ];
@@ -149,7 +149,7 @@ end
 
 %% save data
 if save_data
-    save("./data/K_"+Nk+"x"+Nk, "K", "Nk", "dt", "meta", "Nw")
+    save("../Data/K_"+Nk+"x"+Nk+"_datadriven", "K", "Nk", "dt", "meta", "Nw")
 end
 
 
@@ -165,7 +165,16 @@ function [Psi_n] = KoopFun(Psi, u, K, world, meta)
 %     disp("u")
 %     disp((u*dPsiu*K)')
 
-    Psi_n = observables(Psi(meta.x), u, world)*K;
+    x = Psi(meta.x);
+
+    xu = x'*u;
+    uu = u'*u;
+
+    Psi(meta.u) = u;
+    Psi(meta.xu) = xu(:);
+    Psi(meta.uu) = [uu(1), uu(2), uu(4)];
+
+    Psi_n = Psi*K;
 
 end
 
