@@ -141,8 +141,8 @@ function [Psi_n] = KoopPropagate(Psi, u, K, world, meta)
     uu = u'*u;
 
     Psi(meta.u) = u;
-    Psi(meta.xu) = xu(:);
     Psi(meta.uu) = [uu(1), uu(2), uu(4)];
+    Psi(meta.xu) = xu(:);
 
     Psi_n = Psi*K;
 

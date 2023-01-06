@@ -15,7 +15,6 @@ function [K] = KoopmanAnalytical(world, meta, alpha)
     Nu  = length(meta.u);
     Nuu = length(meta.uu);
     Nxu = length(meta.xu);
-%     Nux = length(meta.ux);
     Nw  = length(meta.d);
     Nk  = meta.Nk;
 
