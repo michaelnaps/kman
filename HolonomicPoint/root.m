@@ -44,14 +44,14 @@ x0 = [0, 0];
 % x0 = 10*rand(N0,Nx) - 5;
 
 % input list
-A = 2.5;                                   % maximum input
-u0 = zeros(1,Nu);                          % initial input 1
-% u0 = A*rand(1,Nu) - A/2;                   % initial input 2
-% uList = u0.*ones(Nt-1,Nu);                 % constant input
-% uList = u0 + (0.50*rand(Nt-1,Nu) - 0.25);  % input with noise
-uList = A*[                                % sinusoidal input
-    cos(linspace(0, 6*pi, Nt-1)'), -cos(linspace(0, 4*pi, Nt-1)')
-];
+A = 2.5;                                   % maximum input * !
+% u0 = zeros(1,Nu);                          % initial input 1 /
+u0 = A*rand(1,Nu) - A/2;                   % initial input 2 *
+uList = u0.*ones(Nt-1,Nu);                 % constant input *
+% uList = u0 + (0.50*rand(Nt-1,Nu) - 0.25);  % input with noise !
+% uList = A*[                                % sinusoidal input !
+%     cos(linspace(0, 6*pi, Nt-1)'), -cos(linspace(0, 4*pi, Nt-1)')
+% ];
 
 
 %% grab meta-data variable
@@ -160,7 +160,7 @@ end
 idx = meta.xx;
 xTx_fig = figure('Position', [1921,-282,1070,599]);
 % sgtitle("Propagation of x^Tx")
-subplot(2,4,1);
+subplot(2,3,1);
     hold on
     plot(tspan, PsiList_Model(:,idx(1)), 'LineWidth', ModelLineWidth, 'Color', ModelColor);
     plot(tspan, PsiList_Analytical(:,idx(1)), AnalyticalMarker, 'Color', AnalyticalColor);
@@ -168,14 +168,14 @@ subplot(2,4,1);
     title(meta.labels(idx(1)))
     ylabel("Magnitude [m^2]");
     hold off
-subplot(2,4,2);
+subplot(2,3,2);
     hold on
     plot(tspan, PsiList_Model(:,idx(2)), 'LineWidth', ModelLineWidth, 'Color', ModelColor);
     plot(tspan, PsiList_Analytical(:,idx(2)), AnalyticalMarker, 'Color', AnalyticalColor);
     plot(tspan, PsiList_DataDriven(:,idx(2)), DataDrivenMarker, 'Color', DataDrivenColor);
     title(meta.labels(idx(2)));
     hold off
-subplot(2,4,3);
+subplot(2,3,3);
     hold on
     plot(tspan, PsiList_Model(:,idx(3)), 'LineWidth', ModelLineWidth, 'Color', ModelColor);
     plot(tspan, PsiList_Analytical(:,idx(3)), AnalyticalMarker, 'Color', AnalyticalColor);
