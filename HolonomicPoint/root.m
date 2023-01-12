@@ -47,11 +47,11 @@ x0 = [0, 0];
 A = 2.5;                                   % maximum input * !
 % u0 = zeros(1,Nu);                          % initial input 1 /
 u0 = A*rand(1,Nu) - A/2;                   % initial input 2 *
-uList = u0.*ones(Nt-1,Nu);                 % constant input *
-% uList = u0 + (0.50*rand(Nt-1,Nu) - 0.25);  % input with noise !
-% uList = A*[                                % sinusoidal input !
-%     cos(linspace(0, 6*pi, Nt-1)'), -cos(linspace(0, 4*pi, Nt-1)')
-% ];
+% uList = u0.*ones(Nt-1,Nu);                 % constant input *
+uList = u0 + (0.50*rand(Nt-1,Nu) - 0.25);  % input with noise !
+uList = A*[                                % sinusoidal input !
+    cos(linspace(0, 6*pi, Nt-1)'), -cos(linspace(0, 4*pi, Nt-1)')
+];
 
 
 %% grab meta-data variable
@@ -307,8 +307,8 @@ function [Psi_n] = KoopPropagate(Psi, u, K, world, meta)
 
     x = Psi(meta.x);
 
-    xu = x'*u;
     uu = u'*u;
+    xu = x'*u;
 
     Psi(meta.u) = u;
     Psi(meta.uu) = [uu(1), uu(2), uu(4)];
