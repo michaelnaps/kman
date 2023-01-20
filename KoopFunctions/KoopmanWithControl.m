@@ -1,3 +1,4 @@
+%% [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, eps, depend)
 function [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, eps, depend)
     %% default variables
     [~, meta] = observation(x0(1,:), uData(1,:));      % observables meta-data
