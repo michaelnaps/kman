@@ -1,7 +1,7 @@
 %% [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, eps, depend)
 function [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, eps, depend)
     %% default variables
-    [~, meta] = observation(x0(1,:), uData(1,:));      % observables meta-data
+    [~, meta] = observation(x0(:,1), uData(:,1));      % observables meta-data
     Nk = meta.Nk;
 
     if nargin < 6
@@ -19,11 +19,11 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, 
 
 
     %% evaluate for the observation function
-    N0 = length(x0(:,1));                              % number of initial points
-    Mx = round(length(xData(:,1))/N0);                 % number of data points
+    N0 = length(x0(1,:));                              % number of initial points
+    Mx = round(length(xData(1,:))/N0);                 % number of data points
 
-    PsiX = NaN(N0*(Mx-1), Nk);
-    PsiY = NaN(N0*(Mx-1), Nk);
+    PsiX = NaN(Nk, N0*(Mx-1));
+    PsiY = NaN(Nk, N0*(Mx-1));
 
     i = 0;
     j = 0;
@@ -35,8 +35,8 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, 
             i = i + 1;
             j = j + 1;
 
-            PsiX(j,:) = observation(xData(i,:), uData(i,:));
-            PsiY(j,:) = observation(xData(i+1,:), uData(i+1,:));
+            PsiX(j,:) = observation(xData(:,i), uData(:,i));
+            PsiY(j,:) = observation(xData(:,i+1), uData(:,i+1));
 
         end
 
@@ -64,8 +64,8 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, 
     %% perform lest-squares
     % create least-squares matrices
     % (according to abraham, model-based)
-    G = 1/(N0*(Mx-1)) * (PsiX')*PsiX;
-    A = 1/(N0*(Mx-1)) * (PsiX')*PsiY;
+    G = 1/(N0*(Mx-1)) * PsiX*(PsiX)';
+    A = 1/(N0*(Mx-1)) * PsiX*(PsiY)';
 
     [U,S,V] = svd(G);
 
@@ -86,7 +86,7 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, 
     % calculate residual error
     acc = 0;
     for n = 1:N0*(Mx-1)    
-        acc = acc + norm(PsiY(n,:) - PsiX(n,:)*K);
+        acc = acc + norm(PsiY(:,n) - K*PsiX(:,n));
     end
     
     if isnan(acc)
