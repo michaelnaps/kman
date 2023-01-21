@@ -1,27 +1,42 @@
-function [K, acc, ind, err] = koopman(observation, x_data, x0)
+%% [K, acc, ind, err] = Koopman(observables, X, Y, x0, eps, depend)
+function [K, acc, ind, err] = Koopman(observables, X, Y, x0, eps, depend)
+    %% default variables
+    [~, meta] = observables(x0(:,1));
+    Nk = meta.Nk;
+
+    if nargin < 6
+        depend = ones(Nk,1);
+    end
+
+    if nargin < 5
+        eps = [];
+    end
+
+
     %% Create structure variable for errors
+    TOL = 1e-12;
     err = struct;
 
-    %% evaluate for the observation function
-    Nx = length(x0(:,1));                   % number of initial points
-    Mx = round(length(x_data(:,1))/Nx);     % number of data points
-    Nk = length(observation(x_data(1,:)));  % number of obs. functions
 
-    psiX = NaN(Mx-Nx, Nk);
-    psiY = NaN(Mx-Nx, Nk);
+    %% evaluate for the observation function
+    N0 = length(x0(1,:));                          % number of initial points
+    Mx = round(length(X(1,:))/N0);                 % number of data points
+
+    PsiX = NaN(Nk, N0*(Mx-1));
+    PsiY = NaN(Nk, N0*(Mx-1));
 
     i = 0;
     j = 0;
 
-    for n = 1:Nx
+    for n = 1:N0
 
         for m = 1:Mx-1
 
             i = i + 1;
             j = j + 1;
 
-            psiX(j,:) = observation(x_data(i,:));
-            psiY(j,:) = observation(x_data(i+1,:));
+            PsiX(:,j) = observables(X(:,i));
+            PsiY(:,j) = observables(Y(:,i));
 
         end
 
@@ -30,28 +45,36 @@ function [K, acc, ind, err] = koopman(observation, x_data, x0)
 
     end
 
-    if (sum(isnan(psiX), 'all') > 0 || sum(isnan(psiY), 'all') > 0)
-        err.psiX = psiX;
-        err.psiY = psiY;
+    if (sum(isnan(PsiX), 'all') > 0 || sum(isnan(PsiY), 'all') > 0)
+
+        err.PsiX = PsiX;
+        err.PsiY = PsiY;
 
         K   = NaN;
         acc = NaN;
         ind = NaN;
 
-        fprintf("ERROR: psiX or psiY contain NaN value.\n\n")
+        fprintf("ERROR: PsiX or PsiY contain NaN value.\n\n")
 
         return;
+
     end
+
     
     %% perform lest-squares
     % create least-squares matrices
-    eps = 1e-6;
-    G = 1/Mx * (psiX')*psiX;
-    A = 1/Mx * (psiX')*psiY;
+    % (according to abraham, model-based)
+    G = 1/(N0*(Mx-1)) * PsiX*(PsiX)';
+    A = 1/(N0*(Mx-1)) * PsiX*(PsiY)';
 
     [U,S,V] = svd(G);
 
+    if isempty(eps)
+        eps = TOL*max(diag(S));
+    end
+
     ind = diag(S) > eps;
+    ind = abs(ind+depend-2) < TOL;
 
     U = U(:,ind);
     S = S(ind,ind);
@@ -59,13 +82,12 @@ function [K, acc, ind, err] = koopman(observation, x_data, x0)
     
     % solve for the Koopman operator
     K = (V*(S\U')) * A;
+    K = K';
     
     % calculate residual error
     acc = 0;
-    for n = 1:Nk
-    
-        acc = acc + norm(psiY(n,:)' - K'*psiX(n,:)');
-    
+    for n = 1:N0*(Mx-1)    
+        acc = acc + norm(PsiY(:,n) - K*PsiX(:,n));
     end
     
     if isnan(acc)
@@ -82,5 +104,14 @@ function [K, acc, ind, err] = koopman(observation, x_data, x0)
         err.A = A;
         err.K = K;
 
+    else
+
+        err.U = U;
+        err.S = S;
+        err.V = V;
+        err.eps = eps;
+
     end
+
+
 end

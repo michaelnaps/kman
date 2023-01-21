@@ -1,14 +1,14 @@
-%% [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, eps, depend)
-function [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, eps, depend)
+%% [K, acc, ind, err] = KoopmanWithControl(observation, X, Y, x0, uData, eps, depend)
+function [K, acc, ind, err] = KoopmanWithControl(observation, X, Y, x0, uData, eps, depend)
     %% default variables
     [~, meta] = observation(x0(:,1), uData(:,1));      % observables meta-data
     Nk = meta.Nk;
 
-    if nargin < 6
+    if nargin < 7
         depend = ones(Nk,1);
     end
 
-    if nargin < 5
+    if nargin < 6
         eps = [];
     end
 
@@ -20,7 +20,7 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, 
 
     %% evaluate for the observation function
     N0 = length(x0(1,:));                              % number of initial points
-    Mx = round(length(xData(1,:))/N0);                 % number of data points
+    Mx = round(length(X(1,:))/N0);                 % number of data points
 
     PsiX = NaN(Nk, N0*(Mx-1));
     PsiY = NaN(Nk, N0*(Mx-1));
@@ -35,8 +35,8 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, 
             i = i + 1;
             j = j + 1;
 
-            PsiX(j,:) = observation(xData(:,i), uData(:,i));
-            PsiY(j,:) = observation(xData(:,i+1), uData(:,i+1));
+            PsiX(:,j) = observation(X(:,i), uData(:,i));
+            PsiY(:,j) = observation(Y(:,i), uData(:,i+1));
 
         end
 
@@ -82,6 +82,7 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, xData, x0, uData, 
     
     % solve for the Koopman operator
     K = (V*(S\U')) * A;
+    K = K';
     
     % calculate residual error
     acc = 0;
