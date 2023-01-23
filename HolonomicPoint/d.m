@@ -31,10 +31,9 @@ modelFun = @(x, u) model(x, u, dt);
 %% Initialize training data
 Nrand = 50;
 x0 = [
-    20*rand(Nrand, 2) - 10;
-    0, 0
+    20*rand(2, Nrand) - 10, [0; 0]
 ];
-[N0, Nx] = size(x0);
+[Nx, N0] = size(x0);
 Nu = Nx;
 
 % simulation variables
@@ -43,12 +42,12 @@ tspan = 0:dt:T;
 Nt = length(tspan);
 
 % create list of inputs
-u0 = 20*rand(N0, Nu) - 10;
-uGenerate = NaN(Nt, N0*Nu);
+u0 = 20*rand(Nu, N0) - 10;
+uGenerate = NaN(N0*Nu, Nt);
 
 k = 1;
 for i = 1:N0
-    uGenerate(:,k:k+Nu-1) = u0(i,:).*ones(Nt,Nu);
+    uGenerate(k:k+Nu-1,:) = u0(:,i).*ones(Nu,Nt);
     k = k + Nu;
 end
 
@@ -59,7 +58,7 @@ uTrain = stack_data(uGenerate, N0, Nu, Nt);
 
 
 %% Evaluate for the observation function
-[~, meta] = observables(zeros(1,Nx), zeros(1,Nx), world);
+[~, meta] = observables(zeros(Nx,1), zeros(Nx,1), world);
 Nk = meta.Nk;
 
 % use meta to ensure d is not factored into observable propagations
@@ -75,7 +74,7 @@ N0 = 1;
 Nx = 2;
 Nu = Nx;
 
-x0 = 10*rand(N0, Nx) - 5;
+x0 = 10*rand(Nx, N0) - 5;
 
 % simulation variables
 T = 10;  tspan = 0:dt:T;
@@ -84,11 +83,11 @@ Nt = length(tspan);
 % create list of inputs
 A = 5*rand - 2.5;
 uTest = A*[                                % sinusoidal input
-    cos(linspace(0, 6*pi, Nt-1)'), -cos(linspace(0, 4*pi, Nt-1)')
+    cos(linspace(0, 6*pi, Nt-1)); -cos(linspace(0, 4*pi, Nt-1)')
 ];
 
 % initial observables
-Psi0 = observation(x0, zeros(1,Nu));
+Psi0 = observation(x0, zeros(Nu,1));
 
 
 %% generate data for new initial conditions
