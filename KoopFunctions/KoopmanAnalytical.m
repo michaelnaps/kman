@@ -80,6 +80,8 @@ function [K] = KoopmanAnalytical(world, meta, alpha)
    % resolve NaN elements
    K(meta.c,meta.c) = 1;
    K(isnan(K)) = 0;
+
+   K = K';  % converting to column vectors
 end
 
 

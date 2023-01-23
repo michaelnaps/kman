@@ -33,7 +33,7 @@ N0 = 1;
 Nx = 2;
 Nu = Nx;
 
-x0 = 10*rand(N0, Nx) - 5;
+x0 = 10*rand(Nx, N0) - 5;
 
 % simulation variables
 T = 10;  tspan = 0:dt:T;
@@ -41,25 +41,25 @@ Nt = length(tspan);
 
 % create list of inputs
 A = 5*rand - 2.5;
-u0 = A*rand(1,Nu) - A/2;
+u0 = A*rand(Nu,1) - A/2;
 % uList = u0.*ones(Nt-1,Nu);                 % constant random input
 
 % uList = u0 + (0.50*rand(Nt-1,Nu) - 0.25);  % input with noise
 uList = A*[                                % sinusoidal input
-    cos(linspace(0, 6*pi, Nt-1)'), -cos(linspace(0, 4*pi, Nt-1)')
+    cos(linspace(0, 6*pi, Nt-1)); -cos(linspace(0, 4*pi, Nt-1))
 ];
 
 
 %% Evaluate for the observation function
-[~, meta] = observables(zeros(1,Nx), zeros(1,Nu), world);
+[~, meta] = observables(zeros(Nx,1), zeros(Nu,1), world);
 Nk = meta.Nk(end);
 
 observation = @(x, u) observables(x, u, world);
-[K] = KoopmanAnalytical(world, meta, dt);
+K = KoopmanAnalytical(world, meta, dt);
 
 
 %% initial observables
-Psi0 = observation(x0, zeros(1,Nu));
+Psi0 = observation(x0, zeros(Nu,1));
 
 
 %% generate data for new initial conditions
@@ -68,10 +68,10 @@ koop = @(x, u) KoopPropagate(x, u, K, world, meta);
 PsiKoop = generate_data(koop, tspan, Psi0, uList, Nu);
 xList = generate_data(modelFun, tspan, x0, uList, Nu);
 
-PsiTest = NaN(Nt, Nk);
-PsiTest(1,:) = observation(xList(1,:), zeros(1,Nu));
+PsiTest = NaN(Nk, Nt);
+PsiTest(:,1) = observation(xList(:,1), zeros(Nu,1));
 for i = 2:Nt
-    PsiTest(i,:) = observation(xList(i,:), uList(i-1,:));
+    PsiTest(:,i) = observation(xList(:,i), uList(:,i-1));
 end
 
 % col = 1:meta.Nk;
@@ -95,9 +95,9 @@ if plot_results
     ];
 
     for i = 1:length(fields)-3
-        col = meta.(fields{i});
-        fig_comp = plot_comparisons(PsiTest(2:end,col), PsiKoop(2:end,col), Psi0(1,col), tspan(2:end), [], meta.labels(col), positions(i,:));
-        disp(meta.labels(col));
+        row = meta.(fields{i});
+        fig_comp = plot_comparisons(PsiTest(row,2:end), PsiKoop(row,2:end), Psi0(row,1), tspan(2:end), [], meta.labels(row), positions(i,:));
+        disp(meta.labels(row));
     end
 
 end
@@ -137,13 +137,13 @@ function [Psi_n] = KoopPropagate(Psi, u, K, world, meta)
 
     x = Psi(meta.x);
 
-    xu = x'*u;
-    uu = u'*u;
+    xu = x*u';
+    uu = u*u';
 
     Psi(meta.u) = u;
     Psi(meta.uu) = [uu(1), uu(2), uu(4)];
     Psi(meta.xu) = xu(:);
 
-    Psi_n = Psi*K;
+    Psi_n = K*Psi;
 
 end

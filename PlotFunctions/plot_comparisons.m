@@ -8,12 +8,12 @@ function [fig] = plot_comparisons(x1_list, x2_list, x0, tspan, x0_2, labels, pos
         labels = [];
     end
 
-    [N0, N1] = size(x0);
+    [N1, N0] = size(x0);
 
     if nargin < 5 || ~isempty(x0_2)
         N2 = N1;
     else
-        [~, N2] = size(x0_2);
+        [N2, ~] = size(x0_2);
     end
 
     k1 = 0;
@@ -26,8 +26,8 @@ function [fig] = plot_comparisons(x1_list, x2_list, x0, tspan, x0_2, labels, pos
 
             subplot(N0,N1,k1+j)
             hold on
-            plot(tspan, x1_list(:,k1+j), 'linewidth', 2)
-            plot(tspan, x2_list(:,k2+j), '--', 'linewidth', 1.5)
+            plot(tspan, x1_list(k1+j,:), 'linewidth', 2)
+            plot(tspan, x2_list(k2+j,:), '--', 'linewidth', 1.5)
 
             if ~isempty(labels)
                 title("(" + i + ") " + labels(j));

@@ -15,8 +15,8 @@ function [Psi, meta] = observables(x, u, world)
     k = k + Nx;
 
     meta.("xx") = k:k+Nxx-1;
-    xx = x'*x;
-    Psi(meta.("xx")) = [xx(1), xx(2), xx(4)];
+    xx = x*x';
+    Psi(meta.("xx")) = [xx(1), xx(2), xx(4)]';
     k = k + Nxx;
 
     meta.("u") = k:k+Nu-1;
@@ -24,18 +24,18 @@ function [Psi, meta] = observables(x, u, world)
     k = k + Nu;
 
     meta.("uu") = k:k+Nuu-1;
-    uu = u'*u;
-    Psi(meta.("uu")) = [uu(1), uu(2), uu(4)];
+    uu = u*u';
+    Psi(meta.("uu")) = [uu(1), uu(2), uu(4)]';
     k = k + Nuu;
 
     meta.("xu") = k:k+Nxu-1;
-    xu = x'*u;
+    xu = x*u';
     Psi(meta.("xu")) = xu(:);
     k = k + Nxu;
 
-    d = NaN(1,Nw);
+    d = NaN(Nw,1);
     for i = 1:Nw
-        d(i) = (x - world(i).x)*(x - world(i).x)';
+        d(i) = (x - world(i).x)'*(x - world(i).x);
     end
 
     meta.("d") = k:k+Nw-1;
@@ -45,6 +45,8 @@ function [Psi, meta] = observables(x, u, world)
     meta.("c") = k;
     Psi(meta.("c")) = 1;
     meta.Nk = k;
+
+    Psi = Psi';  % converting to column vectors
 
 %     meta.labels = [
 %         "q_x", "q_y", "q_xq_x", "q_xq_y", "q_yq_x", "q_yq_y",...
