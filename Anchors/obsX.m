@@ -1,7 +1,7 @@
 function [Psi_x, meta] = obsX(x)
     Psi_x = [x; 1];
 
-    meta.x = [1,2];
-    meta.c = 3;
-    meta.Nk = 3;
+    meta.x = 1:4;
+    meta.c = 5;
+    meta.Nk = 5;
 end

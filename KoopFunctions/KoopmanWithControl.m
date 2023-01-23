@@ -1,7 +1,7 @@
 %% [K, acc, ind, err] = KoopmanWithControl(observation, X, Y, x0, uData, eps)
-function [K, acc, ind, err] = KoopmanWithControl(observation, X, Y, x0, uData, eps)
+function [K, acc, ind, err] = KoopmanWithControl(observables, X, Y, x0, uData, eps)
     %% default variables
-    [~, meta] = observation(x0(:,1), uData(:,1));      % observables meta-data
+    [~, meta] = observables(x0(:,1), uData(:,1));      % observables meta-data
     Nk = meta.Nk;
 
     if nargin < 6
@@ -31,8 +31,8 @@ function [K, acc, ind, err] = KoopmanWithControl(observation, X, Y, x0, uData, e
             i = i + 1;
             j = j + 1;
 
-            PsiX(:,j) = observation(X(:,i), uData(:,i));
-            PsiY(:,j) = observation(Y(:,i), uData(:,i+1));
+            PsiX(:,j) = observables(X(:,i), uData(:,i));
+            PsiY(:,j) = observables(Y(:,i), uData(:,i+1));
 
         end
 

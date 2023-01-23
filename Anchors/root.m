@@ -41,7 +41,7 @@ u0 = [0;0];
 
 
 %% test system model
-T = 10;
+T = 5;
 tlist = 0:dt:10;
 Nt = length(tlist);
 
@@ -71,8 +71,58 @@ Yu = [xlist; ulist];
 Ku = Koopman(@(x)obsH(x), Xu, Yu, [x0;u0]);
 
 
+%% generate Kx
+Xxu = xlist(:,1:end-1);
+Yxu = xlist(:,2:end);
+[Kx, acc, ind, err] = KoopmanWithControl(@(x,u)obsXU(x,u), Xxu, Yxu, x0, ulist);
 
 
+%% create combined operator, K
+m = Nu;
+p = metaX.Nk;
+q = metaU.Nk;
+b = metaH.Nk;
+
+K = Kx*[
+    eye(p), zeros(p, m*q*b);
+    zeros(q, p), kron(vec(Ku(metaH.u,:))', eye(q))
+];
+
+
+%% comparison data
+x0 = 2*rand(Nx,1) - 1;
+
+xtest = NaN(Nx,Nt);
+utest = NaN(Nu,Nt);
+
+xtest(:,1) = x0;
+utest(:,end) = u0;
+
+for i = 1:Nt-1
+    utest(:,i) = Ku(metaH.u,:)*obsH([xtest(:,i);u0]);
+
+    Psi_xuh = K*obs(xtest(:,i));
+    xtest(:,i+1) = Psi_xuh(metaXU.x);
+end
+
+
+%% plot test results
+figure(1)
+subplot(2,2,1)
+    hold on
+    plot(tlist, xlist(1,:), 'b')
+    plot(tlist, xtest(1,:), '--r')
+    hold off
+subplot(2,2,2)
+    hold on
+    plot(tlist, xlist(2,:), 'b')
+    plot(tlist, xtest(2,:), '--r')
+    hold off
+subplot(2,1,2)
+    hold on
+    plot(tlist, ulist, 'b')
+    plot(tlist, utest, '--r')
+    hold off
 
 
 
