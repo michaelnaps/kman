@@ -1,12 +1,8 @@
-%% [K, acc, ind, err] = Koopman(observables, X, Y, x0, eps, depend)
-function [K, acc, ind, err] = Koopman(observables, X, Y, x0, eps, depend)
+%% [K, acc, ind, err] = Koopman(observables, X, Y, x0, eps)
+function [K, acc, ind, err] = Koopman(observables, X, Y, x0, eps)
     %% default variables
     [~, meta] = observables(x0(:,1));
     Nk = meta.Nk;
-
-    if nargin < 6
-        depend = ones(Nk,1);
-    end
 
     if nargin < 5
         eps = [];
@@ -74,7 +70,6 @@ function [K, acc, ind, err] = Koopman(observables, X, Y, x0, eps, depend)
     end
 
     ind = diag(S) > eps;
-    ind = abs(ind+depend-2) < TOL;
 
     U = U(:,ind);
     S = S(ind,ind);
