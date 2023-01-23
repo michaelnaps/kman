@@ -7,6 +7,6 @@ function [xn] = model(x, u, alpha)
     xn = x + alpha*[
         u(1);
         u(2)
-    ]';
+    ];
 
 end
