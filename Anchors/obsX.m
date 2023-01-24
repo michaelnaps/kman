@@ -1,5 +1,5 @@
-function [Psi_x, meta] = obsX(x)
-    Psi_x = [x; 1];
+function [PsiX, meta] = obsX(x)
+    PsiX = [x; 1];
 
     meta.x = 1:4;
     meta.c = 5;

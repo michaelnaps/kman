@@ -101,8 +101,8 @@ utest(:,end) = u0;
 for i = 1:Nt-1
     utest(:,i) = Ku(metaH.u,:)*obsH([xtest(:,i);u0]);
 
-    Psi_xuh = K*obs(xtest(:,i));
-    xtest(:,i+1) = Psi_xuh(metaXU.x);
+    Psi = K*obs(xtest(:,i));
+    xtest(:,i+1) = Psi(metaXU.x);
 end
 
 
