@@ -42,7 +42,7 @@ u0 = [0;0];
 
 %% test system model
 T = 5;
-tlist = 0:dt:10;
+tlist = 0:dt:T;
 Nt = length(tlist);
 
 xlist = NaN(Nx, Nt);
@@ -123,19 +123,3 @@ subplot(2,1,2)
     plot(tlist, ulist, 'b')
     plot(tlist, utest, '--r')
     hold off
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
