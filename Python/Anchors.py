@@ -101,7 +101,7 @@ if __name__ == "__main__":
     # establish initial conditions
     Nx = 4;
     Nu = 2;
-    x0 = np.array( [[0],[0],[0],[0]] );
+    x0 = np.array( [[-1],[1],[0],[0]] );
     u0 = np.array( [[0],[0]] );
 
 
@@ -135,3 +135,14 @@ if __name__ == "__main__":
     Yu = np.vstack( (xlist, ulist) );
 
     (Ku, err, ind) = KoopmanSolve(obsH, metaH.Nk, Xu, Yu, np.vstack( (x0,u0) ));
+
+    print(Ku)
+
+    # test on sim data
+    h = lambda x: obsH(np.vstack( (x, [[0],[0]]) ))[0];
+    Psi0 = h(x0);
+
+    print(Ku.shape);
+    print(Psi0.shape);
+    print(Ku@Psi0);
+    print(ulist[:,1])
