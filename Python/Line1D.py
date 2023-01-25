@@ -44,17 +44,14 @@ def obsXU(x, u):
     metaXU = MetaVariable(Nk);
     return (PsiXU, metaXU);
 
-def obsH(X):
+def obsH(x, u):
     Nx = 4;
     Nu = 2;
-    Nk = 6;
+    Nk = Nx + Nu + 1;
     metaH = MetaVariable(Nk);
 
-    x = X[0:Nx,:];
-    u = X[Nx:Nx+Nu,:];
-
     PsiH = np.zeros((Nk,1));
-    PsiH = np.vstack((x,u));
+    PsiH = np.vstack((x,u, [1]));
 
     return (PsiH, metaH);
 
@@ -62,4 +59,4 @@ if __name__ == "__main__":
     x = np.array([[1],[2],[0],[-1]]);
     u = np.array([[5],[2]]);
 
-    print(obsH(np.concatenate((x, u))))
+    print(obsH(x,u));
