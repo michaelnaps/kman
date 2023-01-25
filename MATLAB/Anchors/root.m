@@ -58,10 +58,12 @@ end
 
 
 %% get observable function meta-data
-[~, metaH] = obsH([x0;u0]);
 [~, metaX] = obsX(x0);
 [~, metaU] = obsU(x0);
-[~, metaXU] = obsXU(x0, u0);
+[~, metaXU] = obsXU(x0);
+[~, metaH] = obsH([x0;u0]);
+
+[~, meta] = obs(x0);
 
 
 %% generate Ku
@@ -74,7 +76,7 @@ Ku = Koopman(@(x)obsH(x), Xu, Yu, [x0;u0]);
 %% generate Kx
 Xxu = xlist(:,1:end-1);
 Yxu = xlist(:,2:end);
-[Kx, acc, ind, err] = KoopmanWithControl(@(x,u)obsXU(x,u), Xxu, Yxu, x0, ulist);
+[Kx, acc, ind, err] = Koopman(@(x)obsXU(x), Xxu, Yxu, x0);
 
 
 %% create combined operator, K
@@ -84,25 +86,24 @@ q = metaU.Nk;
 b = metaH.Nk;
 
 K = Kx*[
-    eye(p), zeros(p, m*q*b);
-    zeros(q, p), kron(vec(Ku(metaH.u,:))', eye(q))
+    eye(p), zeros(p, q*b);
+    zeros(q*b, p), kron(eye(q), Ku)
 ];
 
 
 %% comparison data
-x0 = 2*rand(Nx,1) - 1;
+% x0 = 2*rand(Nx,1) - 1;
 
-xtest = NaN(Nx,Nt);
+psitest = NaN(meta.Nk,Nt);
 utest = NaN(Nu,Nt);
 
-xtest(:,1) = x0;
+psitest(:,1) = obs(x0);
 utest(:,end) = u0;
 
 for i = 1:Nt-1
-    utest(:,i) = Ku(metaH.u,:)*obsH([xtest(:,i);u0]);
+    utest(:,i) = Ku(metaH.u,:)*obsH([psitest(1:4,i);u0]);
 
-    Psi = K*obs(xtest(:,i));
-    xtest(:,i+1) = Psi(metaXU.x);
+    psitest(:,i+1) = K*psitest(:,i);
 end
 
 
@@ -111,12 +112,12 @@ figure(1)
 subplot(2,2,1)
     hold on
     plot(tlist, xlist(1,:), 'b')
-    plot(tlist, xtest(1,:), '--r')
+    plot(tlist, psitest(1,:), '--r')
     hold off
 subplot(2,2,2)
     hold on
     plot(tlist, xlist(2,:), 'b')
-    plot(tlist, xtest(2,:), '--r')
+    plot(tlist, psitest(2,:), '--r')
     hold off
 subplot(2,1,2)
     hold on
