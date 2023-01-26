@@ -99,32 +99,28 @@ K = Kx*[
 %% comparison data
 % x0 = 2*rand(Nx,1) - 1;
 psitest = NaN(meta.Nk,Nt);
-utest = NaN(Nu,Nt);
 
 psitest(:,1) = obs(x0);
-utest(:,end) = u0;
 
 for i = 1:Nt-1
-    utest(:,i) = Ku(metaH.u,:)*obsH([psitest(1:4,i);u0]);
-
     psitest(:,i+1) = K*psitest(:,i);
 end
 
 
 %% plot test results
 figure(1)
-subplot(2,2,1)
+subplot(1,2,1)
     hold on
     plot(tlist, xlist(1,:), 'b')
     plot(tlist, psitest(1,:), '--r')
     hold off
-subplot(2,2,2)
+subplot(1,2,2)
     hold on
     plot(tlist, xlist(2,:), 'b')
     plot(tlist, psitest(2,:), '--r')
     hold off
-subplot(2,1,2)
-    hold on
-    plot(tlist, ulist, 'b')
-    plot(tlist, utest, '--r')
-    hold off
+% subplot(2,1,2)
+%     hold on
+%     plot(tlist, ulist, 'b')
+%     plot(tlist, psitest(1:2,:), '--r')
+%     hold off
