@@ -81,6 +81,7 @@ Ku = Koopman(@(x)obsH(x), Xu, Yu, [x0;u0]);
 %% generate Kx
 Xxu = xlist(:,1:end-1);
 Yxu = xlist(:,2:end);
+
 [Kx, acc, ind, err] = Koopman(@(x)obsXU(x), Xxu, Yxu, x0);
 
 
@@ -109,18 +110,18 @@ end
 
 %% plot test results
 figure(1)
-subplot(1,2,1)
+subplot(2,2,1)
     hold on
     plot(tlist, xlist(1,:), 'b')
     plot(tlist, psitest(1,:), '--r')
     hold off
-subplot(1,2,2)
+subplot(2,2,2)
     hold on
     plot(tlist, xlist(2,:), 'b')
     plot(tlist, psitest(2,:), '--r')
     hold off
-% subplot(2,1,2)
-%     hold on
-%     plot(tlist, ulist, 'b')
-%     plot(tlist, psitest(1:2,:), '--r')
-%     hold off
+subplot(2,1,2)
+    hold on
+    plot(tlist, ulist, 'b')
+    plot(tlist, psitest(meta.Uh1(metaU.uc),:), '--r')
+    hold off

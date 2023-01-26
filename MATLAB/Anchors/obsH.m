@@ -12,7 +12,6 @@ function [PsiH, metaH] = obsH(X)
     PsiH = [u; dist];
 
     metaH.u = 1:2;
-    metaH.a = 1:4 + metaH.u(end);
-    metaH.c = 1 + metaH.a(end);
-    metaH.Nk = 7 - 1;
+    metaH.a = (1:4) + metaH.u(end);
+    metaH.Nk = 6;
 end
