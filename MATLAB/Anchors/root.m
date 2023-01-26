@@ -120,8 +120,8 @@ subplot(2,2,2)
     plot(tlist, xlist(2,:), 'b')
     plot(tlist, psitest(2,:), '--r')
     hold off
-subplot(2,1,2)
-    hold on
-    plot(tlist, ulist, 'b')
-    plot(tlist, psitest(meta.Uh1(metaU.uc),:), '--r')
-    hold off
+% subplot(2,1,2)
+%     hold on
+%     plot(tlist, ulist, 'b')
+%     plot(tlist, psitest(meta.U1h(metaU.uc),:), '--r')
+%     hold off

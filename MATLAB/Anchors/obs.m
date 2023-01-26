@@ -9,7 +9,7 @@ function [Psi, meta] = obs(x)
 
     offset = metaX.Nk;
     for i = 1:metaH.Nk
-        meta.("Uh"+i) = (1:metaU.Nk) + offset;
+        meta.("U"+i+"h") = (1:metaU.Nk) + offset;
         offset = offset + metaU.Nk;
     end
 
