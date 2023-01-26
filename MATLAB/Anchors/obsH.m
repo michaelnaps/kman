@@ -9,11 +9,10 @@ function [PsiH, metaH] = obsH(X)
         dist(i) = (x(1:2) - anchors(i).x)'*(x(1:2) - anchors(i).x);
     end
 
-    PsiH = [u; x; dist; 1];
+    PsiH = [u; dist; 1];
 
     metaH.u = 1:2;
-    metaH.x = 3:6;
-    metaH.a = 7:10;
-    metaH.c = 11;
-    metaH.Nk = 11;
+    metaH.a = 1:4 + metaH.u(end);
+    metaH.c = 1 + metaH.a(end);
+    metaH.Nk = 7;
 end

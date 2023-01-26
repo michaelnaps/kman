@@ -18,7 +18,12 @@ A = [
     0, 0, 1-c, 0;
     0, 0, 0, 1-c;
 ];
-B = [0, 0; 0, 0; dt, 0; 0, dt];
+B = [
+    0, 0;
+    0, 0;
+    dt, 0;
+    0, dt
+];
 C = [
     10, 0, 2.5, 0;
     0, 10, 0, 2.5;
@@ -93,7 +98,6 @@ K = Kx*[
 
 %% comparison data
 % x0 = 2*rand(Nx,1) - 1;
-
 psitest = NaN(meta.Nk,Nt);
 utest = NaN(Nu,Nt);
 

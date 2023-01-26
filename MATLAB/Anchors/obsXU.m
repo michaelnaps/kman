@@ -12,5 +12,5 @@ function [PsiXU, metaXU] = obsXU(x)
         metaXU.(labels{i}) = metaU.(labels{i}) + metaXU.Nk;
     end
 
-    metaXU.Nk = metaX.Nk*(1 + metaH.Nk);
+    metaXU.Nk = metaX.Nk + metaU.Nk*metaH.Nk;
 end
