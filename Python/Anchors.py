@@ -113,6 +113,8 @@ if __name__ == "__main__":
     xlist = np.zeros( (Nx,Nt) );
     ulist = np.zeros( (Nu,Nt) );
 
+    xlist[:,0] = x0.reshape(Nx,);
+
     for i in range(Nt-1):
         uNew = control(xlist[:,i]);
         ulist[:,i+1] = uNew.reshape(Nu,)
@@ -120,7 +122,7 @@ if __name__ == "__main__":
         xNew = model(xlist[:,i], ulist[:,i+1]);
         xlist[:,i+1] = xNew.reshape(Nx,)
 
-    plot(tlist, xlist, ulist);
+    # plot(tlist, xlist, ulist);
 
 
     # get observable function meta-data
@@ -139,10 +141,17 @@ if __name__ == "__main__":
     print(Ku)
 
     # test on sim data
-    h = lambda x: obsH(np.vstack( (x, [[0],[0]]) ))[0];
-    Psi0 = h(x0);
+    h = lambda x: obsH(np.vstack( (x, u0) ))[0];
 
-    print(Ku.shape);
-    print(Psi0.shape);
-    print(Ku@Psi0);
-    print(ulist[:,1])
+    xtest = np.zeros( (Nx,Nt) );
+    xtest[:,0] = x0.reshape(Nx,);
+
+    for i in range(Nt-1):
+        PsiNew = Ku @ h(xtest[:,i].reshape(Nx,1));
+        ulist[:,i+1] = PsiNew[0:2].reshape(Nu,);
+
+        xNew = model(xlist[:,i], ulist[:,i+1]);
+        xtest[:,i+1] = xNew.reshape(Nx,)
+
+    plot(tlist, xlist, xtest);
+    plt.show()
