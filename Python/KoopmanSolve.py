@@ -68,3 +68,31 @@ def KoopmanSolve(observables, Nk, X, Y, x0, U=None, meta=None, eps=None):
         err += np.linalg.norm(PsiY[:,n] - K@PsiX[:,n]);
 
     return (K, err, ind);
+
+
+def generate_data(model, tlist, x0, control=None, Nu=None):
+    Nx = len(x0);
+    N0 = len(x0[0]);
+    Nt = len(tlist);
+
+    if Nu is None:
+        Nu = Nx;
+
+    xlist = np.zeros( (N0*Nx, Nt) );
+
+    n = 0;
+    k = 0;
+    for i in range(N0):
+
+        x = np.zeros( (Nx, Nt) );
+        x[:,0] = x0[:,i];
+
+        for t in range(Nt-1):
+            if control is not None:
+                x[:,t+1] = model(x[0:Nx,t], control(x[0:Nt,t])).reshape(Nx,);
+
+        xlist[n:n+Nx,:] = x;
+        n = n + Nx;
+        k = k + Nu;
+
+    return xlist;
