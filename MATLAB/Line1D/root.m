@@ -3,13 +3,13 @@ clean;
 
 set(groot, 'DefaultLineLineWidth', 1.5);
 
-addpath /home/michaelnaps/prog/kman/KoopFunctions
-addpath /home/michaelnaps/prog/kman/DataFunctions
+addpath /home/michaelnaps/prog/kman/MATLAB/KoopFunctions
+addpath /home/michaelnaps/prog/kman/MATLAB/DataFunctions
 
 
 %% create model/control equations
 dt = 0.1;
-xg = [1; 0];
+xg = [0; 0];
 
 A = [1, dt; 0, dt];
 B = [0; dt];
@@ -20,7 +20,7 @@ control = @(x) C*(xg - x);
 
 
 %% initial state
-x0 = [0; 0];
+x0 = 10*rand(2,1) - 5;
 
 
 %% test run
@@ -51,21 +51,33 @@ end
 
 
 %% generate Ku
-h = @(x) obs_h(x);
+% h = @(x) obs_h(x);
+% 
+% Xu = [xlist; zeros(1,length(xlist))];
+% Yu = [xlist; ulist];
+% 
+% Ku = Koopman(h, Xu, Yu, [x0;0]);
 
-Xu = [xlist; zeros(1,length(xlist))];
-Yu = [xlist; ulist];
-
-Ku = Koopman(h, Xu, Yu, [x0;0]);
+Ku = [
+      1,    0, 0;
+      0,    1, 0;
+    -10, -2.5, 0;
+];
 
 % set obs_h to only take x in R(2)
 h = @(x) obs_h([x;0]);
 
 
 %% generate Kx
-Xxu = xlist(:,1:end-1);
-Yxu = xlist(:,2:end);
-[Kx, acc, ind, err] = KoopmanWithControl(@(x,u)obs_xu(x,u), Xxu, Yxu, x0, ulist);
+% Xxu = xlist(:,1:end-1);
+% Yxu = xlist(:,2:end);
+% Kx = KoopmanWithControl(@(x,u)obs_xu(x,u), Xxu, Yxu, x0, ulist);
+
+Kx = [
+    1, dt, 0;
+    0, dt, dt;
+    0, 0, 1
+];
 
 
 %% create combined operator, K
@@ -103,16 +115,19 @@ subplot(2,2,1)
     hold on
     plot(tlist, xlist(1,:), 'b')
     plot(tlist, xtest(1,:), '--r')
+    title("x1")
     hold off
 subplot(2,2,2)
     hold on
     plot(tlist, xlist(2,:), 'b')
     plot(tlist, xtest(2,:), '--r')
+    title("x2")
     hold off
 subplot(2,1,2)
     hold on
     plot(tlist, ulist, 'b')
     plot(tlist, utest, '--r')
+    title("u")
     hold off
 
 
