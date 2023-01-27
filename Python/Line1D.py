@@ -4,19 +4,24 @@ import matplotlib.pyplot as plt
 from KoopmanSolve import *
 
 def obsX(x):
-    return x;
+    PsiX = x;
+    Nk = len(x);
+    return PsiX, Nk;
 
 def obsU(x):
-    return obsX(x);
+    PsiU, Nk = obsX(x);
+    return PsiU, Nk;
 
 def obsXU(X):
     x = X[0:2].reshape(2,1);
     u = X[2];
 
-    PsiX = obsX(x);
-    PsiU = obsU(x);
+    PsiX, NX = obsX(x);
+    PsiU, NU = obsU(x);
 
-    return np.vstack( (PsiX, np.kron(PsiU, u)) );
+    PsiXU = np.vstack( (PsiX, np.kron(PsiU, u)) );
+
+    return PsiXU, NX+NU;
 
 def plot(tlist, xlist):
     fig, ax = plt.subplots();
@@ -27,7 +32,7 @@ if __name__ == "__main__":
     Nx = 2;
     Nu = 1;
     x0 = np.array( [[1],[1]] );
-    u0 = np.array( [0] );
+    u0 = np.array( 0 );
 
     # model equations
     xg = np.array( [[0],[0]] );
@@ -69,10 +74,17 @@ if __name__ == "__main__":
     # plt.show()
 
     # create large data set
-    N0 = 10;
+    N0 = 1;
     X0 = 10*np.random.rand( Nx, N0 ) - 5;
     xdata = generate_data(model, tlist, X0, control, Nu);
     xtrain = stack_data(xdata, N0, Nx, Nt);
 
     # solve for Kx
-    # X = xtrain[:,]
+    Ux = np.array([control(xlist[:,i])[0][0] for i in range(Nt-1)]);
+    Ux = np.hstack( (u0, Ux) );
+
+    Xx = np.vstack( (xtrain[:,:Nt-1], Ux[:Nt-1]) );
+    Yx = np.vstack( (xtrain[:,1:Nt],  Ux[1:Nt]) );
+
+    _, Nk = obsXU(np.vstack( (x0, u0) ));
+    Kx = KoopmanSolve(obsXU, Nk, Xx, Yx, np.vstack( (x0, u0) ))[0];
