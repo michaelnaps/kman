@@ -74,17 +74,21 @@ if __name__ == "__main__":
     # plt.show()
 
     # create large data set
-    N0 = 1;
+    N0 = 10;
     X0 = 10*np.random.rand( Nx, N0 ) - 5;
     xdata = generate_data(model, tlist, X0, control, Nu);
     xtrain = stack_data(xdata, N0, Nx, Nt);
 
     # solve for Kx
-    Ux = np.array([control(xlist[:,i])[0][0] for i in range(Nt-1)]);
+    Ux = np.array( [control(xlist[:,i])[0][0] for i in range(Nt-1)] );
     Ux = np.hstack( (u0, Ux) );
 
     Xx = np.vstack( (xtrain[:,:Nt-1], Ux[:Nt-1]) );
     Yx = np.vstack( (xtrain[:,1:Nt],  Ux[1:Nt]) );
 
     _, Nk = obsXU(np.vstack( (x0, u0) ));
-    Kx = KoopmanSolve(obsXU, Nk, Xx, Yx, np.vstack( (x0, u0) ))[0];
+    Kx, err, ind = KoopmanSolve(obsXU, Nk, Xx, Yx, np.vstack( (x0, u0) ));
+
+    print(err);
+    print(ind);
+    print(Kx);
