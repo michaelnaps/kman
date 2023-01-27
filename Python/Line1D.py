@@ -1,36 +1,48 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from KoopmanSolve import *
+from KoopmanFunctions import *
 
 
-def obsX(x):
+def obsX(x=None):
+    if x is None:
+        Nk = 2;
+        return Nk;
+
     PsiX = x;
-    Nk = len(x);
-    return PsiX, Nk;
+    return PsiX;
 
-def obsU(x):
+def obsU(x=None):
+    if x is None:
+        Nk = 1;
+        return Nk;
+
     PsiU = [[1]];
-    Nk = 1;
-    return PsiU, Nk;
+    return PsiU;
 
-def obsXU(X):
+def obsXU(X=None):
+    if X is None:
+        Nk = obsX() + obsU()*obsH();
+        return Nk;
+
     x = X[0:2].reshape(2,1);
     u = X[2];
 
-    PsiX, NX = obsX(x);
-    PsiU, NU = obsU(x);
-    PsiH, NH = obsH(X);
+    PsiX = obsX(x);
+    PsiU = obsU(x);
+    PsiH = obsH(X);
 
     PsiXU = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
-    Nk = NX + NU*NH;
 
-    return PsiXU, Nk;
+    return PsiXU;
 
-def obsH(X):
+def obsH(X=None):
+    if X is None:
+        Nk = 3;
+        return Nk;
+
     PsiH = X;
-    Nk = len(X);
-    return PsiH, Nk;
+    return PsiH;
 
 
 def plot(tlist, xlist):
@@ -80,8 +92,8 @@ if __name__ == "__main__":
     Xu = np.vstack( (xlist, np.zeros( (Nu, Nt) )) );
     Yu = np.vstack( (xlist, ulist) )
 
-    _, Nk = obsH(xu0);
-    Ku, _, _ = KoopmanSolve(obsH, Nk, Xu, Yu, xu0)
+    NkH = obsH();
+    Ku, _, _ = KoopmanSolve(obsH, NkH, Xu, Yu, xu0)
 
     print(Ku);
 
@@ -98,8 +110,8 @@ if __name__ == "__main__":
     Xx = np.vstack( (xtrain[:,:Nt-1], utrain[:,:Nt-1]) );
     Yx = np.vstack( (xtrain[:,1:Nt],  utrain[:,1:Nt]) );
 
-    _, Nk = obsXU(np.vstack( (x0, u0) ));
-    Kx, err, ind = KoopmanSolve(obsXU, Nk, Xx, Yx, xu0);
+    NkXU = obsXU();
+    Kx, err, ind = KoopmanSolve(obsXU, NkXU, Xx, Yx, xu0);
 
     print(err);
     print(ind);
@@ -109,12 +121,13 @@ if __name__ == "__main__":
     # generate the cumulative operator
     # K = Kx*[I in (p x p), 0 in (p x mq); 0 in (mq x p), kron(Ku, I in q)]
     m = Nu;
-    _, p = obsX(x0);
-    _, q = obsU(x0);
-    _, b = obsH(np.vstack( (x0, u0) ));
-
+    p = obsX();
+    q = obsU();
+    b = NkH;
 
     top = np.hstack( (np.eye(p), np.zeros( (p, b*q) )) );
     bot = np.hstack( (np.zeros( (b*q, p) ), np.kron(Ku, np.eye(q))) );
 
     K = Kx @ np.vstack( (top, bot) );
+
+    print(K)

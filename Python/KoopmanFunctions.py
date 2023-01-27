@@ -1,6 +1,23 @@
 import numpy as np
 
-def KoopmanSolve(observables, Nk, X, Y, x0, U=None, meta=None, eps=None):
+class KoopmanOperator:
+    def __init__(self, model, observables, control=None):
+        # function parameters
+        self.model = model;
+        self.obs = observables;
+        self.control = control;
+
+        # Koopman parameters
+        self.K = None;
+        self.Nk = self.obs();
+        self.eps = None;
+
+        # data parameters
+        self.X = None;
+        self.Y = None;
+        self.X0 = None;
+
+def KoopmanSolve(observables, Nk, X, Y, x0, U=None, eps=None):
     # tolerance variable
     TOL = 1e-12;
 
@@ -20,8 +37,8 @@ def KoopmanSolve(observables, Nk, X, Y, x0, U=None, meta=None, eps=None):
         for m in range(Mx-1):
 
             if U is None:
-                (PsiX_new, _) = observables(X[:,i].reshape(N,1));
-                (PsiY_new, _) = observables(Y[:,i].reshape(N,1));
+                PsiX_new = observables(X[:,i].reshape(N,1));
+                PsiY_new = observables(Y[:,i].reshape(N,1));
 
                 PsiX[:,j] = PsiX_new.reshape(Nk,);
                 PsiY[:,j] = PsiY_new.reshape(Nk,);
