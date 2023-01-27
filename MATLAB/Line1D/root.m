@@ -59,9 +59,8 @@ end
 % Ku = Koopman(h, Xu, Yu, [x0;0]);
 
 Ku = [
-      1,    0, 0;
-      0,    1, 0;
-    -10, -2.5, 0;
+    eye(2,3);
+    -C, 0;
 ];
 
 % set obs_h to only take x in R(2)
@@ -74,9 +73,8 @@ h = @(x) obs_h([x;0]);
 % Kx = KoopmanWithControl(@(x,u)obs_xu(x,u), Xxu, Yxu, x0, ulist);
 
 Kx = [
-    1, dt, 0;
-    0, dt, dt;
-    0, 0, 1
+    A, B;
+    0,0,1;
 ];
 
 
