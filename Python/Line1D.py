@@ -71,6 +71,8 @@ if __name__ == "__main__":
     # create large data set
     N0 = 10;
     X0 = 10*np.random.rand( Nx, N0 ) - 5;
-    xtrain = generate_data(model, tlist, X0, control, Nu);
+    xdata = generate_data(model, tlist, X0, control, Nu);
+    xtrain = stack_data(xdata, N0, Nx, Nt);
 
-    print(xtrain);
+    # solve for Kx
+    # X = xtrain[:,]

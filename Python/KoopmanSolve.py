@@ -69,7 +69,6 @@ def KoopmanSolve(observables, Nk, X, Y, x0, U=None, meta=None, eps=None):
 
     return (K, err, ind);
 
-
 def generate_data(model, tlist, x0, control=None, Nu=None):
     Nx = len(x0);
     N0 = len(x0[0]);
@@ -96,3 +95,15 @@ def generate_data(model, tlist, x0, control=None, Nu=None):
         k = k + Nu;
 
     return xlist;
+
+def stack_data(data, N0, Nx, Nt):
+    x = np.zeros( (Nx, N0*Nt) );
+
+    k = 0;
+    t = 0;
+    for i in range(N0):
+        x[:,t:t+Nt] = data[k:k+Nx,:];
+        k += Nx;
+        t += Nt;
+
+    return x;
