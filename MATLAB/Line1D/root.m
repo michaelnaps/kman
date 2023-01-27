@@ -91,7 +91,7 @@ K = Kx*[
 
 
 %% comparison data
-x0 = 4*rand(2,1)-2;
+% x0 = 4*rand(2,1)-2;
 
 utest = NaN(1,N+1);
 xtest = NaN(2,N+1);
