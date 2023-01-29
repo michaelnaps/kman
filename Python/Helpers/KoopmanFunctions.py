@@ -14,7 +14,7 @@ class KoopmanOperator:
         self.err = None;
         self.ind = None;
 
-    def edmd(self, X, Y, x0, eps=None):
+    def edmd(self, X, Y, X0, eps=None):
         # tolerance variable
         TOL = 1e-12;
 
@@ -23,8 +23,8 @@ class KoopmanOperator:
         Nk = self.Nk;
 
         # evaluate for observable functions over X and Y
-        Nx = len(x0);
-        N0 = len(x0[0]);
+        Nx = len(X0);
+        N0 = len(X0[0]);
         Mx = round(len(X[0])/N0);
 
         PsiX = np.ones( (Nk, N0*(Mx-1)) );
