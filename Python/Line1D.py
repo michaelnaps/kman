@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from KoopmanFunctions import *
+from DataFunctions import *
 
 
 def obsX(x=None):
@@ -92,10 +93,12 @@ if __name__ == "__main__":
     Xu = np.vstack( (xlist, np.zeros( (Nu, Nt) )) );
     Yu = np.vstack( (xlist, ulist) )
 
-    NkH = obsH();
-    Ku, _, _ = KoopmanSolve(obsH, NkH, Xu, Yu, xu0)
+    Ku_var = KoopmanOperator(obsH)
 
-    print(Ku);
+    NkH = Ku_var.Nk;
+    Ku = Ku_var.edmd(Xu, Yu, xu0)
+
+    print('Ku\n', Ku, '\n\n');
 
 
     # create large data set for Ku and Kx solution
@@ -110,12 +113,14 @@ if __name__ == "__main__":
     Xx = np.vstack( (xtrain[:,:Nt-1], utrain[:,:Nt-1]) );
     Yx = np.vstack( (xtrain[:,1:Nt],  utrain[:,1:Nt]) );
 
-    NkXU = obsXU();
-    Kx, err, ind = KoopmanSolve(obsXU, NkXU, Xx, Yx, xu0);
+    Kx_var = KoopmanOperator(obsXU)
 
-    print(err);
-    print(ind);
-    print(Kx);
+    NkXU = Kx_var.Nk;
+    Kx = Kx_var.edmd(Xx, Yx, xu0);
+
+    print('Kx\n', Kx_var.err);
+    print(Kx_var.ind);
+    print(Kx, '\n\n');
 
 
     # generate the cumulative operator
@@ -130,4 +135,4 @@ if __name__ == "__main__":
 
     K = Kx @ np.vstack( (top, bot) );
 
-    print(K)
+    print('K', K, '\n\n')
