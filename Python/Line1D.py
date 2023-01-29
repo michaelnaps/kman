@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from KoopmanFunctions import *
-from DataFunctions import *
+from Helpers.KoopmanFunctions import *
+from Helpers.DataFunctions import *
 
 
 def obsX(x=None):
