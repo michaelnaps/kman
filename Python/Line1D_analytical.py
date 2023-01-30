@@ -42,7 +42,11 @@ def obsH(X=None):
         Nk = 3;
         return Nk;
 
-    PsiH = X;
+    # switch order
+    x = X[:2].reshape(2,1);
+    u = X[2];
+
+    PsiH = np.vstack( (u, x) );
     return PsiH;
 
 
@@ -98,8 +102,8 @@ if __name__ == "__main__":
     # analytically construct Ku
     NkH = obsH();
     Ku = np.vstack( (
-        np.hstack( (np.eye(2,2), [[0],[0.1]]) ),
-        np.hstack( (-C, [[0]]) )
+        np.hstack( ([[0]], -C) ),
+        np.hstack( ([[0],[0]], np.eye(2)) )
     ) );
 
     print('Ku\n', Ku, '\n');
@@ -108,7 +112,7 @@ if __name__ == "__main__":
     NkXU = obsXU();
 
     Kx = np.vstack( (
-        np.hstack( (A, [[0,0], [0,0]], B) ),
+        np.hstack( (A, B, [[0,0], [0,0]]) ),
         np.hstack( (np.zeros( (3,2) ), np.eye( 3 )) )
     ) );
 
@@ -143,7 +147,6 @@ if __name__ == "__main__":
 
         psitest[:,i+1] = Psi_n.reshape(NkH,)
         xmodel[:,i+1] = model(xmodel[:,i], Psi_n[2]).reshape(Nx,);
-
 
     plot(tlist, xlist, psitest)
     plt.show()
