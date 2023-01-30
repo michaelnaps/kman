@@ -97,7 +97,10 @@ if __name__ == "__main__":
 
     # analytically construct Ku
     NkH = obsH();
-    Ku = np.vstack( (np.eye(2,3), np.hstack( (-C, [[0]]) )) );
+    Ku = np.vstack( (
+        np.hstack( (np.eye(2,2), [[0],[0.1]]) ),
+        np.hstack( (-C, [[0]]) )
+    ) );
 
     print('Ku\n', Ku, '\n');
 
@@ -105,7 +108,7 @@ if __name__ == "__main__":
     NkXU = obsXU();
 
     Kx = np.vstack( (
-        np.hstack( (A, B, [[0,0], [0,0]]) ),
+        np.hstack( (A, [[0,0], [0,0]], B) ),
         np.hstack( (np.zeros( (3,2) ), np.eye( 3 )) )
     ) );
 
@@ -124,7 +127,7 @@ if __name__ == "__main__":
 
     K = Kx @ np.vstack( (top, bot) );
 
-    print('K', K, '\n\n')
+    print('K\n', K, '\n')
 
 
     # test input-specific operator
@@ -146,4 +149,13 @@ if __name__ == "__main__":
     plt.show()
 
 
-    # test state-specific operator
+    # test cumulative operator
+    psilist = np.zeros( (NkXU, Nt) );
+    psilist[:,0] = obsXU( np.vstack( (x0,u0) ) ).reshape(NkXU,);
+
+    for i in range(Nt-1):
+        Psi_n = K @ psilist[:,i].reshape(NkXU,1);
+        psilist[:,i+1] = Psi_n.reshape(NkXU,);
+
+    plot(tlist, xlist, psilist);
+    plt.show();
