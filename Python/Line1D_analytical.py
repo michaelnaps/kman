@@ -66,7 +66,7 @@ if __name__ == "__main__":
     u0 = np.array( [[0]] );
 
     # model equations
-    xg = np.array( [[1],[0]] );
+    xg = np.array( [[0],[0]] );
     dt = 0.1;
     A = np.array( [[1, dt], [0, 1]] );
     B = np.array( [[0], [dt]] );
@@ -76,7 +76,7 @@ if __name__ == "__main__":
     control = lambda x: C @ (xg.reshape(Nx,1) - x.reshape(Nx,1));
 
 
-    # simulate model and control
+    # simulate model and control (for comparisons)
     T = 5;
     Nt = round(T/dt) + 1;
     tlist = np.array([i*dt for i in range(Nt)]);
@@ -95,58 +95,21 @@ if __name__ == "__main__":
         xlist[:,i+1] = xNew.reshape(Nx,);
 
 
-    # solve for Ku
-    xu0 = np.vstack( (x0, u0) );
-    Xu = np.vstack( (xlist, np.zeros( (Nu, Nt) )) );
-    Yu = np.vstack( (xlist, ulist) )
-
-    Ku_var = KoopmanOperator(obsH)
-
-    NkH = Ku_var.Nk;
-    Ku = Ku_var.edmd(Xu, Yu, xu0)
+    # analytically construct Ku
+    NkH = obsH();
+    Ku = np.vstack( (np.eye(2,3), np.hstack( (-C, [[0]]) )) );
 
     print('Ku\n', Ku, '\n');
 
+    # intialize and construct Kx
+    NkXU = obsXU();
 
-    # create large data set for Ku and Kx solution
-    # NOTE: this structure for data leads to correlation between x+ and x
-    #   as opposed to desired correlation with u
-    #   --> (in future use randomly generated inputs)
-    zero_control = lambda x: np.zeros( (Nu,1) );
-    rand_control = lambda x: np.random.rand( Nu,1 );
-
-    N0 = 1;
-    X0 = 10*np.random.rand( Nx, N0 ) - 5;
-    xtrain1, utrain1 = generate_data(tlist, model, X0, zero_control, u0);
-    xtrain2, utrain2 = generate_data(tlist, model, X0, rand_control, u0);
-
-    xtrain = stack_data(np.vstack( (xtrain1, xtrain2) ), 2*N0, Nx, Nt);
-    utrain = stack_data(np.vstack( (utrain1, utrain2) ), 2*N0, Nu, Nt);
-
-
-    # solve for Kx
-    Xx = np.vstack( (xtrain[:,:Nt-1], utrain[:,:Nt-1]) );
-    Yx = np.vstack( (xtrain[:,1:Nt],  utrain[:,1:Nt]) );
-
-    Kx_var = KoopmanOperator(obsXU)
-
-    NkXU = Kx_var.Nk;
-    Kx = Kx_var.edmd(Xx, Yx, np.vstack( (x0, u0) ));
-
-    # NkXU = obsXU();
-    #
-    # # analytically construct Kx
-    # Kx = np.vstack( (
-    #     np.hstack( (A, B, [[0,0], [0,0]]) ),
-    #     [[0,0,1,0,0],
-    #      [0,0,0,1,0],
-    #      [0,0,0,0,1]]
-    # ) );
+    Kx = np.vstack( (
+        np.hstack( (A, B, [[0,0], [0,0]]) ),
+        np.hstack( (np.zeros( (3,2) ), np.eye( 3 )) )
+    ) );
 
     print('Kx\n', Kx, '\n');
-
-    print(Kx.shape);
-    print(NkXU);
 
 
     # generate the cumulative operator
@@ -165,19 +128,22 @@ if __name__ == "__main__":
 
 
     # test input-specific operator
-    xtest = np.zeros( (Nx, Nt) );
-    xtest[:,0] = x0.reshape(Nx,);
+    xmodel = np.zeros( (Nx, Nt) );
+    xmodel[:,0] = x0.reshape(Nx,);
 
     psitest = np.zeros( (NkH, Nt) );
     psitest[:,0] = obsH(np.vstack( (x0, u0) )).reshape(NkH,);
 
     for i in range(Nt-1):
-        Psi_c = obsH(np.vstack((xtest[:,i].reshape(Nx,1), u0)));
+        Psi_c = obsH(np.vstack((xmodel[:,i].reshape(Nx,1), u0)));
         Psi_n = Ku @ Psi_c;
 
         psitest[:,i+1] = Psi_n.reshape(NkH,)
-        xtest[:,i+1] = model(xtest[:,i], Psi_n[2]).reshape(Nx,);
+        xmodel[:,i+1] = model(xmodel[:,i], Psi_n[2]).reshape(Nx,);
 
 
     plot(tlist, xlist, psitest)
     plt.show()
+
+
+    # test state-specific operator
