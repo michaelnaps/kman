@@ -55,6 +55,9 @@ Xxu = xlist(:,1:end-1);
 Yxu = xlist(:,2:end);
 Kx = KoopmanWithControl(@(x,u)obs_xu(x,u), Xxu, Yxu, x0, ulist);
 
+disp("Kx");
+disp(Kx);
+
 
 %% generate Ku
 h = @(x) obs_h(x);
@@ -63,6 +66,9 @@ Xu = [xlist; zeros(1,length(xlist))];
 Yu = [xlist; ulist];
 
 Ku = Koopman(h, Xu, Yu, [x0;0]);
+
+disp("Ku");
+disp(Ku);
 
 % set obs_h to only take x in R(2)
 h = @(x) obs_h([x;0]);
@@ -76,8 +82,11 @@ b = metaH.Nk;
 
 K = Kx*[
     eye(p), zeros(p, m*q*b);
-    zeros(q, p), kron(vec(Ku(metaH.u,:))', eye(q))
+    zeros(q, p), kron(eye(q), Ku(metaH.u,:))
 ];
+
+disp("K");
+disp(K);
 
 
 %% comparison data
