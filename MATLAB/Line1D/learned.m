@@ -11,6 +11,9 @@ addpath /home/michaelnaps/prog/kman/MATLAB/DataFunctions
 dt = 0.1;
 xg = [0; 0];
 
+Nx = 2;
+Nu = 1;
+
 A = [1, dt; 0, dt];
 B = [0; dt];
 C = [10, 2.5];
@@ -20,22 +23,22 @@ control = @(x) C*(xg - x);
 
 
 %% initial state
-x0 = 10*rand(2,1) - 5;
+x0 = 10*rand(Nx,1) - 5;
 
 
 %% test run
 T = 10;
-N = round(T/dt);
+Nt = round(T/dt)+1;
 
-tlist = NaN(1,N+1);
-ulist = NaN(1,N+1);
-xlist = NaN(2,N+1);
+tlist = NaN(1,Nt);
+ulist = NaN(Nu,Nt);
+xlist = NaN(Nx,Nt);
 
 tlist(1) = 0;
 ulist(:,end) = 0;
 xlist(:,1) = x0;
 
-for i = 1:N
+for i = 1:Nt-1
     tlist(i+1) = i*dt;
     ulist(i) = control(xlist(:,i));
     xlist(:,i+1) = model(xlist(:,i), ulist(i));
@@ -57,7 +60,6 @@ Kx = KoopmanWithControl(@(x,u)obs_xu(x,u), Xxu, Yxu, x0, ulist);
 
 disp("Kx");
 disp(Kx);
-
 
 %% generate Ku
 h = @(x) obs_h(x);
@@ -81,8 +83,8 @@ q = metaU.Nk;
 b = metaH.Nk;
 
 K = Kx*[
-    eye(p), zeros(p, m*q*b);
-    zeros(q, p), kron(eye(q), Ku(metaH.u,:))
+    eye(p), zeros(p, q*b);
+    zeros(q*b, p), kron(eye(q), Ku)
 ];
 
 disp("K");
@@ -90,19 +92,21 @@ disp(K);
 
 
 %% comparison data
-% x0 = 4*rand(2,1)-2;
+x0 = 4*rand(Nx,1) - 2;
 
-utest = NaN(1,N+1);
-xtest = NaN(2,N+1);
+utest = NaN(1,Nt);
+xtest = NaN(2,Nt);
+psitest = NaN(meta.Nk,Nt);
 
 utest(end) = 0;
 xtest(:,1) = x0;
+psitest(:,1) = obs(x0);
 
-for i = 1:N
-    utest(i) = Ku(metaH.u,:)*h(xtest(:,i));
+for i = 1:Nt-1
+    utest(i) = Ku(metaH.uh,:)*h(xtest(:,i));
 
-    Psi_xuh = K*obs(xtest(:,i));
-    xtest(:,i+1) = Psi_xuh(metaXU.x);
+    psitest(:,i+1) = K*psitest(:,i);
+    xtest(:,i+1) = psitest(metaXU.x,i+1);
 end
 
 

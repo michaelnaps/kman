@@ -1,11 +1,16 @@
 function [Psi_xu, meta] = obs_xu(x, u)  
-    [Psi_x, meta] = obs_x(x);
+    [Psi_x, meta_x] = obs_x(x);
     [Psi_u, meta_u] = obs_u(x);
+    [Psi_h, meta_h] = obs_h([x;u]);
 
-    Psi_xu = [Psi_x; kron(Psi_u, u)];
+    Psi_xu = [Psi_x; kron(Psi_u, Psi_h)];
 
-    labels = fieldnames(meta_u);
-    for i = 1:length(labels)
-        meta.(labels{i}) = meta_u.(labels{i}) + meta.Nk;
+    meta = meta_x;
+
+    labels_h = fieldnames(meta_h);
+    for i = 1:length(labels_h)
+        meta_x.(labels_h{i}) = meta_h.(labels_h{i}) + meta_x.Nk;
     end
+    
+    meta.Nk = meta.Nk + meta_u.Nk*meta_h.Nk;
 end
