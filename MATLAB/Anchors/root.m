@@ -101,11 +101,10 @@ K = Kx*[
 % x0 = 2*rand(Nx,1) - 1;
 psitest = NaN(meta.Nk,Nt);
 
-psitest(:,1) = obs(x0);
+psitest(:,1) = obsXU(x0);
 
 for i = 1:Nt-1
-
-    psitest(:,i+1) = K*psitest(:,i);
+    psitest(:,i+1) = Kx*psitest(:,i);
 end
 
 
@@ -121,10 +120,10 @@ subplot(2,1,2)
     plot(tlist, xlist(2,:), 'b')
     plot(tlist, psitest(2,:), '--r')
     hold off
-subplot(2,1,2)
-    hold on
-    plot(tlist, ulist, 'b')
-    plot(tlist,...
-        [psitest(meta.U2h(4),:);  ],...
-        '--r')
-    hold off
+% subplot(2,1,2)
+%     hold on
+%     plot(tlist, ulist, 'b')
+% %     plot(tlist,...
+% %         [psitest(meta.U2h(4),:);  ],...
+% %         '--r')
+%     hold off

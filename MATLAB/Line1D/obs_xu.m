@@ -1,7 +1,9 @@
-function [Psi_xu, meta] = obs_xu(x, u)  
+function [Psi_xu, meta] = obs_xu(X)  
+    x = X(1:2);  u = X(3);
+
     [Psi_x, meta_x] = obs_x(x);
     [Psi_u, meta_u] = obs_u(x);
-    [Psi_h, meta_h] = obs_h([x;u]);
+    [Psi_h, meta_h] = obs_h(X);
 
     Psi_xu = [Psi_x; kron(Psi_u, Psi_h)];
 

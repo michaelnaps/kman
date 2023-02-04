@@ -45,18 +45,32 @@ for i = 1:Nt-1
 end
 
 
+%% generate constant data
+uconst = -3;
+
+tconst = tlist;
+uconst = kron(ones(1,Nt), uconst);
+xconst = NaN(Nx,Nt);
+
+xconst(:,1) = x0;
+
+for i = 1:Nt-1
+    xconst(:,i+1) = model(xlist(:,i), uconst(i));
+end
+
+
 %% meta data
 [~, metaX] = obs_x(x0);
 [~, metaU] = obs_u(x0);
-[~, metaXU] = obs_xu(x0, 0);
+[~, metaXU] = obs_xu([x0;0]);
 [~, metaH] = obs_h([x0;0]);
 [~, meta] = obs(x0);
 
 
 %% generate Kx
-Xxu = xlist(:,1:end-1);
-Yxu = xlist(:,2:end);
-Kx = KoopmanWithControl(@(x,u)obs_xu(x,u), Xxu, Yxu, x0, ulist);
+Xxu = [xconst(:,1:end-1); uconst(1:end-1)];
+Yxu = [xconst(:,2:end); uconst(2:end)];
+Kx = Koopman(@(X)obs_xu(X), Xxu, Yxu, [x0;0]);
 
 disp("Kx");
 disp(Kx);
@@ -100,12 +114,12 @@ psitest = NaN(meta.Nk,Nt);
 
 utest(end) = 0;
 xtest(:,1) = x0;
-psitest(:,1) = obs(x0);
+psitest(:,1) = obs_xu([x0;0]);
 
 for i = 1:Nt-1
     utest(i) = Ku(metaH.uh,:)*h(xtest(:,i));
 
-    psitest(:,i+1) = K*psitest(:,i);
+    psitest(:,i+1) = Kx*psitest(:,i);
     xtest(:,i+1) = psitest(metaXU.x,i+1);
 end
 
