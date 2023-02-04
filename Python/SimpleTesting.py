@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt
 import Helpers.KoopmanFunctions as kman
 
 
-np.set_printoptions(precision=3, suppress=True);
-
 def obsX(x):
     return x;
 
@@ -27,6 +25,10 @@ def obs(X=None):
     Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
 
     return Psi;
+
+
+# set global output setting
+np.set_printoptions(precision=3, suppress=True);
 
 
 if __name__ == "__main__":
