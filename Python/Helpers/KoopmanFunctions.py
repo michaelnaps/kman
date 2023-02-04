@@ -7,7 +7,7 @@ class KoopmanOperator:
 
         # Koopman parameters
         self.K = None;
-        self.Nk = self.obs();
+        self.meta = self.obs();
         self.eps = None;
 
         # accuracy variables
@@ -20,7 +20,7 @@ class KoopmanOperator:
 
         # get class variables
         observables = self.obs;
-        Nk = self.Nk;
+        Nk = self.meta['Nk'];
 
         # evaluate for observable functions over X and Y
         Nx = len(X0);
