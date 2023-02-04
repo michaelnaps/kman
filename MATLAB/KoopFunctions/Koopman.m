@@ -16,7 +16,7 @@ function [K, acc, ind, err] = Koopman(observables, X, Y, x0, eps)
 
     %% evaluate for the observation function
     N0 = length(x0(1,:));                          % number of initial points
-    Mx = round(length(X(1,:))/N0);                 % number of data points
+    Mx = round(length(X(1,:))/N0)+1;                 % number of data points
 
     PsiX = NaN(Nk, N0*(Mx-1));
     PsiY = NaN(Nk, N0*(Mx-1));

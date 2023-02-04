@@ -25,17 +25,17 @@ class KoopmanOperator:
         # evaluate for observable functions over X and Y
         Nx = len(X0);
         N0 = len(X0[0]);
-        Mx = round(len(X[0])/N0);
+        Nt = round(len(X[0])/N0) + 1;
 
-        PsiX = np.ones( (Nk, N0*(Mx-1)) );
-        PsiY = np.zeros( (Nk, N0*(Mx-1)) );
+        PsiX = np.zeros( (Nk, N0*(Nt-1)) );
+        PsiY = np.zeros( (Nk, N0*(Nt-1)) );
 
         i = 0;
         j = 0;
 
         for n in range(N0):
 
-            for m in range(Mx-1):
+            for m in range(Nt-1):
 
                 PsiX_new = observables(X[:,i].reshape(Nx,1));
                 PsiY_new = observables(Y[:,i].reshape(Nx,1));
@@ -47,15 +47,14 @@ class KoopmanOperator:
                 j += 1;
 
             i += 1;
-            j = n*(Mx - 1);
-
+            j = n*(Nt - 1);
 
         # perform EDMD
         # create matrices for least squares
         #   K = inv(G)*A
         # (according to abraham, model-based)
-        G = 1/(N0*(Mx - 1)) * (PsiX @ PsiX.T);
-        A = 1/(N0*(Mx - 1)) * (PsiX @ PsiY.T);
+        G = 1/(N0*(Nt - 1)) * (PsiX @ PsiX.T);
+        A = 1/(N0*(Nt - 1)) * (PsiX @ PsiY.T);
 
         (U, S, V) = np.linalg.svd(G);
 
@@ -65,10 +64,12 @@ class KoopmanOperator:
         ind = S > eps;
 
         U = U[:,ind];
-        V = V[:,ind];
+        V = V[ind,:].T;
 
         S = S[ind];
         Sinv = np.diag([1/S[i] for i in range(len(S))]);
+
+        # print(Sinv);
 
         # solve for the Koopman operator
         # K = (V @ (1/S) @ U.T) @ A;
@@ -77,7 +78,7 @@ class KoopmanOperator:
 
         # calculate residual error
         err = 0;
-        for n in range(N0*(Mx-1)):
+        for n in range(N0*(Nt-1)):
             err += np.linalg.norm(PsiY[:,n] - K@PsiX[:,n]);
 
         self.K = K;

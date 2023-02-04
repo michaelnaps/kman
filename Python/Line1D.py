@@ -7,24 +7,24 @@ from Helpers.DataFunctions import *
 
 def obsX(x=None):
     if x is None:
-        Nk = 2;
-        return Nk;
+        meta = {'Nk': 2};
+        return meta;
 
     PsiX = x;
     return PsiX;
 
 def obsU(x=None):
     if x is None:
-        Nk = 1;
-        return Nk;
+        meta = {'Nk': 1};
+        return meta;
 
     PsiU = [[1]];
     return PsiU;
 
 def obsXU(X=None):
     if X is None:
-        Nk = obsX() + obsU()*obsH();
-        return Nk;
+        meta = {'Nk': obsX()['Nk'] + obsU()['Nk']*obsH()['Nk']};
+        return meta;
 
     x = X[0:2].reshape(2,1);
     u = X[2];
@@ -39,8 +39,8 @@ def obsXU(X=None):
 
 def obsH(X=None):
     if X is None:
-        Nk = 1;
-        return Nk;
+        meta = {'Nk': 1};
+        return meta;
 
     PsiH = X[2];
     return PsiH;
