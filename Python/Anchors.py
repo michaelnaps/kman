@@ -1,5 +1,5 @@
 import sys
-sys.path.insert('/home/michaelnaps/prog/ode');
+sys.path.insert(0, '/home/michaelnaps/prog/ode');
 
 import numpy as np
 import matplotlib.pyplot as plt
