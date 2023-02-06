@@ -103,6 +103,7 @@ if __name__ == "__main__":
     T = 10;  Nt = round(T/dt)+1;
     tTrain = np.array( [i*dt for i in range(Nt)] );
 
+
     # generate list of randomly assorted u
     x0 = 10*np.random.rand(4,1) - 5;
 
@@ -166,3 +167,12 @@ if __name__ == "__main__":
     ) );
 
     print('K\n', K)
+    print(K.shape);
+
+
+    # test data with cumulative operator
+    # Nk = obs();
+    # PsiTest = np.zeros( (Nk, Nt) );
+    #
+    # x0 = 10*np.rand(Nx,1) - 5;
+    # Psi0 = 1;
