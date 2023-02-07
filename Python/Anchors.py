@@ -11,7 +11,57 @@ import Helpers.KoopmanFunctions as kman
 # create global "measurement" variables
 Nu = 2;
 Na = 4;
-anchors = np.random.rand(2,Na);
+anchors = 20*np.random.rand(2,Na) - 10;
+
+
+class Parameters:
+    def __init__(self, x0,
+                 fig=None, axs=None,
+                 buffer_length=10, pause=1e-3,
+                 color='k'):
+        if axs is None and fig is None:
+            self.fig, self.axs = plt.subplots();
+        else:
+            self.fig = fig;
+            self.axs = axs;
+
+        self.axs.set_xlim(-10.5, 10.5);
+        self.axs.set_ylim(-10.5, 10.5);
+        self.fig.tight_layout();
+
+        # event variable
+        self.x = x0;
+        self.axs.plot(x0[0], x0[1], marker='.');
+
+        # initialize buffer (trail)
+        self.color = color;
+        self.pause = pause;
+
+    def update(self, t, x):
+        self.axs.plot(x[0], x[1], marker='.');
+
+        plt.show(block=0);
+        plt.pause(self.pause);
+
+        return self;
+
+def modelFunc(x, u, params=None):
+    A = [
+        [1, 0, dt, 0],
+        [0, 1, 0, dt],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+    ];
+    B = [
+        [0, 0],
+        [0, 0],
+        [dt, 0],
+        [0, dt]
+    ];
+    return A@x + B@u;
+
+def callbackFunc(T, x, u, mvar):
+    return mvar.params.update(T, x);
 
 
 def obsX(x=None):
@@ -38,7 +88,7 @@ def obsH(X=None):
 
     dist = np.zeros( (Na,1) );
     for i, anchor in enumerate(anchors.T):
-        dist[i] = (anchor.T - xp).T @ (anchor.T - xp);
+        dist[i] = np.sqrt((anchor.T - xp).T @ (anchor.T - xp));
 
     Psi = np.vstack( (dist, u) );
 
@@ -60,13 +110,6 @@ def obs(X=None):
 
     return Psi;
 
-def plot(T, X, U):
-    fig, axs = plt.subplots(2,1);
-    axs[0].scatter(X[0], X[1]);
-    axs[1].plot(T, U[0]);
-    axs[1].plot(T, U[1]);
-    return fig, axs;
-
 
 # set global output setting
 np.set_printoptions(precision=3, suppress=True);
@@ -78,24 +121,11 @@ if __name__ == "__main__":
 
     dt = 0.1;
     xg = np.zeros( (Nx,1) );
-    A = [
-        [1, 0, dt, 0],
-        [0, 1, 0, dt],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]
-    ];
-    B = [
-        [0, 0],
-        [0, 0],
-        [dt, 0],
-        [0, dt]
-    ];
+
     C = [
         [10, 0, 2.5, 0],
         [0, 10, 0, 2.5]
     ];
-
-    model = lambda x,u: A@x + B@u;
     control = lambda x: C@(xg.reshape(Nx,1) - x.reshape(Nx,1));
 
 
@@ -113,10 +143,7 @@ if __name__ == "__main__":
     xTrain[:,1] = x0.reshape(Nx,);
 
     for i in range(Nt-1):
-        xTrain[:,i+1] = model(xTrain[:,i], uRand[:,i]);
-
-    plot(tTrain[:Nt-1], xTrain, uRand);
-    # plt.show()
+        xTrain[:,i+1] = modelFunc(xTrain[:,i], uRand[:,i]);
 
 
     # construct Kx data matrices
@@ -137,9 +164,6 @@ if __name__ == "__main__":
 
     for i in range(Nt-1):
         uTrain[:,i] = control(xRand[:,i]).reshape(Nu,);
-
-    plot(tTrain[:Nt-1], xRand, uTrain);
-    # plt.show()
 
 
     # solve for Ku
@@ -167,12 +191,34 @@ if __name__ == "__main__":
     ) );
 
     print('K\n', K)
-    print(K.shape);
 
 
-    # test data with cumulative operator
-    # Nk = obs();
-    # PsiTest = np.zeros( (Nk, Nt) );
-    #
-    # x0 = 10*np.rand(Nx,1) - 5;
-    # Psi0 = 1;
+    # create the remeasure function
+    NkX = obsX()['Nk'];
+    NkU = obsU()['Nk'];
+    def rmes(Psi):
+        x = Psi[:Nx];
+        u = Psi[Nx:];
+
+        PsiX = x;
+        PsiU = 1;
+
+        X = np.vstack( (x, np.zeros( (Nu,1) )) )
+        PsiH = obsH(X);
+
+        Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
+
+        return Psi;
+
+
+    # generate model variable from koopman function
+    koopFunc = lambda Psi, _1, _2: K@rmes(Psi);
+
+    Psi0 = obs(x0);
+    params = Parameters(Psi0);
+
+    kModel = ode.Model(koopFunc, 'discrete', callbackFunc, params, x0=Psi0, dt=dt);
+    kModel.setMinTimeStep(0.1);
+
+    sim_time = 10;
+    kModel.simulate(sim_time, Psi0, callback=callbackFunc, output=1);
