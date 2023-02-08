@@ -3,6 +3,8 @@ sys.path.insert(0, '/home/michaelnaps/prog/ode');
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as patch
+import matplotlib.path as path
 
 import ode
 import Helpers.KoopmanFunctions as kman
@@ -11,11 +13,14 @@ import Helpers.KoopmanFunctions as kman
 # create global "measurement" variables
 Nu = 2;
 Na = 4;
-anchors = 20*np.random.rand(2,Na) - 10;
+anchors = np.array( [
+    [5, 5, -5, -5],
+    [5, -5, -5, 5]
+] );
 
 
 class Parameters:
-    def __init__(self, x0,
+    def __init__(self, X0,
                  fig=None, axs=None,
                  buffer_length=10, pause=1e-3,
                  color='k'):
@@ -27,18 +32,31 @@ class Parameters:
 
         self.axs.set_xlim(-10.5, 10.5);
         self.axs.set_ylim(-10.5, 10.5);
-        self.fig.tight_layout();
-
-        # event variable
-        self.x = x0;
-        self.axs.plot(x0[0], x0[1], marker='.');
+        # self.fig.tight_layout();
 
         # initialize buffer (trail)
         self.color = color;
+
+        x0 = X0[:2].T;
+        self.buffer = np.kron( np.ones( (buffer_length, 1) ), x0);
+        self.trail_patch = patch.PathPatch(path.Path(self.buffer), color=self.color);
+
+        self.axs.add_patch(self.trail_patch);
+
         self.pause = pause;
 
-    def update(self, t, x):
-        self.axs.plot(x[0], x[1], marker='.');
+    def update(self, t, X):
+        self.trail_patch.remove();
+
+        self.axs.set_title("time: %.3f [s]" % t)
+
+        x = X[:2].T;
+
+        self.buffer[:-1] = self.buffer[1:];
+        self.buffer[-1] = x;
+
+        self.trail_patch = patch.PathPatch(path.Path(self.buffer), fill=0);
+        self.axs.add_patch(self.trail_patch);
 
         plt.show(block=0);
         plt.pause(self.pause);
@@ -86,17 +104,18 @@ def obsH(X=None):
 
     xp = x[:2].T[0];
 
-    dist = np.zeros( (Na,1) );
-    for i, anchor in enumerate(anchors.T):
-        dist[i] = np.sqrt((anchor.T - xp).T @ (anchor.T - xp));
+    # dist = np.zeros( (Na,1) );
+    # for i, anchor in enumerate(anchors.T):
+    #     dist[i] = (anchor.T - xp).T @ (anchor.T - xp);
 
-    Psi = np.vstack( (dist, u) );
+    Psi = X;
+    # Psi = np.vstack( (dist, u) );
 
     return Psi;
 
 def obs(X=None):
     if X is None:
-        meta = {'Nk': obsX()['Nk'] + obsU()['Nk']*2};
+        meta = {'Nk': obsX()['Nk'] + obsU()['Nk']*Nu};
         return meta;
 
     x = X[:4];
@@ -187,7 +206,7 @@ if __name__ == "__main__":
 
     K = Kx @ np.vstack( (
         np.hstack( (np.eye(p), np.zeros( (p,q*b) )) ),
-        np.hstack( (np.zeros( (m*q, p) ), np.kron(np.eye(q), Ku[4:,:])) )
+        np.hstack( (np.zeros( (m*q, p) ), np.kron(np.eye(q), Ku[Na:,:])) )
     ) );
 
     print('K\n', K)
@@ -215,10 +234,13 @@ if __name__ == "__main__":
     koopFunc = lambda Psi, _1, _2: K@rmes(Psi);
 
     Psi0 = obs(x0);
-    params = Parameters(Psi0);
+    params = Parameters(x0, buffer_length=25);
 
     kModel = ode.Model(koopFunc, 'discrete', callbackFunc, params, x0=Psi0, dt=dt);
-    kModel.setMinTimeStep(0.1);
+    # kModel.setMinTimeStep(dt);
 
     sim_time = 10;
-    kModel.simulate(sim_time, Psi0, callback=callbackFunc, output=1);
+    kModel.simulate(sim_time, Psi0, callback=callbackFunc, output=0);
+
+
+    # generate multiple test cases
