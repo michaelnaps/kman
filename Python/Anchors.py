@@ -231,16 +231,15 @@ if __name__ == "__main__":
 
 
     # generate model variable from koopman function
-    koopFunc = lambda Psi, _1, _2: K@rmes(Psi);
+    x0list = 10*np.random.rand(Nx,10);
 
-    Psi0 = obs(x0);
+    koopFunc = lambda Psi, _1, _2: K@rmes(Psi);
     params = Parameters(x0, buffer_length=25);
 
-    kModel = ode.Model(koopFunc, 'discrete', callbackFunc, params, x0=Psi0, dt=dt);
-    # kModel.setMinTimeStep(dt);
-
     sim_time = 10;
-    kModel.simulate(sim_time, Psi0, callback=callbackFunc, output=0);
 
-
-    # generate multiple test cases
+    for x0 in x0list.T:
+        params = Parameters(x0.T, buffer_length=25);
+        Psi0 = obs(x0.reshape(Nx,1));
+        kModel = ode.Model(koopFunc, 'discrete', callbackFunc, params, x0=Psi0, dt=dt);
+        xList, uList = kModel.simulate(sim_time, Psi0, callback=callbackFunc, output=0);
