@@ -104,12 +104,12 @@ def obsH(X=None):
 
     xp = x[:2].T[0];
 
-    dist = np.zeros( (Na,1) );
-    for i, anchor in enumerate(anchors.T):
-        dist[i] = (anchor.T - xp).T @ (anchor.T - xp);
+    # dist = np.zeros( (Na,1) );
+    # for i, anchor in enumerate(anchors.T):
+    #     dist[i] = (anchor.T - xp).T @ (anchor.T - xp);
 
-    # Psi = X;
-    Psi = np.vstack( (dist, u) );
+    Psi = X;
+    # Psi = np.vstack( (dist, u) );
 
     return Psi;
 
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     Nx = 4;
 
     dt = 0.1;
-    xg = np.zeros( (Nx,1) );
+    xg = np.ones( (Nx,1) );
 
     C = [
         [10, 0, 5, 0],
@@ -237,7 +237,7 @@ if __name__ == "__main__":
     axs.set_xlim(-10, 10);
     axs.set_ylim(-10, 10);
 
-    N0 = 5;
+    N0 = 100;
     xu0Test = np.vstack( (
         20*np.random.rand(Nx,N0) - 10, np.zeros( (Nu,N0) )
     ) );
