@@ -96,7 +96,7 @@ def obsU(x=None):
 
 def obsH(X=None):
     if X is None:
-        meta = {'Nk':Na+Nu};
+        meta = {'Nk':Na+Nu+1};
         return meta;
 
     x = X[:4];
@@ -108,14 +108,14 @@ def obsH(X=None):
     # for i, anchor in enumerate(anchors.T):
     #     dist[i] = (anchor.T - xp).T @ (anchor.T - xp);
 
-    Psi = X;
+    Psi = np.vstack( (X, 1) );
     # Psi = np.vstack( (dist, u) );
 
     return Psi;
 
 def obs(X=None):
     if X is None:
-        meta = {'Nk': obsX()['Nk'] + obsU()['Nk']*Nu};
+        meta = {'Nk': obsX()['Nk'] + obsU()['Nk']*(Nu + 1)};
         return meta;
 
     x = X[:4];
@@ -123,7 +123,7 @@ def obs(X=None):
 
     PsiX = obsX(x);
     PsiU = obsU(x);
-    PsiH = u;
+    PsiH = np.vstack( (u, 1) );
 
     Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
 
@@ -139,7 +139,9 @@ if __name__ == "__main__":
     Nx = 4;
 
     dt = 0.1;
-    xg = np.ones( (Nx,1) );
+    xg = np.vstack( (
+        np.ones( (Nu,1) ), np.zeros( (Nu,1) )
+    ) );
 
     C = [
         [10, 0, 5, 0],
@@ -199,7 +201,7 @@ if __name__ == "__main__":
 
 
     # calculate cumulative operator
-    m = Nu;
+    m = Nu + 1;
     p = obsX()['Nk'];
     q = obsU()['Nk'];
     b = obsH()['Nk'];
@@ -236,8 +238,9 @@ if __name__ == "__main__":
     fig, axs = plt.subplots();
     axs.set_xlim(-10, 10);
     axs.set_ylim(-10, 10);
+    axs.grid();
 
-    N0 = 100;
+    N0 = 10;
     xu0Test = np.vstack( (
         20*np.random.rand(Nx,N0) - 10, np.zeros( (Nu,N0) )
     ) );

@@ -15,7 +15,7 @@ Nu = 2;
 Na = 4;
 anchors = np.array( [
     [5, 5, -5, -5],
-    [5, -5, -5, 5]
+    [1, -5, -5, 5]
 ] );
 
 
@@ -96,7 +96,7 @@ def obsU(x=None):
 
 def obsH(X=None):
     if X is None:
-        meta = {'Nk':Na+Nu};
+        meta = {'Nk':Na+Nu+1};
         return meta;
 
     x = X[:4];
@@ -106,10 +106,10 @@ def obsH(X=None):
 
     dist = np.zeros( (Na,1) );
     for i, anchor in enumerate(anchors.T):
-        dist[i] = (anchor.T - xp).T @ (anchor.T - xp);
+        dist[i] = np.sqrt( (anchor.T - xp).T @ (anchor.T - xp) );
 
     # Psi = X;
-    Psi = np.vstack( (dist, u) );
+    Psi = np.vstack( (dist, u, 1) );
 
     return Psi;
 
@@ -206,7 +206,7 @@ if __name__ == "__main__":
 
     K = Kx @ np.vstack( (
         np.hstack( (np.eye(p), np.zeros( (p,q*b) )) ),
-        np.hstack( (np.zeros( (m*q, p) ), np.kron(np.eye(q), Ku[Na:,:])) )
+        np.hstack( (np.zeros( (m*q, p) ), np.kron(np.eye(q), Ku[Na:-1,:])) )
     ) );
 
     print('K\n', K)
@@ -242,7 +242,7 @@ if __name__ == "__main__":
         20*np.random.rand(Nx,N0) - 10, np.zeros( (Nu,N0) )
     ) );
 
-    sim_time = 1;
+    sim_time = 2;
     for i, xu0 in enumerate(xu0Test.T):
         Psi0 = obs(xu0.reshape(Nx+Nu,1));
 
