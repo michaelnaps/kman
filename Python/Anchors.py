@@ -106,7 +106,7 @@ def obsH(X=None):
 
     dist = np.zeros( (Na,1) );
     for i, anchor in enumerate(anchors.T):
-        dist[i] = np.sqrt( (anchor.T - xp).T @ (anchor.T - xp) );
+        dist[i] = (anchor.T - xp).T @ (anchor.T - xp);
 
     # Psi = X;
     Psi = np.vstack( (dist, u, 1) );
@@ -174,6 +174,7 @@ if __name__ == "__main__":
     kxvar = kman.KoopmanOperator(obs);
     Kx = kxvar.edmd(X, Y, X0);
 
+    print(kxvar.err);
     print('Kx\n', Kx);
 
 
