@@ -46,7 +46,7 @@ if __name__ == "__main__":
     # model parameters
     dt = 0.01;
     Nx = 1;
-    x0 = np.array( [.90] );
+    x0 = np.array( [0.90] );
 
 
     # model class variable
