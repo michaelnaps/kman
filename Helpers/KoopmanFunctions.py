@@ -23,9 +23,14 @@ class KoopmanOperator:
         Nk = self.meta['Nk'];
 
         # evaluate for observable functions over X and Y
+        Mx = len(X[0]);
         Nx = len(X0);
-        N0 = len(X0[0]);
-        Nt = round(len(X[0])/N0) + 1;
+        if len(X0.shape) > 1:
+            N0 = len(X0[0]);
+        else:
+            N0 = 1;
+
+        Nt = round(Mx/N0) + 1;
 
         PsiX = np.zeros( (Nk, N0*(Nt-1)) );
         PsiY = np.zeros( (Nk, N0*(Nt-1)) );
@@ -68,8 +73,6 @@ class KoopmanOperator:
 
         S = S[ind];
         Sinv = np.diag([1/S[i] for i in range(len(S))]);
-
-        # print(Sinv);
 
         # solve for the Koopman operator
         # K = (V @ (1/S) @ U.T) @ A;

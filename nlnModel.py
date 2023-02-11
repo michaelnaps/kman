@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     # simulate model
     sim_time = 10;
-    tTest, xTest = mvar.simulate(sim_time)[:2];
+    tTest, xTest = mvar.simulate(sim_time, x0)[:2];
     Nt = len(tTest);
 
     fig, axs = plt.subplots();
@@ -69,8 +69,10 @@ if __name__ == "__main__":
 
 
     # train cumulative Koopman operator
-    X = xTest[:Nt-1];
-    Y = xTest[1:Nt];
+
+    print(xTest);
+    X = xTest[:,:Nt-1];
+    Y = xTest[:,1:Nt];
 
     kvar = kman.KoopmanOperator(obs);
     K = kvar.edmd(X, Y, x0);
