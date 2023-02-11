@@ -16,9 +16,14 @@ def modelFunc(x, _1, _2):
 
 def obsX(x=None):
     if x is None:
-        meta = {'Nk':2};
+        meta = {'Nk':6};
         return meta;
-    return np.vstack( (np.exp(x), np.exp(x**2)) );
+    Psi = np.vstack( (
+        np.exp(x), np.exp(x**2),
+        np.exp(x)*x, np.exp(x**2)*(x**2),
+        np.exp(x)*x*x, np.exp(x**2)*(x**2)*(x**2)
+    ) );
+    return Psi;
 
 def obsH(x=None):
     if x is None:
@@ -90,8 +95,9 @@ if __name__ == "__main__":
 
     # model the koopman with updating observables
     def koopModel(Psi, _1, _2):
-        Psi_n = K@Psi.reshape(3,1);
-        return Psi_n.reshape(3,);
+        Nk = obsX()['Nk'] + 1;
+        Psi_n = K@Psi.reshape(Nk,1);
+        return Psi_n.reshape(Nk,);
 
     Psi0 = obsTrain(x0);
     koopModelVar = ode.Model(koopModel, model_type, x0=Psi0, dt=dt);
