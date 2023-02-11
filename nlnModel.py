@@ -69,8 +69,6 @@ if __name__ == "__main__":
 
 
     # train cumulative Koopman operator
-
-    print(xTest);
     X = xTest[:,:Nt-1];
     Y = xTest[:,1:Nt];
 
