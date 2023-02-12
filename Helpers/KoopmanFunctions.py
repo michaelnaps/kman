@@ -29,11 +29,10 @@ class KoopmanOperator:
             N0 = len(X0[0]);
         else:
             N0 = 1;
+        Nt = round(Mx/N0);
 
-        Nt = round(Mx/N0) + 1;
-
-        PsiX = np.zeros( (Nk, N0*(Nt-1)) );
-        PsiY = np.zeros( (Nk, N0*(Nt-1)) );
+        PsiX = np.empty( (Nk, N0*(Nt-1)) );
+        PsiY = np.empty( (Nk, N0*(Nt-1)) );
 
         i = 0;
         j = 0;
