@@ -18,7 +18,6 @@ dt = 0.01;
 # set global output setting
 np.set_printoptions(precision=3, suppress=True);
 
-
 def modelFunc(X):
     mu = 2;
     x = X[0];  dx = X[1];
@@ -30,17 +29,16 @@ def modelFunc(X):
 
     return xn;
 
-
 def obs(x=None):
     if x is None:
-        meta = {'Nk':10};
+        meta = {'Nk':29};
         return meta;
     Psi = np.vstack( (
-        x,
-        np.exp(x),
-        np.exp(x)*x,
-        np.exp(x)*x*x,
-        np.exp(x)*x*x*x
+        np.exp(x), np.exp(x**2), np.exp(x[1]*x[0]**2),
+        np.exp(x)*x, np.exp(x**2)*x, np.exp(x[1]*x[0]**2)*x,
+        np.exp(x)*x*x, np.exp(x**2)*x*x, np.exp(x[1]*x[0]**2)*x*x,
+        np.exp(x)*x*x*x, np.exp(x**2)*x*x*x, np.exp(x[1]*x[0]**2)*x*x*x,
+        np.exp(x)*x*x*x*x, np.exp(x**2)*x*x*x*x, np.exp(x[1]*x[0]**2)*x*x*x*x
     ) );
     return Psi;
 
@@ -52,7 +50,7 @@ if __name__ == "__main__":
     X0 = 2*np.random.rand(Nx,N0) - 1;
 
     # create model data
-    T = 100;
+    T = 10;
     Nt = round(T/dt) + 1;
 
     tList = np.array( [[i*dt for i in range(Nt)]] );
@@ -79,7 +77,7 @@ if __name__ == "__main__":
 
     koopFunc = lambda Psi: K@Psi;
     PsiTest, _ = data.generate_data(tList, koopFunc, Psi0);
-    xTest = np.log( PsiTest[:Nx,:] );
+    xTest = PsiTest[:Nx,:];
 
     # plot comparison
     fig, axs = plt.subplots();
