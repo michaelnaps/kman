@@ -10,6 +10,10 @@ import ode
 import Helpers.KoopmanFunctions as kman
 
 
+# hyper parameter(s)
+dt = 0.01;
+
+
 def modelFunc(x, _1, _2):
     return x - x**2;  # stable for x <= 1
 
@@ -39,7 +43,6 @@ np.set_printoptions(precision=3, suppress=True);
 
 if __name__ == "__main__":
     # model parameters
-    dt = 0.1;
     Nx = 1;
     x0 = np.array( [.90] );
 
