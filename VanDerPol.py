@@ -31,7 +31,7 @@ def modelFunc(X):
 
 def obs(x=None):
     if x is None:
-        meta = {'Nk':25};
+        meta = {'Nk':26};
         return meta;
 
     z1 = x;
@@ -43,7 +43,8 @@ def obs(x=None):
         np.exp(z1)*z1, np.exp(z2)*z2, np.exp(z3)*z3,
         np.exp(z1)*z1*z1, np.exp(z2)*z2*z2, np.exp(z3)*z3*z3,
         np.exp(z1)*z1*z1*z1, np.exp(z2)*z2*z2*z2, np.exp(z3)*z3*z3*z3,
-        np.exp(z1)*z1*z1*z1*z1, np.exp(z2)*z2*z2*z2*z2, np.exp(z3)*z3*z3*z3*z3
+        np.exp(z1)*z1*z1*z1*z1, np.exp(z2)*z2*z2*z2*z2, np.exp(z3)*z3*z3*z3*z3,
+        [1]
     ) );
 
     return Psi;
@@ -52,11 +53,11 @@ def obs(x=None):
 if __name__ == "__main__":
     # model parameters
     Nx = 2;
-    N0 = 30;
+    N0 = 15;
     X0 = 2*np.random.rand(Nx,N0) - 1;
 
     # create model data
-    T = 50;
+    T = 25;
     Nt = round(T/dt) + 1;
 
     tList = np.array( [[i*dt for i in range(Nt)]] );
