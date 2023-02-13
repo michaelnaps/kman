@@ -15,8 +15,6 @@ def modelFunc(x):
     return x - x**2;  # stable for x <= 1
 
 
-
-
 # define observable function FOR TRAINING
 def obs(x=None):
     if x is None:
@@ -30,7 +28,7 @@ def obs(x=None):
     Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
 
     return Psi;
-    
+
 def obsX(x=None):
     if x is None:
         meta = {'Nk':6};
