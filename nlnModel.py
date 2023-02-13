@@ -8,13 +8,14 @@ import matplotlib.path as path
 
 import ode
 import Helpers.KoopmanFunctions as kman
+import Helpers.DataFunctions as data
 
 
 # hyper parameter(s)
 dt = 0.01;
 
 
-def modelFunc(x, _1, _2):
+def modelFunc(x):
     return x - x**2;  # stable for x <= 1
 
 
@@ -44,22 +45,14 @@ np.set_printoptions(precision=3, suppress=True);
 if __name__ == "__main__":
     # model parameters
     Nx = 1;
-    x0 = np.array( [.90] );
-
-
-    # model class variable
-    model_type = 'discrete';
-    mvar = ode.Model(modelFunc, model_type, x0=x0, dt=dt);
-    mvar.setMinTimeStep(0.01);
+    x0 = np.random.rand(Nx,1);
 
 
     # simulate model
-    sim_time = 10;
-    tTest, xTest = mvar.simulate(sim_time, x0)[:2];
-    Nt = tTest.shape[1];
+    T = 10;  Nt = round(T/dt) + 1;
+    tList = np.array( [[i*dt for i in range(Nt)]] )
 
-    fig, axs = plt.subplots();
-    axs.plot(tTest[0], xTest[0]);
+    xTest, _ = data.generate_data(tList, modelFunc, x0);
 
 
     # define observable function FOR TRAINING
@@ -102,11 +95,14 @@ if __name__ == "__main__":
 
 
     # model the koopman with updating observables
-    koopModel = lambda x, _1, _2: Kup@obsImplm(x);
+    koopModel = lambda x: Kup@obsImplm(x);
 
     Psi0 = obsX(x0);
-    koopModelVar = ode.Model(koopModel, model_type, x0=Psi0, dt=dt);
-    PsiTest = koopModelVar.simulate(sim_time, Psi0)[1];
+    PsiTest, _ = data.generate_data(tList, koopModel, Psi0);
 
-    axs.plot(tTest[0], PsiTest[0], linestyle='--');
+
+    # plot result comparisons
+    fig, axs = plt.subplots();
+    axs.plot(tList[0], xTest[0]);
+    axs.plot(tList[0], PsiTest[0], linestyle='--');
     plt.show();
