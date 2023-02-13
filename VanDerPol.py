@@ -19,38 +19,44 @@ dt = 0.01;
 np.set_printoptions(precision=3, suppress=True);
 
 def modelFunc(X):
-    mu = 2;
+    mu = 0;
     x = X[0];  dx = X[1];
 
     xn = X.reshape(Nx,1) + dt*np.array( [
         [dx],
-        [mu*(1 - x**2)*dx - x]
+        [mu*(dx - dx*x**2) - x]
     ] );
 
     return xn;
 
 def obs(x=None):
     if x is None:
-        meta = {'Nk':29};
+        meta = {'Nk':25};
         return meta;
+
+    z1 = x;
+    z2 = x**2;
+    z3 = x[1]*x[0]**2;
+
     Psi = np.vstack( (
-        np.exp(x), np.exp(x**2), np.exp(x[1]*x[0]**2),
-        np.exp(x)*x, np.exp(x**2)*x, np.exp(x[1]*x[0]**2)*x,
-        np.exp(x)*x*x, np.exp(x**2)*x*x, np.exp(x[1]*x[0]**2)*x*x,
-        np.exp(x)*x*x*x, np.exp(x**2)*x*x*x, np.exp(x[1]*x[0]**2)*x*x*x,
-        np.exp(x)*x*x*x*x, np.exp(x**2)*x*x*x*x, np.exp(x[1]*x[0]**2)*x*x*x*x
+        np.exp(z1), np.exp(z2), np.exp(z3),
+        np.exp(z1)*z1, np.exp(z2)*z2, np.exp(z3)*z3,
+        np.exp(z1)*z1*z1, np.exp(z2)*z2*z2, np.exp(z3)*z3*z3,
+        np.exp(z1)*z1*z1*z1, np.exp(z2)*z2*z2*z2, np.exp(z3)*z3*z3*z3,
+        np.exp(z1)*z1*z1*z1*z1, np.exp(z2)*z2*z2*z2*z2, np.exp(z3)*z3*z3*z3*z3
     ) );
+
     return Psi;
 
 
 if __name__ == "__main__":
     # model parameters
     Nx = 2;
-    N0 = 10;
+    N0 = 30;
     X0 = 2*np.random.rand(Nx,N0) - 1;
 
     # create model data
-    T = 10;
+    T = 50;
     Nt = round(T/dt) + 1;
 
     tList = np.array( [[i*dt for i in range(Nt)]] );
@@ -83,4 +89,5 @@ if __name__ == "__main__":
     fig, axs = plt.subplots();
     axs.plot(xTrain[0], xTrain[1]);
     axs.plot(xTest[0], xTest[1], linestyle='--');
+    axs.axis('equal');
     plt.show();
