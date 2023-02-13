@@ -8,12 +8,29 @@ import matplotlib.path as path
 
 import ode
 import Helpers.KoopmanFunctions as kman
+import Helpers.DataFunctions as data
 
 
-def modelFunc(x, _1, _2):
+def modelFunc(x):
     return x - x**2;  # stable for x <= 1
 
 
+
+
+# define observable function FOR TRAINING
+def obs(x=None):
+    if x is None:
+        meta = {'Nk': obsX()['Nk'] + obsU()['Nk']*obsH()['Nk']}
+        return meta;
+
+    PsiX = obsX(x);
+    PsiU = obsU(x);
+    PsiH = obsH(x);
+
+    Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
+
+    return Psi;
+    
 def obsX(x=None):
     if x is None:
         meta = {'Nk':6};
@@ -46,44 +63,24 @@ if __name__ == "__main__":
     # model parameters
     dt = 0.01;
     Nx = 1;
-    x0 = np.array( [0.90] );
-
-
-    # model class variable
-    model_type = 'discrete';
-    mvar = ode.Model(modelFunc, model_type, x0=x0, dt=dt);
-    mvar.setMinTimeStep(0.01);
+    x0 = np.random.rand(Nx,1);
 
 
     # simulate model
-    sim_time = 10;
-    tList, xTrain = mvar.simulate(sim_time, x0)[:2];
-    Nt = tList.shape[1];
+    T = 10;  Nt = round(T/dt) + 1;
+    tList = np.array( [[i*dt for i in range(Nt)]] );
+
+    xTrain, _ = data.generate_data(tList, modelFunc, x0);
 
     fig, axs = plt.subplots();
     axs.plot(tList[0], xTrain[0]);
-
-
-    # define observable function FOR TRAINING
-    def obsTrain(x=None):
-        if x is None:
-            meta = {'Nk': obsX()['Nk'] + obsU()['Nk']*obsH()['Nk']}
-            return meta;
-
-        PsiX = obsX(x);
-        PsiU = obsU(x);
-        PsiH = obsH(x);
-
-        Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
-
-        return Psi;
 
 
     # train cumulative Koopman operator
     X = xTrain[:,:Nt-1];
     Y = xTrain[:,1:Nt];
 
-    kvar = kman.KoopmanOperator(obsTrain);
+    kvar = kman.KoopmanOperator(obs);
     Nk = kvar.meta['Nk'];
     K = kvar.edmd(X, Y, x0);
 
@@ -94,14 +91,13 @@ if __name__ == "__main__":
 
 
     # model the koopman with updating observables
-    def koopModel(Psi, _1, _2):
+    def koopModel(Psi):
         Nk = obsX()['Nk'] + 1;
         Psi_n = K@Psi.reshape(Nk,1);
         return Psi_n.reshape(Nk,);
 
-    Psi0 = obsTrain(x0);
-    koopModelVar = ode.Model(koopModel, model_type, x0=Psi0, dt=dt);
-    PsiTest = koopModelVar.simulate(sim_time, Psi0)[1];
+    Psi0 = obs(x0);
+    PsiTest, _ = data.generate_data(tList, koopModel, Psi0);
 
     xTest = np.log(PsiTest[0]);
 
