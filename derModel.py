@@ -31,13 +31,20 @@ def obs(x=None):
 
 def obsX(x=None):
     if x is None:
-        meta = {'Nk':6};
+        meta = {'Nk':10};
         return meta;
+
+    z1 = x;
+    z2 = x**2;
+
     Psi = np.vstack( (
-        np.exp(x), np.exp(x**2),
-        np.exp(x)*x, np.exp(x**2)*(x**2),
-        np.exp(x)*x*x, np.exp(x**2)*(x**2)*(x**2)
+        np.exp(z1), np.exp(z2),
+        np.exp(z1)*z1, np.exp(z2)*z2,
+        np.exp(z1)*z1**2, np.exp(z2)*z2**2,
+        np.exp(z1)*z1**4, np.exp(z2)*z2**3,
+        np.exp(z1)*z1**4, np.exp(z2)*z2**4,
     ) );
+
     return Psi;
 
 def obsH(x=None):
@@ -54,7 +61,7 @@ def obsU(x=None):
 
 
 # set global output setting
-np.set_printoptions(precision=3, suppress=True);
+np.set_printoptions(precision=2, suppress=True);
 
 
 if __name__ == "__main__":
