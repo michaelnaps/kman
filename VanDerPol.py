@@ -45,7 +45,7 @@ def obs(x=None):
         np.exp(z1)*z1*z1*z1, np.exp(z2)*z2*z2*z2, np.exp(z3)*z3*z3*z3,
         np.exp(z1)*z1*z1*z1*z1, np.exp(z2)*z2*z2*z2*z2, np.exp(z3)*z3*z3*z3*z3,
         [1]
-    ) );
+    ) )
 
     return Psi;
 
