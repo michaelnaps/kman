@@ -19,7 +19,7 @@ dt = 0.01;
 np.set_printoptions(precision=3, suppress=True);
 
 def modelFunc(X):
-    mu = 0;
+    mu = 1;
     x = X[0];  dx = X[1];
 
     xn = X.reshape(Nx,1) + dt*np.array( [
@@ -29,40 +29,56 @@ def modelFunc(X):
 
     return xn;
 
-def obs(x=None):
+
+def obsX(x=None):
     if x is None:
-        meta = {'Nk':26};
+        meta = {'Nk':2};
         return meta;
+    Psi = x;
+    return Psi;
 
-    z1 = x;
-    z2 = x**2;
-    z3 = x[1]*x[0]**2;
+def obsU(x=None):
+    if x is None:
+        meta = {'Nk':2};
+        return meta;
+    Psi = np.vstack( ([1], x[1]) );
+    return Psi;
 
-    Psi = np.vstack( (
-        np.exp(z1), np.exp(z2), np.exp(z3),
-        np.exp(z1)*z1, np.exp(z2)*z2, np.exp(z3)*z3,
-        np.exp(z1)*z1*z1, np.exp(z2)*z2*z2, np.exp(z3)*z3*z3,
-        np.exp(z1)*z1*z1*z1, np.exp(z2)*z2*z2*z2, np.exp(z3)*z3*z3*z3,
-        np.exp(z1)*z1*z1*z1*z1, np.exp(z2)*z2*z2*z2*z2, np.exp(z3)*z3*z3*z3*z3,
-        [1]
-    ) );
-
+def obsH(x=None):
+    if x is None:
+        meta = {'Nk':1};
+        return meta;
+    Psi = x[0]**2;
     return Psi;
 
 
 if __name__ == "__main__":
     # model parameters
     Nx = 2;
-    N0 = 15;
-    X0 = 2*np.random.rand(Nx,N0) - 1;
+    N0 = 5;
+    X0 = 10*np.random.rand(Nx,N0) - 5;
 
     # create model data
-    T = 25;
+    T = 100;
     Nt = round(T/dt) + 1;
 
     tList = np.array( [[i*dt for i in range(Nt)]] );
 
     xTrain, _ = data.generate_data(tList, modelFunc, X0);
+
+    # observables for TRAINING
+    def obsTrain(x=None):
+        if x is None:
+            meta = {'Nk': obsX()['Nk'] + obsU()['Nk']*obsH()['Nk']}
+            return meta;
+
+        PsiX = obsX(x);
+        PsiU = obsU(x);
+        PsiH = obsH(x);
+
+        Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
+
+        return Psi;
 
     # organize data
     xData = xTrain[:,:Nt-1];
@@ -71,18 +87,36 @@ if __name__ == "__main__":
     X = data.stack_data(xData, N0, Nx, Nt-1);
     Y = data.stack_data(yData, N0, Nx, Nt-1);
 
-    kvar = kman.KoopmanOperator(obs);
+    kvar = kman.KoopmanOperator(obsTrain);
     K = kvar.edmd(X, Y, X0);
+    Kup = K[:Nx,:];
 
     print('K:', kvar.err);
     print(K, '\n');
 
+    print('Kup:');
+    print(Kup, '\n');
+
+    # define observable function FOR IMPLEMENTATION
+    def obsImplm(x=None):
+        Nk = obsTrain()['Nk'];
+        if x is None:
+            meta = {'Nk':Nk};
+            return meta;
+
+        PsiX = x;
+        PsiU = np.vstack( ([1], x[1]) );
+        PsiH = obsH(x);
+
+        Psi = np.vstack( (x, np.kron(x, PsiH)) );
+        return Psi.reshape(Nk,1);
+
     # compare koopman to real model
-    Nk = obs()['Nk'];
-    Psi0 = obs(X0[:,0].reshape(Nx,1));
+    Nk = obsTrain()['Nk'];
+    Psi0 = X0[:,0].reshape(Nx,1); #obsTrain(X0[:,0].reshape(Nx,1));
     xComp = xTrain[:Nx,:];
 
-    koopFunc = lambda Psi: K@Psi;
+    koopFunc = lambda x: Kup@obsImplm(x);
     PsiTest, _ = data.generate_data(tList, koopFunc, Psi0);
     xTest = PsiTest[:Nx,:];
 
