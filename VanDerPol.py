@@ -55,16 +55,18 @@ def obsH(x=None):
 if __name__ == "__main__":
     # model parameters
     Nx = 2;
-    N0 = 5;
+    N0 = 10;
     X0 = 10*np.random.rand(Nx,N0) - 5;
 
+
     # create model data
-    T = 100;
+    T = 10;
     Nt = round(T/dt) + 1;
 
     tList = np.array( [[i*dt for i in range(Nt)]] );
 
     xTrain, _ = data.generate_data(tList, modelFunc, X0);
+
 
     # observables for TRAINING
     def obsTrain(x=None):
@@ -79,6 +81,7 @@ if __name__ == "__main__":
         Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
 
         return Psi;
+
 
     # organize data
     xData = xTrain[:,:Nt-1];
@@ -97,6 +100,7 @@ if __name__ == "__main__":
     print('Kup:');
     print(Kup, '\n');
 
+
     # define observable function FOR IMPLEMENTATION
     def obsImplm(x=None):
         Nk = obsTrain()['Nk'];
@@ -111,6 +115,7 @@ if __name__ == "__main__":
         Psi = np.vstack( (x, np.kron(x, PsiH)) );
         return Psi.reshape(Nk,1);
 
+
     # compare koopman to real model
     Nk = obsTrain()['Nk'];
     Psi0 = X0[:,0].reshape(Nx,1); #obsTrain(X0[:,0].reshape(Nx,1));
@@ -119,6 +124,7 @@ if __name__ == "__main__":
     koopFunc = lambda x: Kup@obsImplm(x);
     PsiTest, _ = data.generate_data(tList, koopFunc, Psi0);
     xTest = PsiTest[:Nx,:];
+
 
     # plot comparison
     fig, axs = plt.subplots();
