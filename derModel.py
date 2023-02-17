@@ -41,7 +41,7 @@ def obsX(x=None):
         np.exp(z1), np.exp(z2),
         np.exp(z1)*z1, np.exp(z2)*z2,
         np.exp(z1)*z1**2, np.exp(z2)*z2**2,
-        np.exp(z1)*z1**4, np.exp(z2)*z2**3,
+        np.exp(z1)*z1**3, np.exp(z2)*z2**3,
         np.exp(z1)*z1**4, np.exp(z2)*z2**4,
     ) );
 
