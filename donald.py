@@ -4,7 +4,7 @@ sys.path.insert(0, '/home/michaelnaps/prog/ode');
 sys.path.insert(0, '/home/michaelnaps/prog/mpc');
 
 import mpc
-from numpy import random as rd
+import numpy as np
 
 import math
 import matplotlib.pyplot as plt
@@ -153,7 +153,10 @@ def obs(x=None):
     if x is None:
         meta = {'Nk':0};
         return meta;
-    Psi = np.vstack( (x, 1) );
+
+    N = 10;
+    Psi = np.vstack( tuple(x**i for i in range(1,N+1)) )
+
     return Psi;
 
 
@@ -172,14 +175,18 @@ if __name__ == "__main__":
         max_iter=10, model_type=model_type);
     mpc_var.setAlpha(0.01);
 
-    # solve single time-step
-    sim_time = 10;
-    uinit = [0 for i in range(Nu*mpc_var.PH)];
-    sim_results = mpc_var.sim_root(sim_time, x0, uinit,
-        callback=callback, output=1);
-    plt.close('all');
+    # # solve over 10 [s] time frame
+    # sim_time = 10;
+    # uinit = [0 for i in range(Nu*mpc_var.PH)];
+    # sim_results = mpc_var.sim_root(sim_time, x0, uinit,
+    #     callback=callback, output=1);
+    # plt.close('all');
+    #
+    # T = sim_results[0];
+    # xlist = sim_results[1];
+    # ulist = sim_results[2];
+    # tlist = sim_results[6];
 
-    T = sim_results[0];
-    xlist = sim_results[1];
-    ulist = sim_results[2];
-    tlist = sim_results[6];
+    # check obs function
+    obsReshape = lambda x: obs( np.array(x).reshape(Nx,1) );
+    print(obsReshape(x0));
