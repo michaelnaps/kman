@@ -1,4 +1,5 @@
 import sys
+sys.path.insert(0, '/home/michaelnaps/prog/kman');
 sys.path.insert(0, '/home/michaelnaps/prog/ode');
 
 import numpy as np
@@ -127,8 +128,6 @@ if __name__ == "__main__":
     koopFunc = lambda x: Kup@obsImplm(x);
     PsiTest, _ = data.generate_data(tList, koopFunc, Psi0);
     xTest = PsiTest[:Nx,:];
-
-    print(PsiTest);
 
 
     # plot comparison

@@ -1,4 +1,5 @@
 import sys
+sys.path.insert(0, '/home/michaelnaps/prog/kman');
 sys.path.insert(0, '/home/michaelnaps/prog/ode');
 
 import numpy as np

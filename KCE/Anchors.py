@@ -1,4 +1,5 @@
 import sys
+sys.path.insert(0, '/home/michaelnaps/prog/kman');
 sys.path.insert(0, '/home/michaelnaps/prog/ode');
 
 import numpy as np
@@ -239,9 +240,7 @@ if __name__ == "__main__":
     axs.set_ylim(-10, 10);
 
     N0 = 5;
-    xu0Test = np.vstack( (
-        20*np.random.rand(Nx,N0) - 10, np.zeros( (Nu,N0) )
-    ) );
+    xu0Test = np.vstack( (20*np.random.rand(Nx,N0)-10, np.zeros( (Nu,N0) )) );
 
     sim_time = 2;
     for i, xu0 in enumerate(xu0Test.T):
