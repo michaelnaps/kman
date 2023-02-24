@@ -6,9 +6,9 @@ import numpy as np
 
 
 # model is discrete (no ode needed)
-def model(x, u, dt):
-    dx = [dt*u[0]];
-    return dx;
+def model(x, u, _=None):
+    xn = [x[0] + u[0]];
+    return xn;
 
 def cost(mvar, xlist, ulist):
     g = xlist[1][0]**2;
@@ -24,8 +24,8 @@ if __name__ == "__main__":
     Nu = 1;
 
     # create MPC class variable
-    params = 1e-3;
-    model_type = 'continuous';
+    params = None;
+    model_type = 'discrete';
     PH = 1;
     mvar = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
         num_ssvar=Nx, PH_length=PH, model_type=model_type);
@@ -33,4 +33,4 @@ if __name__ == "__main__":
     x0 = [0.5];
     uinit = [0 for i in range(Nu*PH)];
     u = mvar.solve(x0, uinit, output=1)[0];
-    print(model(x0, u, params));
+    print(model(x0, u));
