@@ -6,14 +6,12 @@ import numpy as np
 
 
 # model is discrete (no ode needed)
-def model(x, u, _=None):
-    xn = [x[0] + u[0]];
-    return xn;
+def model(x, u, dt):
+    dx = [dt*u[0]];
+    return dx;
 
 def cost(mvar, xlist, ulist):
-    g = 0;
-    for x in xlist:
-        g += x[0]**2;
+    g = xlist[1][0]**2;
     return g;
 
 def obs(x=None):
@@ -26,11 +24,13 @@ if __name__ == "__main__":
     Nu = 1;
 
     # create MPC class variable
-    params = None;
-    model_type = 'discrete';
+    params = 1e-3;
+    model_type = 'continuous';
+    PH = 1;
     mvar = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
-        num_ssvar=Nx, model_type=model_type);
+        num_ssvar=Nx, PH_length=PH, model_type=model_type);
 
-    x0 = [1];
-    u = mvar.solve(x0, [0], output=1)[0];
-    print(model([1], u));
+    x0 = [0.5];
+    uinit = [0 for i in range(Nu*PH)];
+    u = mvar.solve(x0, uinit, output=1)[0];
+    print(model(x0, u, params));
