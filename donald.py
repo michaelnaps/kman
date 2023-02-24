@@ -31,6 +31,7 @@ class Parameters:
             self.fig = fig;
             self.axs = axs;
 
+        # figure scaling
         self.axs.set_xlim(-2,2);
         self.axs.set_ylim(-2,2);
         self.axs.axis('equal');
@@ -39,17 +40,23 @@ class Parameters:
 
         # initialize buffer (trail)
         self.color = color;
-        self.width = 0.05;
+        self.width = 0.10;
         self.length = R/2;
+
+        m1d = self.length*math.cos(xd[2]);
+        m2d = self.length*math.sin(xd[2]);
+        permanentPatch = patch.Arrow(xd[0], xd[1], m1d, m2d,
+            color='g',width=self.width);
 
         self.buffer = [x0[:2] for i in range(buffer_length)];
         self.trail_patch = patch.PathPatch(path.Path(self.buffer), color=self.color);
 
-        dx1 = self.length*math.cos(x0[2]);
-        dx2 = self.length*math.sin(x0[2]);
-        self.orientation = patch.Arrow(x0[0], x0[1], dx1, dx2,
-                                       width=self.width, color=self.color);
+        m1 = self.length*math.cos(x0[2]);
+        m2 = self.length*math.sin(x0[2]);
+        self.orientation = patch.Arrow(x0[0], x0[1], m1, m2,
+            color=self.color, width=self.width);
 
+        self.axs.add_patch(permanentPatch);
         self.axs.add_patch(self.trail_patch);
         self.axs.add_patch(self.orientation);
 
@@ -78,8 +85,10 @@ class Parameters:
 
         return self;
 
+def callback(mpc_var, T, x, u):
+    return mpc_var.params.update(T, x);
 
-def modelFunc(x, u, _):
+def model(x, u, _):
     dx = [
         math.cos(x[2])*(u[0] + u[1]),
         math.sin(x[2])*(u[0] + u[1]),
@@ -87,7 +96,7 @@ def modelFunc(x, u, _):
     ]
     return dx;
 
-def costFunc(mpc_var, xlist, ulist):
+def cost(mpc_var, xlist, ulist):
     # grab class variables
     xd = mpc_var.params.xd;
     Nu = mpc_var.u_num;
@@ -104,26 +113,23 @@ def costFunc(mpc_var, xlist, ulist):
     k = 0;
     for i, x in enumerate(xlist):
         dx = (x[0] - xd[0])**2 + (x[1] - xd[1])**2;
-        do = (math.cos(x[2]) - math.cos(xd[2]))**2 + (math.sin(x[2]) - math.sin(xd[2]))**2;
+        do = (x[2] - xd[2])**2;
 
-        if dx > TOL:
-            kx = kh;
-            ko = kl;
-        else:
-            kx = kl;
-            ko = kh;
+        # if dx > TOL:
+        #     kx = kh;
+        #     ko = kl;
+        # else:
+        #     kx = kl;
+        #     ko = kh;
 
-        C += kx*dx;
-        C += ko*do;
+        C += kh*dx;
+        C += kl*do;
 
         if (i != PH):
             C += ku*(ulist[k]**2 + ulist[k+1]**2);
             k += Nu;
 
     return C;
-
-def callbackFunc(mpc_var, T, x, u):
-    return mpc_var.params.update(T, x);
 
 
 if __name__ == "__main__":
@@ -136,7 +142,7 @@ if __name__ == "__main__":
     kl = 2;
     model_type = 'continuous';
     params = Parameters(x0, xd, buffer_length=25);
-    mpc_var = mpc.ModelPredictiveControl('ngd', modelFunc, costFunc, params, Nu,
+    mpc_var = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
         num_ssvar=Nx, PH_length=PH, knot_length=kl, time_step=dt, model_type=model_type);
     mpc_var.setAlpha(0.01);
 
@@ -144,7 +150,7 @@ if __name__ == "__main__":
     sim_time = 10;
     uinit = [0 for i in range(Nu*mpc_var.PH)];
     sim_results = mpc_var.sim_root(sim_time, x0, uinit,
-        callback=callbackFunc, output=1);
+        callback=callback, output=1);
     plt.close('all');
 
     T = sim_results[0];
