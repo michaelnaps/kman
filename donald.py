@@ -6,14 +6,22 @@ sys.path.insert(0, '/home/michaelnaps/prog/mpc');
 import mpc
 import numpy as np
 
+import Helpers.DataFunctions as data
+import Helpers.KoopmanFunctions as kman
+
 import math
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
 import matplotlib.path as path
 
 
+# print precision
+np.set_printoptions(precision=3, suppress=True);
+
 # hyper parameter(s)
 pi = math.pi;
+PH = 10;
+kl = 2;
 Nx = 3;
 Nu = 2;
 R = 1/2;  # robot-body radius
@@ -22,7 +30,7 @@ dt = 0.01;
 
 # callback function and parameters
 class Parameters:
-    def __init__(self, x0, xd, PH,
+    def __init__(self, x0, xd,
                  fig=None, axs=None,
                  buffer_length=10, pause=1e-3,
                  color='k'):
@@ -149,13 +157,39 @@ def cost(mpc_var, xlist, ulist):
 
 
 # observable functions
-def obs(x=None):
-    if x is None:
-        meta = {'Nk':0};
+def obs(X=None):
+    if X is None:
+        meta = {'Nk':obsX()['Nk']+obsU()['Nk']};
         return meta;
 
-    N = 10;
-    Psi = np.vstack( tuple(x**i for i in range(1,N+1)) )
+    x = X[:Nx].reshape(Nx,1);
+    u = X[Nx:].reshape(Nu,1);
+
+    PsiX = obsX(x);
+    PsiU = obsU(u);
+
+    Psi = np.vstack( (PsiX, PsiU) );
+    return Psi;
+
+
+def obsX(x=None):
+    Np = 10;
+    if x is None:
+        meta = {'Nk':Nx-1+Np};
+        return meta;
+
+    xR = np.array(x).reshape(Nx,1);
+    Psi = np.vstack( (xR[:2], tuple(xR[2]**i for i in range(1,Np+1))) )
+
+    return Psi;
+
+def obsU(u=None):
+    if u is None:
+        meta = {'Nk':Nu};
+        return meta;
+
+    uR = np.array(u).reshape(Nu,1);
+    Psi = uR;
 
     return Psi;
 
@@ -164,12 +198,11 @@ if __name__ == "__main__":
     # initialize states
     x0 = [0,0,pi/2];
     xd = [1,1,3*pi/2];
+    uinit = [0 for i in range(Nu*PH)];
 
     # create MPC class variable
-    PH = 10;
-    kl = 2;
     model_type = 'discrete';
-    params = Parameters(x0, xd, PH, buffer_length=25, pause=0.1);
+    params = Parameters(x0, xd, buffer_length=25, pause=0.1);
     mpc_var = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
         num_ssvar=Nx, PH_length=PH, knot_length=kl, time_step=dt,
         max_iter=10, model_type=model_type);
@@ -177,7 +210,6 @@ if __name__ == "__main__":
 
     # # solve over 10 [s] time frame
     # sim_time = 10;
-    # uinit = [0 for i in range(Nu*mpc_var.PH)];
     # sim_results = mpc_var.sim_root(sim_time, x0, uinit,
     #     callback=callback, output=1);
     # plt.close('all');
@@ -188,5 +220,34 @@ if __name__ == "__main__":
     # tlist = sim_results[6];
 
     # check obs function
-    obsReshape = lambda x: obs( np.array(x).reshape(Nx,1) );
-    print(obsReshape(x0));
+    # print(len(obsX(x0)) == obsX()['Nk']);
+    # print(len(obsU(uinit)) == obsU()['Nk']);
+    # print(len(obs( np.hstack( (x0, uinit) ) )) == obs()['Nk']);
+
+    # model function for training syntax
+    modelTrain = lambda x, u: np.array( model(x,u,None) ).reshape(Nx,1);
+
+    # generate initial conditions for training
+    N0 = 10;
+    X0 = np.random.rand(Nx,N0);
+
+    T = 10;  Nt = round(T/dt)+1;
+    tList = [[i*dt for i in range(Nt)]];
+
+    control = lambda x: 10*np.random.rand(Nu,1)-5;
+    xTrain, uTrain = data.generate_data(tList, modelTrain, X0, control, Nu);
+
+    # split training data into X and Y sets
+    xData = np.vstack( (xTrain[:,:-1], uTrain) );
+    yData = np.vstack( (xTrain[:,1:], uTrain) );
+
+    X = data.stack_data(xData, N0, Nx+Nu, Nt-1);
+    Y = data.stack_data(yData, N0, Nx+Nu, Nt-1);
+
+    # solve for Kx
+    XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
+    kvar = kman.KoopmanOperator(obs);
+    Kx = kvar.edmd(X, Y, XU0);
+
+    print('Kx:', kvar.err);
+    print(Kx);
