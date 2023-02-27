@@ -46,7 +46,7 @@ $$
     d_i(x) = ||x - a_i||_2
 $$
 
-Where $d$ is the $L_2$-norm distance function and $a$ is the center point of an active $anchor$.
+Where $d_i$ is the $L_2$-norm distance from the anchor, $a_i$, located at index $i$.
 
 
 ___
