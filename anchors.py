@@ -1,5 +1,4 @@
 import sys
-sys.path.insert(0, '/home/michaelnaps/prog/kman');
 sys.path.insert(0, '/home/michaelnaps/prog/ode');
 
 import numpy as np
@@ -7,8 +6,8 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patch
 import matplotlib.path as path
 
-import ode
 import Helpers.KoopmanFunctions as kman
+import Helpers.DataFunctions as data
 
 
 # create global "measurement" variables
@@ -234,24 +233,3 @@ if __name__ == "__main__":
 
     # generate model variable from koopman function
     koopFunc = lambda Psi, _1, _2: K@rmes(Psi);
-
-    fig, axs = plt.subplots();
-    axs.set_xlim(-10, 10);
-    axs.set_ylim(-10, 10);
-
-    N0 = 5;
-    xu0Test = np.vstack( (20*np.random.rand(Nx,N0)-10, np.zeros( (Nu,N0) )) );
-
-    sim_time = 2;
-    for i, xu0 in enumerate(xu0Test.T):
-        Psi0 = obs(xu0.reshape(Nx+Nu,1));
-
-        kModel = ode.Model(koopFunc, 'discrete', x0=Psi0, dt=dt);
-
-        xTest = kModel.simulate(sim_time)[1];
-        xTest = np.array(xTest);
-
-        axs.plot(xTest[:,0], xTest[:,1], color='b');
-        axs.plot(xTest[0,0], xTest[0,1], marker='.', markersize=12, color='k');
-
-    plt.show();
