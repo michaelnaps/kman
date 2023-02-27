@@ -247,7 +247,7 @@ if __name__ == "__main__":
     X = np.vstack( (xData, uData) );
     Y = np.vstack( (yData, uData) );
 
-    # solve for Kx
+    # solve for K
     XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
     kvar = kman.KoopmanOperator(obs);
     Kx = kvar.edmd(X, Y, XU0);
