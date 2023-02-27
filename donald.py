@@ -111,7 +111,7 @@ def callback(mpc_var, T, x, u):
     return mpc_var.params.update(T, x, xPH);
 
 
-# model functions
+# functions for MPC
 def model(x, u, _):
     xn = [
         x[0] + dt*math.cos(x[2])*(u[0] + u[1]),
@@ -159,7 +159,7 @@ def cost(mpc_var, xlist, ulist):
 # observable functions
 def obs(X=None):
     if X is None:
-        meta = {'Nk':obsX()['Nk']+obsU()['Nk']};
+        meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsH()['Nk']};
         return meta;
 
     x = X[:Nx].reshape(Nx,1);
@@ -167,30 +167,32 @@ def obs(X=None):
 
     PsiX = obsX(x);
     PsiU = obsU(u);
+    PsiH = obsH(x);
 
-    Psi = np.vstack( (PsiX, PsiU) );
+    Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
     return Psi;
 
-
 def obsX(x=None):
-    Np = 10;
     if x is None:
-        meta = {'Nk':Nx-1+Np};
+        meta = {'Nk':Nx};
         return meta;
-
     xR = np.array(x).reshape(Nx,1);
-    Psi = np.vstack( (xR[:2], tuple(xR[2]**i for i in range(1,Np+1))) )
-
+    Psi = xR;
     return Psi;
 
 def obsU(u=None):
     if u is None:
         meta = {'Nk':Nu};
         return meta;
-
     uR = np.array(u).reshape(Nu,1);
     Psi = uR;
+    return Psi;
 
+def obsH(x=None):
+    if x is None:
+        meta = {'Nk':2};
+        return meta;
+    Psi = np.array( [np.cos(x[2]), np.sin(x[2])] );
     return Psi;
 
 
@@ -202,7 +204,7 @@ if __name__ == "__main__":
 
     # create MPC class variable
     model_type = 'discrete';
-    params = Parameters(x0, xd, buffer_length=25, pause=0.1);
+    params = Parameters(x0, xd, buffer_length=25);
     mpc_var = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
         num_ssvar=Nx, PH_length=PH, knot_length=kl, time_step=dt,
         max_iter=10, model_type=model_type);
@@ -238,11 +240,12 @@ if __name__ == "__main__":
     xTrain, uTrain = data.generate_data(tList, modelTrain, X0, control, Nu);
 
     # split training data into X and Y sets
-    xData = np.vstack( (xTrain[:,:-1], uTrain) );
-    yData = np.vstack( (xTrain[:,1:], uTrain) );
+    uData = data.stack_data(uTrain, N0, Nu, Nt-1);
+    xData = data.stack_data(xTrain[:,:-1], N0, Nx, Nt-1);
+    yData = data.stack_data(xTrain[:,1:], N0, Nx, Nt-1);
 
-    X = data.stack_data(xData, N0, Nx+Nu, Nt-1);
-    Y = data.stack_data(yData, N0, Nx+Nu, Nt-1);
+    X = np.vstack( (xData, uData) );
+    Y = np.vstack( (yData, uData) );
 
     # solve for Kx
     XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
