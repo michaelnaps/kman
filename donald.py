@@ -182,17 +182,22 @@ def obsX(x=None):
 
 def obsU(u=None):
     if u is None:
-        meta = {'Nk':Nu};
+        meta = {'Nk':Nu+1};
         return meta;
     uR = np.array(u).reshape(Nu,1);
-    Psi = uR;
+    Psi = np.vstack( (uR, [1]) );
     return Psi;
 
 def obsH(x=None):
+    # Np = 10;
     if x is None:
-        meta = {'Nk':2};
+        Ntrig = 2;
+        meta = {'Nk':Ntrig};
         return meta;
-    Psi = np.array( [np.cos(x[2]), np.sin(x[2])] );
+
+    # xp = np.array( [x[2]**i for i in range(Np)] );
+    Psi = np.vstack( (np.cos(x[2]), np.sin(x[2])) );
+
     return Psi;
 
 
@@ -250,7 +255,8 @@ if __name__ == "__main__":
     # solve for K
     XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
     kvar = kman.KoopmanOperator(obs);
-    Kx = kvar.edmd(X, Y, XU0);
+    K = kvar.edmd(X, Y, XU0);
 
-    print('Kx:', kvar.err);
-    print(Kx);
+    print('Kx:', kvar.err, K.shape);
+    print(K);
+    # print(np.linalg.eig(K)[0]);
