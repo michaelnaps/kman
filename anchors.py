@@ -10,6 +10,10 @@ import Helpers.KoopmanFunctions as kman
 import Helpers.DataFunctions as data
 
 
+# set global output setting
+np.set_printoptions(precision=3, suppress=True);
+
+
 # create global "measurement" variables
 Nu = 2;
 Na = 4;
@@ -109,7 +113,7 @@ def obsH(X=None):
         dist[i] = (anchor.T - xp).T @ (anchor.T - xp);
 
     # Psi = X;
-    Psi = np.vstack( (dist, u, 1) );
+    Psi = np.vstack( (dist, 1, u) );
 
     return Psi;
 
@@ -128,10 +132,6 @@ def obs(X=None):
     Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
 
     return Psi;
-
-
-# set global output setting
-np.set_printoptions(precision=3, suppress=True);
 
 
 if __name__ == "__main__":
