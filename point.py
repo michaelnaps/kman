@@ -60,8 +60,12 @@ def obsU(u=None):
     PsiU = u;
     return PsiU;
 
-def obsH(x=None):
-    pass;
+def obsH(X=None):
+    if X is None:
+        meta = {'Nk':Nx+Nu};
+        return meta;
+    PsiH = X;
+    return PsiH;
 
 
 if __name__ == "__main__":
@@ -74,7 +78,7 @@ if __name__ == "__main__":
     randControl = lambda x: np.random.rand(Nu,1);
 
 
-    # generate training data for PsiX
+    # generate training data for Kx
     N0 = 10;
     X0 = 20*np.random.rand(Nx,N0) - 10;
 
@@ -112,5 +116,43 @@ if __name__ == "__main__":
 
     print('Kx:', Kx.shape, kxvar.err)
     print(Kx);
+    print('\n');
 
 
+    # construct data for Ku
+    randModel = lambda x, u: np.random.rand(Nx,1);
+    xRand, uTrain = data.generate_data(tList, randModel, X0,
+        control=control, Nu=Nu);
+
+    uStack = data.stack_data(uTrain, N0, Nu, Nt-1);
+    xStack = data.stack_data(xRand[:,:-1], N0, Nx, Nt-1);
+
+
+    # solve for Ku
+    Xu = np.vstack( (xStack, np.zeros( (Nu,N0*(Nt-1)) )) );
+    Yu = np.vstack( (xStack, uStack) );
+
+    kuvar = kman.KoopmanOperator(obsH);
+    Ku = kuvar.edmd(Xu, Yu, XU0)
+
+    print('Ku:', Ku.shape, kuvar.err)
+    print(Ku);
+    print('\n');
+
+
+    # generate cumulate operator
+    m = Nu;
+    p = obsX()['Nk'];
+    q = obsU()['Nk'];
+    b = obsH()['Nk'];
+
+    Ktemp = np.vstack( (
+        np.hstack( (np.eye(p), np.zeros( (p,q*b) )) ),
+        np.hstack( (np.zeros( (m*q, p) ), np.kron(np.eye(q), Ku[Nx:,:])) )
+    ) );
+
+    K = Kx @ Ktemp;
+
+    print('K\n', K)
+
+    
