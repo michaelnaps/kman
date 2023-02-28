@@ -67,7 +67,9 @@ $$
 
 The Koopman operator for this was formed using the KCE and resulted in good behavior...
 
-![image](./Figures/point.png)
+<p align="center">
+    <img src=./Figures/point.png width=550 />
+</p>
 
 
 ___
