@@ -184,9 +184,13 @@ if __name__ == "__main__":
     fig, axs = plt.subplots();
     axs.plot(xTest[0], xTest[1], label='Model');
     axs.plot(PsiTest[0], PsiTest[1], linestyle='--', label='KCE');
+
+    plt.title('$x_0 = [3, -1.4, 3, -10]^\intercal$');
     plt.xlabel('$x_1$')
     plt.ylabel('$x_2$')
     axs.axis('equal');
+    plt.grid();
+    
     fig.tight_layout();
     plt.legend();
     plt.show();
