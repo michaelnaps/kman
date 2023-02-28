@@ -15,7 +15,7 @@ Nx = 4;
 Nu = 2;
 
 
-# model is discrete (no ode needed)
+# model and control functions
 def model(x, u):
     A = np.array( [
         [1, 0, dt, 0],
