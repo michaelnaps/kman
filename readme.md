@@ -9,7 +9,10 @@ State/Model Selection: linear/second-order/discrete
 
 $$
     x = \left[ \begin{matrix}
-        x \\ y \\ \dot x \\ \dot y
+        x \\
+        y \\
+        \dot x \\
+        \dot y
     \end{matrix} \right]
 $$
 
@@ -61,6 +64,10 @@ $$
     \end{bmatrix}
 \end{aligned}
 $$
+
+The Koopman operator for this was formed using the KCE and resulted in good behavior...
+
+![image](./Figures/point.png)
 
 
 ___

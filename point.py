@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 import Helpers.KoopmanFunctions as kman
 import Helpers.DataFunctions as data
@@ -46,6 +47,21 @@ def control(x):
 
 
 # observable functions PsiX, PsiU, PsiH
+def obs(X=None):
+    if X is None:
+        meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsH()['Nk']};
+        return meta;
+    
+    x = X[:Nx];
+    u = X[Nx:];
+
+    PsiX = obsX(x);
+    PsiU = obsU(u);
+    PsiH = obsH(X);
+    PsiXU = np.vstack( (PsiX, np.kron(PsiU,PsiH)) );
+
+    return PsiXU;
+
 def obsX(x=None):
     if x is None:
         meta = {'Nk': Nx};
@@ -55,9 +71,9 @@ def obsX(x=None):
 
 def obsU(u=None):
     if u is None:
-        meta = {'Nk': Nu}
+        meta = {'Nk': 1}
         return meta;
-    PsiU = u;
+    PsiU = [1];
     return PsiU;
 
 def obsH(X=None):
@@ -96,22 +112,8 @@ if __name__ == "__main__":
     Y = np.vstack( (yStack, uStack) );
 
 
-    # create training observables and solve for Kx
-    def obsXU(X=None):
-        if X is None:
-            meta = {'Nk':obsX()['Nk']+obsU()['Nk']};
-            return meta;
-        
-        x = X[:Nx];
-        u = X[Nx:];
-
-        PsiX = obsX(x);
-        PsiU = obsU(u);
-        PsiXU = np.vstack( (PsiX, PsiU) );
-
-        return PsiXU;
-
-    kxvar = kman.KoopmanOperator(obsXU);
+    # solve for Kx from data
+    kxvar = kman.KoopmanOperator(obs);
     Kx = kxvar.edmd(X, Y, XU0);
 
     print('Kx:', Kx.shape, kxvar.err)
@@ -148,11 +150,44 @@ if __name__ == "__main__":
 
     Ktemp = np.vstack( (
         np.hstack( (np.eye(p), np.zeros( (p,q*b) )) ),
-        np.hstack( (np.zeros( (m*q, p) ), np.kron(np.eye(q), Ku[Nx:,:])) )
+        np.hstack( (np.zeros( (b*q, p) ), np.kron(np.eye(q), Ku)) )
     ) );
 
     K = Kx @ Ktemp;
 
-    print('K\n', K)
+    print('K\n', K, '\n')
 
+
+    # test the cumulative operator
+    kModel = lambda Psi: K@rmes(Psi);
+    def rmes(Psi):
+        Nkx = obsX()['Nk'];
+        Nku = obsU()['Nk'];
+        Nkh = obsH()['Nk'];
+
+        PsiX = Psi[:Nkx].reshape(Nkx,1);
+        PsiU = [1];
+        PsiH = obsH(Psi[Nkx:].reshape(Nku*Nkh,1));
+
+        Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
+
+        return Psin;
+
+    x0 = np.array( [[3],[-1.4],[3],[-10],[0],[0]] );
+    Psi0 = obs(x0);
+
+    xTest = data.generate_data(tList, model, x0[:Nx].reshape(Nx,1), control=control, Nu=Nu)[0];
+    PsiTest = data.generate_data(tList, kModel, Psi0)[0];
+
+    
+    # plot test results
+    fig, axs = plt.subplots();
+    axs.plot(xTest[0], xTest[1], label='Model');
+    axs.plot(PsiTest[0], PsiTest[1], linestyle='--', label='KCE');
+    plt.xlabel('$x_1$')
+    plt.ylabel('$x_2$')
+    axs.axis('equal');
+    fig.tight_layout();
+    plt.legend();
+    plt.show();
     
