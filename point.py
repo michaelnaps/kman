@@ -29,7 +29,7 @@ def model(x, u):
         [0, dt]
     ] );
 
-    xn = A@x + B@u;
+    xn = A@x.reshape(Nx,1) + B@u.reshape(Nu,1);
 
     return xn;
 
@@ -38,31 +38,79 @@ def control(x):
         [10, 0, 2.5, 0],
         [0, 10, 0, 2.5]
     ] );
-    xg = np.array([[0],[0]]);
+    xg = np.zeros( (Nx,1) );
 
-    u = C*(xg - x.reshape(Nx,1));
+    u = C@(xg - x.reshape(Nx,1));
 
     return u;
 
 
 # observable functions PsiX, PsiU, PsiH
-def obs(x=None):
-    if x is None:
-        meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsH()['Nk']};
-        return meta;
-    pass;
-
 def obsX(x=None):
-    pass;
+    if x is None:
+        meta = {'Nk': Nx};
+        return meta;
+    PsiX = x;
+    return PsiX;
 
-def obsU(x=None):
-    pass;
+def obsU(u=None):
+    if u is None:
+        meta = {'Nk': Nu}
+        return meta;
+    PsiU = u;
+    return PsiU;
 
 def obsH(x=None):
     pass;
 
 
 if __name__ == "__main__":
+    # simulation variables
+    T = 10;  Nt = round(T/dt) + 1;
+    tList = np.array( [ [i*dt for i in range(Nt)] ] );
 
+
+    # generate the randomized control policy
+    randControl = lambda x: np.random.rand(Nu,1);
+
+
+    # generate training data for PsiX
+    N0 = 10;
+    X0 = 20*np.random.rand(Nx,N0) - 10;
+
+    xData, uData = data.generate_data(tList, model, X0,
+        control=control, Nu=Nu);
+
+
+    # construct training data from xData and uData
+    uStack = data.stack_data(uData, N0, Nu, Nt-1);
+    xStack = data.stack_data(xData[:,:-1], N0, Nx, Nt-1);
+    yStack = data.stack_data(xData[:,1:], N0, Nx, Nt-1);
+
+    XU0 = np.vstack( (X0, np.zeros( (Nu,N0) )) );
+    X = np.vstack( (xStack, uStack) );
+    Y = np.vstack( (yStack, uStack) );
+
+
+    # create training observables and solve for Kx
+    def obsXU(X=None):
+        if X is None:
+            meta = {'Nk':obsX()['Nk']+obsU()['Nk']};
+            return meta;
+        
+        x = X[:Nx];
+        u = X[Nx:];
+
+        PsiX = obsX(x);
+        PsiU = obsU(u);
+        PsiXU = np.vstack( (PsiX, PsiU) );
+
+        return PsiXU;
+
+    kxvar = kman.KoopmanOperator(obsXU);
+    Kx = kxvar.edmd(X, Y, XU0);
+
+    print('Kx:', Kx.shape, kxvar.err)
+    print(Kx);
 
 
