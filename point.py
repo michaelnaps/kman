@@ -84,6 +84,7 @@ def obsH(X=None):
     return PsiH;
 
 
+# main executable section
 if __name__ == "__main__":
     # simulation variables
     T = 10;  Nt = round(T/dt) + 1;
