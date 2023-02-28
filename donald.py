@@ -128,7 +128,7 @@ def cost(mpc_var, xlist, ulist):
 
     # gain parameters
     TOL = 1e-6;
-    kh = 1000;
+    kh = 150;
     kl = 10;
     ku = 1;
 
@@ -138,13 +138,6 @@ def cost(mpc_var, xlist, ulist):
     for i, x in enumerate(xlist):
         dx = (x[0] - xd[0])**2 + (x[1] - xd[1])**2;
         do = (x[2] - xd[2])**2;
-
-        # if dx > TOL:
-        #     kx = kh;
-        #     ko = kl;
-        # else:
-        #     kx = kl;
-        #     ko = kh;
 
         C += kh*dx;
         C += kl*do;
@@ -203,7 +196,7 @@ def obsH(x=None):
 
 if __name__ == "__main__":
     # initialize states
-    x0 = [0,0,pi/2];
+    x0 = [-1,-1,3*pi/2];
     xd = [1,1,3*pi/2];
     uinit = [0 for i in range(Nu*PH)];
 
@@ -220,13 +213,13 @@ if __name__ == "__main__":
     # sim_results = mpc_var.sim_root(sim_time, x0, uinit,
     #     callback=callback, output=1);
     # plt.close('all');
-    #
+    
     # T = sim_results[0];
     # xlist = sim_results[1];
     # ulist = sim_results[2];
     # tlist = sim_results[6];
 
-    # check obs function
+    # # check obs function
     # print(len(obsX(x0)) == obsX()['Nk']);
     # print(len(obsU(uinit)) == obsU()['Nk']);
     # print(len(obs( np.hstack( (x0, uinit) ) )) == obs()['Nk']);
