@@ -56,7 +56,7 @@ $$
 \begin{aligned}
     \Psi_x = x
     &&
-    \Psi_u = u
+    \Psi_u = 1
     &&
     h = \begin{bmatrix}
         x \\
