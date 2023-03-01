@@ -106,9 +106,9 @@ class Parameters:
 
         return self;
 
-def callback(mpc_var, T, x, u):
-    xPH = mpc_var.simulate(x, u);
-    return mpc_var.params.update(T, x, xPH);
+def callback(mvar, T, x, u):
+    xPH = mvar.simulate(x, u);
+    return mvar.params.update(T, x, xPH);
 
 
 # functions for MPC
@@ -156,11 +156,10 @@ def obs(X=None):
         return meta;
 
     x = X[:Nx].reshape(Nx,1);
-    u = X[Nx:].reshape(Nu,1);
 
     PsiX = obsX(x);
-    PsiU = obsU(u);
-    PsiH = obsH(x);
+    PsiU = obsU(x);
+    PsiH = obsH(X);
 
     Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
     return Psi;
@@ -173,24 +172,22 @@ def obsX(x=None):
     Psi = xR;
     return Psi;
 
-def obsU(u=None):
-    if u is None:
-        meta = {'Nk':Nu+1};
-        return meta;
-    uR = np.array(u).reshape(Nu,1);
-    Psi = np.vstack( (uR, [1]) );
-    return Psi;
-
-def obsH(x=None):
-    # Np = 10;
+def obsU(x=None):
     if x is None:
         Ntrig = 2;
-        meta = {'Nk':Ntrig};
+        meta = {'Nk':Ntrig+1};
         return meta;
+    Psi = np.vstack( (np.cos(x[2]), np.sin(x[2]), [1]) );
+    return Psi;
 
-    # xp = np.array( [x[2]**i for i in range(Np)] );
-    Psi = np.vstack( (np.cos(x[2]), np.sin(x[2])) );
-
+def obsH(X=None):
+    # Np = 10;
+    if X is None:
+        Ntrig = 2;
+        meta = {'Nk':Nu};
+        return meta;
+    u = X[Nx:].reshape(Nu,1);
+    Psi = u;
     return Psi;
 
 
@@ -247,9 +244,9 @@ if __name__ == "__main__":
 
     # solve for K
     XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
-    kvar = kman.KoopmanOperator(obs);
-    K = kvar.edmd(X, Y, XU0);
+    kxvar = kman.KoopmanOperator(obs);
+    Kx = kvar.edmd(X, Y, XU0);
 
     print('Kx:', kvar.err, K.shape);
-    print(K);
+    print(Kx);
     # print(np.linalg.eig(K)[0]);

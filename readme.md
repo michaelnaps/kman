@@ -114,7 +114,7 @@ We pruposely limit the $h$ observation list from having knowledge of the states 
 
 ___
 ### **Caterpillar Track System:**
-State/Model Selection: nonlinear/first-order/discrete
+**State/Model Selection:** nonlinear/first-order/discrete
 
 $$
     x = \left[ \begin{matrix}
@@ -148,7 +148,7 @@ $$
     x^+ = x + \Delta t \cdot \dot{x}
 $$
 
-Observation Functions Structure:
+**Observation Functions Structure:**
 
 $$
 \begin{aligned}
@@ -159,13 +159,13 @@ $$
     \end{matrix} \right]
     &&
     \Psi_u = \left[ \begin{matrix} 
-        u_1 \\
-        u_2
+        \cos(x_3) \\
+        \sin(x_3)
     \end{matrix} \right]
     &&
     h = \left[ \begin{matrix} 
-        \cos(x_3) \\
-        \sin(x_3)
+        u_1 \\
+        u_2
     \end{matrix} \right]
 \end{aligned}
 $$
