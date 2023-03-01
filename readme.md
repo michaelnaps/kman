@@ -56,7 +56,7 @@ It is important to note that because the system is already linear, and the contr
 
 $$
 \begin{aligned}
-    \Psi_x = 1
+    \Psi_x = x
     &&
     \Psi_u = 1
     &&

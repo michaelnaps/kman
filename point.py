@@ -64,9 +64,9 @@ def obs(X=None):
 
 def obsX(x=None):
     if x is None:
-        meta = {'Nk': 1};
+        meta = {'Nk': Nx};
         return meta;
-    PsiX = 1;
+    PsiX = x;
     return PsiX;
 
 def obsU(u=None):
@@ -75,6 +75,20 @@ def obsU(u=None):
         return meta;
     PsiU = [1];
     return PsiU;
+
+def obsXU(X=None):
+    if X is None:
+        meta = {'Nk':obsX()['Nk']+obsU()['Nk']*Nu};
+        return meta;
+    
+    x = X[:Nx].reshape(Nx,1);
+    u = X[Nx:].reshape(Nu,1);
+
+    PsiX = obsX(x);
+    PsiU = obsU(u);
+    PsiXU = np.vstack( (PsiX, np.kron(PsiU,u)) );
+
+    return PsiXU;
 
 def obsH(X=None):
     if X is None:
@@ -134,7 +148,7 @@ if __name__ == "__main__":
 
 
     # solve for Kx from data
-    kxvar = kman.KoopmanOperator(obs);
+    kxvar = kman.KoopmanOperator(obsXU);
     Kx = kxvar.edmd(X, Y, XU0);
 
     print('Kx:', Kx.shape, kxvar.err)
@@ -171,7 +185,7 @@ if __name__ == "__main__":
 
     Ktemp = np.vstack( (
         np.hstack( (np.eye(p), np.zeros( (p,q*b) )) ),
-        np.hstack( (np.zeros( (b*q, p) ), np.kron(np.eye(q), Ku)) )
+        np.hstack( (np.zeros( (m*q, p) ), np.kron(np.eye(q), Ku[-m:,:])) )
     ) );
 
     K = Kx @ Ktemp;
@@ -188,20 +202,20 @@ if __name__ == "__main__":
 
         PsiX = Psi[:Nkx].reshape(Nkx,1);
         PsiU = [1];
-        PsiH = obsH(Psi[Nkx:].reshape(Nku*Nkh,1));
+        PsiH = obsH(Psi.reshape(Nkx+Nku*Nu,1));
 
         Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
 
         return Psin;
 
     x0 = np.array( [[3],[-1.4],[3],[-10],[0],[0]] );
-    Psi0 = obs(x0);
+    Psi0 = obsXU(x0);
 
     xTest = data.generate_data(tList, model, x0[:Nx].reshape(Nx,1), control=control, Nu=Nu)[0];
     PsiTest = data.generate_data(tList, kModel, Psi0)[0];
 
     
     # plot test results
-    plotcomp(xTest, PsiTest[p:]);
-    # plotcomp(xTest, PsiTest[p:], './Figures/point.png');
+    plotcomp(xTest, PsiTest);
+    # plotcomp(xTest, PsiTest, './Figures/point.png');
     
