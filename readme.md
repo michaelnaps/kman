@@ -5,7 +5,7 @@ This repository serves as the testing ground for my research being performed at 
 
 ___
 ### **Linear System:**
-State/Model Selection: linear/second-order/discrete
+**State/Model Selection:** linear/second-order/discrete
 
 $$
     x = \left[ \begin{matrix}
@@ -50,11 +50,13 @@ $$
 \end{aligned}
 $$
 
-Observation Functions Structure:
+**Observation Functions Structure:**
+
+It is important to note that because the system is already linear, and the control policy is linearly dependent on the states, the state and policy functions can reside solely in the $h$ observation list.
 
 $$
 \begin{aligned}
-    \Psi_x = x
+    \Psi_x = 1
     &&
     \Psi_u = 1
     &&
@@ -71,10 +73,9 @@ The Koopman operator for this was formed using the KCE and resulted in good beha
     <img src=./Figures/point.png width=550 />
 </p>
 
-
 ___
 ### **Anchor System:**
-State/model equations are the same as those shown for the *Linear System*.
+**State/model equations** are the same as those shown for the *Linear System*.
 
 The interesting component introduced here is the idea that the state is not observed directly, but instead observed through *anchors*. For practical purposes there are four evenly distanced *anchors* which, when called, give the object its respective linear distance. That is,
 
@@ -82,8 +83,32 @@ $$
     d_i(x) = ||x - a_i||_2
 $$
 
-Where $d_i$ is the $L_2$-norm distance from the anchor, $a_i$, located at index $i$.
+Where $d_i$ is the $L_2$-norm distance from the anchor, $a_i$, located at index $i$. The goal here is to utilize the EDMD learning structure to find a correlation between the *anchor* distances and the policy.
 
+**Observation Function Structure:**
+
+Here the observables are listed as
+
+$$
+\begin{aligned}
+    \Psi_x = x
+    &&
+    \Psi_u = \begin{bmatrix}
+        u \\
+        1
+    \end{bmatrix}
+    &&
+    h = \begin{bmatrix}
+        1 \\
+        d_1(x) \\
+        d_2(x) \\
+        \vdots \\
+        d_a(x)
+    \end{bmatrix}
+\end{aligned}
+$$
+
+We pruposely limit the $h$ observation list from having knowledge of the states so that we can demonstrate the robustness of the KCE formulation.
 
 ___
 ### **Caterpillar Track System:**

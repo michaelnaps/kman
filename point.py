@@ -64,9 +64,9 @@ def obs(X=None):
 
 def obsX(x=None):
     if x is None:
-        meta = {'Nk': Nx};
+        meta = {'Nk': 1};
         return meta;
-    PsiX = x;
+    PsiX = 1;
     return PsiX;
 
 def obsU(u=None):
@@ -82,6 +82,26 @@ def obsH(X=None):
         return meta;
     PsiH = X;
     return PsiH;
+
+
+# plot results
+def plotcomp(x1List, x2List, filename=None):
+    fig, axs = plt.subplots();
+    axs.plot(x1List[0], x1List[1], label='Model');
+    axs.plot(x2List[0], x2List[1], linestyle='--', label='KCE');
+
+    plt.title('$x_0 = [3, -1.4, 3, -10]^\intercal$');
+    plt.xlabel('$x_1$')
+    plt.ylabel('$x_2$')
+    axs.axis('equal');
+    fig.tight_layout();
+    plt.legend();
+    plt.grid();
+    
+    if filename is None:
+        plt.show();
+    else:
+        plt.savefig(filename, dpi=600);
 
 
 # main executable section
@@ -182,17 +202,5 @@ if __name__ == "__main__":
 
     
     # plot test results
-    fig, axs = plt.subplots();
-    axs.plot(xTest[0], xTest[1], label='Model');
-    axs.plot(PsiTest[0], PsiTest[1], linestyle='--', label='KCE');
-
-    plt.title('$x_0 = [3, -1.4, 3, -10]^\intercal$');
-    plt.xlabel('$x_1$')
-    plt.ylabel('$x_2$')
-    axs.axis('equal');
-    plt.grid();
-    
-    fig.tight_layout();
-    plt.legend();
-    plt.show();
+    plotcomp(xTest, PsiTest[p:], './Figures/point.png')
     
