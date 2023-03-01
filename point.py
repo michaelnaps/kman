@@ -120,7 +120,7 @@ if __name__ == "__main__":
     X0 = 20*np.random.rand(Nx,N0) - 10;
 
     xData, uData = data.generate_data(tList, model, X0,
-        control=control, Nu=Nu);
+        control=randControl, Nu=Nu);
 
 
     # construct training data from xData and uData
@@ -202,5 +202,6 @@ if __name__ == "__main__":
 
     
     # plot test results
-    plotcomp(xTest, PsiTest[p:], './Figures/point.png')
+    plotcomp(xTest, PsiTest[p:]);
+    # plotcomp(xTest, PsiTest[p:], './Figures/point.png');
     

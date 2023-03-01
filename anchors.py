@@ -13,6 +13,11 @@ np.set_printoptions(precision=3, suppress=True);
 dt = 0.01;
 Nx = 4;
 Nu = 2;
+Na = 4;
+aList = np.array( [
+    [10, 10, -10, -10],
+    [10, -10, -10, 10]
+] );
 
 
 # model and control functions
@@ -45,6 +50,12 @@ def control(x):
 
     return u;
 
+def anchors(x):
+    d = np.empty( (Na, 1) );
+    for i, a in enumerate(aList.T):
+        d[:,i] = np.linalg.norm(a.reshape(2,1) - x[:2].reshape(2,1));
+    return d;    
+
 
 # observable functions PsiX, PsiU, PsiH
 def obs(X=None):
@@ -76,11 +87,11 @@ def obsU(u=None):
     PsiU = [1];
     return PsiU;
 
-def obsH(X=None):
-    if X is None:
-        meta = {'Nk':Nx+Nu};
+def obsH(x=None):
+    if x is None:
+        meta = {'Nk':Na+1};
         return meta;
-    PsiH = X;
+    PsiH = np.vstack( ([1], anchors(x)) );
     return PsiH;
 
 
