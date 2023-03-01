@@ -1,10 +1,5 @@
-import sys
-sys.path.insert(0, '/home/michaelnaps/prog/ode');
-
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.patches as patch
-import matplotlib.path as path
 
 import Helpers.KoopmanFunctions as kman
 import Helpers.DataFunctions as data
@@ -14,222 +9,198 @@ import Helpers.DataFunctions as data
 np.set_printoptions(precision=3, suppress=True);
 
 
-# create global "measurement" variables
+# hyper paramter(s)
+dt = 0.01;
+Nx = 4;
 Nu = 2;
-Na = 4;
-anchors = np.array( [
-    [5, 5, -5, -5],
-    [1, -5, -5, 5]
-] );
 
 
-class Parameters:
-    def __init__(self, X0,
-                 fig=None, axs=None,
-                 buffer_length=10, pause=1e-3,
-                 color='k'):
-        if axs is None and fig is None:
-            self.fig, self.axs = plt.subplots();
-        else:
-            self.fig = fig;
-            self.axs = axs;
-
-        self.axs.set_xlim(-10.5, 10.5);
-        self.axs.set_ylim(-10.5, 10.5);
-        # self.fig.tight_layout();
-
-        # initialize buffer (trail)
-        self.color = color;
-
-        x0 = X0[0][:2];
-        self.buffer = np.kron( np.ones( (buffer_length, 1) ), x0 );
-        self.trail_patch = patch.PathPatch(path.Path(self.buffer), color=self.color);
-
-        self.axs.add_patch(self.trail_patch);
-
-        self.pause = pause;
-
-    def update(self, t, X):
-        self.trail_patch.remove();
-
-        self.axs.set_title("time: %.3f [s]" % t)
-
-        x = X[:2].T;
-
-        self.buffer[:-1] = self.buffer[1:];
-        self.buffer[-1] = x;
-
-        self.trail_patch = patch.PathPatch(path.Path(self.buffer), fill=0);
-        self.axs.add_patch(self.trail_patch);
-
-        plt.show(block=0);
-        plt.pause(self.pause);
-
-        return self;
-
-def modelFunc(x, u, params=None):
-    A = [
+# model and control functions
+def model(x, u):
+    A = np.array( [
         [1, 0, dt, 0],
         [0, 1, 0, dt],
         [0, 0, 1, 0],
         [0, 0, 0, 1]
-    ];
-    B = [
+    ] );
+    B = np.array( [
         [0, 0],
         [0, 0],
         [dt, 0],
         [0, dt]
-    ];
-    return A@x + B@u;
+    ] );
 
-def callbackFunc(T, x, u, mvar):
-    return mvar.params.update(T, x);
+    xn = A@x.reshape(Nx,1) + B@u.reshape(Nu,1);
 
+    return xn;
+
+def control(x):
+    C = np.array( [
+        [10, 0, 2.5, 0],
+        [0, 10, 0, 2.5]
+    ] );
+    xg = np.zeros( (Nx,1) );
+
+    u = C@(xg - x.reshape(Nx,1));
+
+    return u;
+
+
+# observable functions PsiX, PsiU, PsiH
+def obs(X=None):
+    if X is None:
+        meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsH()['Nk']};
+        return meta;
+    
+    x = X[:Nx];
+    u = X[Nx:];
+
+    PsiX = obsX(x);
+    PsiU = obsU(u);
+    PsiH = obsH(X);
+    PsiXU = np.vstack( (PsiX, np.kron(PsiU,PsiH)) );
+
+    return PsiXU;
 
 def obsX(x=None):
     if x is None:
-        meta = {'Nk':4};
+        meta = {'Nk': 1};
         return meta;
-    return x;
+    PsiX = 1;
+    return PsiX;
 
-def obsU(x=None):
-    if x is None:
-        meta = {'Nk':1};
+def obsU(u=None):
+    if u is None:
+        meta = {'Nk': 1}
         return meta;
-    return 1;
+    PsiU = [1];
+    return PsiU;
 
 def obsH(X=None):
     if X is None:
-        meta = {'Nk':Na+Nu+1};
+        meta = {'Nk':Nx+Nu};
         return meta;
-
-    x = X[:4];
-    u = X[4:];
-
-    xp = x[:2].T[0];
-
-    dist = np.zeros( (Na,1) );
-    for i, anchor in enumerate(anchors.T):
-        dist[i] = (anchor.T - xp).T @ (anchor.T - xp);
-
-    # Psi = X;
-    Psi = np.vstack( (dist, 1, u) );
-
-    return Psi;
-
-def obs(X=None):
-    if X is None:
-        meta = {'Nk': obsX()['Nk'] + obsU()['Nk']*Nu};
-        return meta;
-
-    x = X[:4];
-    u = X[4:];
-
-    PsiX = obsX(x);
-    PsiU = obsU(x);
-    PsiH = u;
-
-    Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
-
-    return Psi;
+    PsiH = X;
+    return PsiH;
 
 
+# plot results
+def plotcomp(x1List, x2List, filename=None):
+    fig, axs = plt.subplots();
+    axs.plot(x1List[0], x1List[1], label='Model');
+    axs.plot(x2List[0], x2List[1], linestyle='--', label='KCE');
+
+    plt.title('$x_0 = [3, -1.4, 3, -10]^\intercal$');
+    plt.xlabel('$x_1$')
+    plt.ylabel('$x_2$')
+    axs.axis('equal');
+    fig.tight_layout();
+    plt.legend();
+    plt.grid();
+    
+    if filename is None:
+        plt.show();
+    else:
+        plt.savefig(filename, dpi=600);
+
+
+# main executable section
 if __name__ == "__main__":
-    # construct model
-    Nx = 4;
-
-    dt = 0.1;
-    xg = np.zeros( (Nx,1) );
-
-    C = [
-        [10, 0, 5, 0],
-        [0, 10, 0, 5]
-    ];
-    control = lambda x: C@(xg.reshape(Nx,1) - x.reshape(Nx,1));
-
-
     # simulation variables
-    T = 10;  Nt = round(T/dt)+1;
-    tTrain = np.array( [i*dt for i in range(Nt)] );
+    T = 10;  Nt = round(T/dt) + 1;
+    tList = np.array( [ [i*dt for i in range(Nt)] ] );
 
 
-    # generate list of randomly assorted u
-    x0 = 10*np.random.rand(4,1) - 5;
-
-    uRand = 2*np.random.rand(Nu, Nt-1) - 1;
-    xTrain = np.zeros( (Nx,Nt) );
-
-    xTrain[:,1] = x0.reshape(Nx,);
-
-    for i in range(Nt-1):
-        xTrain[:,i+1] = modelFunc(xTrain[:,i], uRand[:,i]);
+    # generate the randomized control policy
+    randControl = lambda x: np.random.rand(Nu,1);
 
 
-    # construct Kx data matrices
-    X = np.vstack( (xTrain[:,:Nt-1], uRand) );
-    Y = np.vstack( (xTrain[:,1:Nt], uRand) );
+    # generate training data for Kx
+    N0 = 10;
+    X0 = 20*np.random.rand(Nx,N0) - 10;
 
-    X0 = np.vstack( (x0, uRand[:,0].reshape(Nu,1)) );
+    xData, uData = data.generate_data(tList, model, X0,
+        control=control, Nu=Nu);
 
+
+    # construct training data from xData and uData
+    uStack = data.stack_data(uData, N0, Nu, Nt-1);
+    xStack = data.stack_data(xData[:,:-1], N0, Nx, Nt-1);
+    yStack = data.stack_data(xData[:,1:], N0, Nx, Nt-1);
+
+    XU0 = np.vstack( (X0, np.zeros( (Nu,N0) )) );
+    X = np.vstack( (xStack, uStack) );
+    Y = np.vstack( (yStack, uStack) );
+
+
+    # solve for Kx from data
     kxvar = kman.KoopmanOperator(obs);
-    Kx = kxvar.edmd(X, Y, X0);
+    Kx = kxvar.edmd(X, Y, XU0);
 
-    print(kxvar.err);
-    print('Kx\n', Kx);
+    print('Kx:', Kx.shape, kxvar.err)
+    print(Kx);
+    print('\n');
 
 
     # construct data for Ku
-    xRand = np.random.rand(Nx,Nt-1);
-    uTrain = np.zeros( (Nu,Nt-1) );
+    randModel = lambda x, u: np.random.rand(Nx,1);
+    xRand, uTrain = data.generate_data(tList, randModel, X0,
+        control=control, Nu=Nu);
 
-    for i in range(Nt-1):
-        uTrain[:,i] = control(xRand[:,i]).reshape(Nu,);
+    uStack = data.stack_data(uTrain, N0, Nu, Nt-1);
+    xStack = data.stack_data(xRand[:,:-1], N0, Nx, Nt-1);
 
 
     # solve for Ku
-    Xu = np.vstack( (xRand, np.zeros( (Nu,Nt-1) )) );
-    Yu = np.vstack( (xRand, uTrain) );
+    Xu = np.vstack( (xStack, np.zeros( (Nu,N0*(Nt-1)) )) );
+    Yu = np.vstack( (xStack, uStack) );
 
-    Xu0 = np.vstack( (
-        xRand[:,0].reshape(Nx,1), uTrain[:,0].reshape(Nu,1)
-    ) );
     kuvar = kman.KoopmanOperator(obsH);
-    Ku = kuvar.edmd(Xu, Yu, Xu0)
+    Ku = kuvar.edmd(Xu, Yu, XU0)
 
-    print('Ku\n', Ku);
+    print('Ku:', Ku.shape, kuvar.err)
+    print(Ku);
+    print('\n');
 
 
-    # calculate cumulative operator
+    # generate cumulate operator
     m = Nu;
     p = obsX()['Nk'];
     q = obsU()['Nk'];
     b = obsH()['Nk'];
 
-    K = Kx @ np.vstack( (
+    Ktemp = np.vstack( (
         np.hstack( (np.eye(p), np.zeros( (p,q*b) )) ),
-        np.hstack( (np.zeros( (m*q, p) ), np.kron(np.eye(q), Ku[Na:-1,:])) )
+        np.hstack( (np.zeros( (b*q, p) ), np.kron(np.eye(q), Ku)) )
     ) );
 
-    print('K\n', K)
+    K = Kx @ Ktemp;
+
+    print('K\n', K, '\n')
 
 
-    # create the remeasure function
-    NkX = obsX()['Nk'];
-    NkU = obsU()['Nk'];
+    # test the cumulative operator
+    kModel = lambda Psi: K@rmes(Psi);
     def rmes(Psi):
-        x = Psi[:Nx];
-        u = Psi[Nx:];
+        Nkx = obsX()['Nk'];
+        Nku = obsU()['Nk'];
+        Nkh = obsH()['Nk'];
 
-        PsiX = x;
-        PsiU = 1;
+        PsiX = Psi[:Nkx].reshape(Nkx,1);
+        PsiU = [1];
+        PsiH = obsH(Psi[Nkx:].reshape(Nku*Nkh,1));
 
-        X = np.vstack( (x, np.zeros( (Nu,1) )) )
-        PsiH = obsH(X);
+        Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
 
-        Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
+        return Psin;
 
-        return Psi;
+    x0 = np.array( [[3],[-1.4],[3],[-10],[0],[0]] );
+    Psi0 = obs(x0);
 
+    xTest = data.generate_data(tList, model, x0[:Nx].reshape(Nx,1), control=control, Nu=Nu)[0];
+    PsiTest = data.generate_data(tList, kModel, Psi0)[0];
 
-    # generate model variable from koopman function
-    koopFunc = lambda Psi, _1, _2: K@rmes(Psi);
+    
+    # plot test results
+    plotcomp(xTest, PsiTest[p:], './Figures/point.png')
+    
