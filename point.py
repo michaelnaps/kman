@@ -47,21 +47,6 @@ def control(x):
 
 
 # observable functions PsiX, PsiU, PsiH
-def obs(X=None):
-    if X is None:
-        meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsH()['Nk']};
-        return meta;
-    
-    x = X[:Nx];
-    u = X[Nx:];
-
-    PsiX = obsX(x);
-    PsiU = obsU(u);
-    PsiH = obsH(X);
-    PsiXU = np.vstack( (PsiX, np.kron(PsiU,PsiH)) );
-
-    return PsiXU;
-
 def obsX(x=None):
     if x is None:
         meta = {'Nk': Nx};
@@ -86,9 +71,9 @@ def obsXU(X=None):
 
     PsiX = obsX(x);
     PsiU = obsU(u);
-    PsiXU = np.vstack( (PsiX, np.kron(PsiU,u)) );
+    Psi = np.vstack( (PsiX, np.kron(PsiU,u)) );
 
-    return PsiXU;
+    return Psi;
 
 def obsH(X=None):
     if X is None:
