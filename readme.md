@@ -1,6 +1,6 @@
 ### **Koopman Operator Notes**
 
-This repository serves as the testing ground for my research being performed at Boston University with the intent of being published. This readme currently discusses noteworthy models being evaluated theoretically before being tested with the Koopman control equation (KCE) formulation. It also serves as a testing ground for my ideas on gradient flow mapping, etc.
+This repository serves as the testing ground for my research being performed at Boston University with the intent of being published. This readme currently discusses noteworthy models being evaluated and the results of their tests with the Koopman control equation (KCE) formulation. It also serves as a testing ground for my ideas on gradient flow mapping, etc.
 
 
 ___
@@ -66,6 +66,8 @@ $$
     \end{bmatrix}
 \end{aligned}
 $$
+
+In other words, for a wholistically linear system, we can represent the model in terms of solely $h$. We could also write is as $x,u \in h^+ = \mathcal{K}_u h$.
 
 The Koopman operator for this was formed using the KCE and resulted in good behavior...
 

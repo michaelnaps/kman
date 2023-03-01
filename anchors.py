@@ -53,7 +53,7 @@ def control(x):
 def anchors(x):
     d = np.empty( (Na, 1) );
     for i, a in enumerate(aList.T):
-        d[:,i] = np.linalg.norm(a.reshape(2,1) - x[:2].reshape(2,1));
+        d[i] = np.linalg.norm(a.reshape(2,1) - x[:2].reshape(2,1));
     return d;    
 
 
@@ -75,9 +75,9 @@ def obs(X=None):
 
 def obsX(x=None):
     if x is None:
-        meta = {'Nk': 1};
+        meta = {'Nk': Nx};
         return meta;
-    PsiX = 1;
+    PsiX = x;
     return PsiX;
 
 def obsU(u=None):
@@ -87,11 +87,16 @@ def obsU(u=None):
     PsiU = [1];
     return PsiU;
 
-def obsH(x=None):
-    if x is None:
-        meta = {'Nk':Na+1};
+def obsH(X=None):
+    if X is None:
+        meta = {'Nk':Nu+Na+1};
         return meta;
-    PsiH = np.vstack( ([1], anchors(x)) );
+    
+    x = X[:Nx];
+    u = X[Nx:];
+
+    PsiH = np.vstack( (u, anchors(x), [1]) );
+
     return PsiH;
 
 
@@ -131,7 +136,7 @@ if __name__ == "__main__":
     X0 = 20*np.random.rand(Nx,N0) - 10;
 
     xData, uData = data.generate_data(tList, model, X0,
-        control=control, Nu=Nu);
+        control=randControl, Nu=Nu);
 
 
     # construct training data from xData and uData
@@ -145,7 +150,14 @@ if __name__ == "__main__":
 
 
     # solve for Kx from data
-    kxvar = kman.KoopmanOperator(obs);
+    def obsXU(X=None):
+        if X is None:
+            meta = {'Nk':Nx+Nu};
+            return meta;
+        PsiXU = X;
+        return PsiXU;
+
+    kxvar = kman.KoopmanOperator(obsXU);
     Kx = kxvar.edmd(X, Y, XU0);
 
     print('Kx:', Kx.shape, kxvar.err)
@@ -182,36 +194,42 @@ if __name__ == "__main__":
 
     Ktemp = np.vstack( (
         np.hstack( (np.eye(p), np.zeros( (p,q*b) )) ),
-        np.hstack( (np.zeros( (b*q, p) ), np.kron(np.eye(q), Ku)) )
+        np.hstack( (np.zeros( (m*q, p) ), np.kron(np.eye(q), Ku[:Nu,:])) )
     ) );
 
     K = Kx @ Ktemp;
 
-    print('K\n', K, '\n')
+    print('K:', K.shape);
+    print(K, '\n');
 
 
-    # test the cumulative operator
-    kModel = lambda Psi: K@rmes(Psi);
+    # define the remeasure function
     def rmes(Psi):
         Nkx = obsX()['Nk'];
         Nku = obsU()['Nk'];
         Nkh = obsH()['Nk'];
 
+        X = Psi[:Nx+Nu].reshape(Nx+Nu,1);
+
         PsiX = Psi[:Nkx].reshape(Nkx,1);
         PsiU = [1];
-        PsiH = obsH(Psi[Nkx:].reshape(Nku*Nkh,1));
+        PsiH = obsH(X);
 
         Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
 
         return Psin;
 
+
+    # test the cumulative operator
+    kModel = lambda Psi: K@rmes(Psi);
+
     x0 = np.array( [[3],[-1.4],[3],[-10],[0],[0]] );
-    Psi0 = obs(x0);
+    Psi0 = obsXU(x0);
 
     xTest = data.generate_data(tList, model, x0[:Nx].reshape(Nx,1), control=control, Nu=Nu)[0];
     PsiTest = data.generate_data(tList, kModel, Psi0)[0];
 
     
     # plot test results
-    plotcomp(xTest, PsiTest[p:], './Figures/point.png')
+    plotcomp(xTest, PsiTest[p:])
     
