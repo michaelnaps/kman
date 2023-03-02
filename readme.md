@@ -1,6 +1,6 @@
 ### **Koopman Operator Notes**
 
-This repository serves as the testing ground for my research being performed at Boston University with the intent of being published. This readme currently discusses noteworthy models being evaluated and the results of their tests with the Koopman control equation (KCE) formulation. It also serves as a testing ground for my ideas on gradient flow mapping, etc.
+This repository serves as the testing ground for my research at Boston University (being performed with the intent of being published). This readme currently discusses noteworthy models being evaluated and the results of their tests with the Koopman control equation (KCE). It also serves as a testing ground for my ideas on gradient flow mapping, etc.
 
 
 ___
