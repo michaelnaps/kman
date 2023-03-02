@@ -174,4 +174,4 @@ $$
 \end{aligned}
 $$
 
-We will consider using the Taylor series expansion of $\cos(x_3)$ and $\sin(x_3)$ with the hope that we can include enough terms to propagate $\cos$ and $\sin$ successfully.
+We will consider using the Taylor series expansion of $\cos(x_3)$ and $\sin(x_3)$ with the hope that we can include enough terms to propagate the trigonomateric functions successfully.

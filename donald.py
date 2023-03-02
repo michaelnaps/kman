@@ -177,7 +177,9 @@ def obsU(x=None):
         Ntrig = 2;
         meta = {'Nk':Ntrig+1};
         return meta;
+
     PsiU = np.vstack( (np.cos(x[2]), np.sin(x[2]), [1]) );
+    
     return PsiU;
 
 def obsH(X=None):
