@@ -110,7 +110,7 @@ $$
 \end{aligned}
 $$
 
-We pruposely limit the $h$ observation list from having knowledge of the states so that we can demonstrate the robustness of the KCE formulation.
+We purposely limit the $h$ observation list from having knowledge of the states so that we can demonstrate the robustness of the KCE under considerable limitations.
 
 ___
 ### **Caterpillar Track System:**
