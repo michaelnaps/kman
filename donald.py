@@ -169,26 +169,26 @@ def obsX(x=None):
         meta = {'Nk':Nx};
         return meta;
     xR = np.array(x).reshape(Nx,1);
-    Psi = xR;
-    return Psi;
+    PsiX = xR;
+    return PsiX;
 
 def obsU(x=None):
     if x is None:
         Ntrig = 2;
         meta = {'Nk':Ntrig+1};
         return meta;
-    Psi = np.vstack( (np.cos(x[2]), np.sin(x[2]), [1]) );
-    return Psi;
+    PsiU = np.vstack( (np.cos(x[2]), np.sin(x[2]), [1]) );
+    return PsiU;
 
 def obsH(X=None):
-    # Np = 10;
     if X is None:
-        Ntrig = 2;
         meta = {'Nk':Nu};
         return meta;
+
     u = X[Nx:].reshape(Nu,1);
-    Psi = u;
-    return Psi;
+
+    PsiH = u;
+    return PsiH;
 
 
 if __name__ == "__main__":
@@ -210,11 +210,6 @@ if __name__ == "__main__":
     # sim_results = mpc_var.sim_root(sim_time, x0, uinit,
     #     callback=callback, output=1);
     # plt.close('all');
-    
-    # T = sim_results[0];
-    # xlist = sim_results[1];
-    # ulist = sim_results[2];
-    # tlist = sim_results[6];
 
     # # check obs function
     # print(len(obsX(x0)) == obsX()['Nk']);
@@ -243,10 +238,13 @@ if __name__ == "__main__":
     Y = np.vstack( (yData, uData) );
 
     # solve for K
+    NkX = obsX()['Nk'];  # for reference
+    NkU = obsU()['Nk'];
+    NkH = obsH()['Nk'];
+
     XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
     kxvar = kman.KoopmanOperator(obs);
-    Kx = kvar.edmd(X, Y, XU0);
+    Kx = kxvar.edmd(X, Y, XU0);
 
-    print('Kx:', kvar.err, K.shape);
+    print('Kx:', kxvar.err, Kx.shape);
     print(Kx);
-    # print(np.linalg.eig(K)[0]);

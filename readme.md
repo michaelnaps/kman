@@ -150,6 +150,8 @@ $$
 
 **Observation Functions Structure:**
 
+It is important to note that for this system, the $cos(x_3)$ and $sin(x_3)$ terms must be included in $\Psi_u$ because of their bilinear combination in the model equations. For this reason, the measured observation list, $h$ must contain a method for propagating them forward as well as computing the control.
+
 $$
 \begin{aligned}
     \Psi_x = \left[ \begin{matrix}
@@ -160,12 +162,16 @@ $$
     &&
     \Psi_u = \left[ \begin{matrix} 
         \cos(x_3) \\
-        \sin(x_3)
+        \sin(x_3) \\
+        1
     \end{matrix} \right]
     &&
     h = \left[ \begin{matrix} 
         u_1 \\
-        u_2
+        u_2 \\
+        \sum_{j=0}^{N_p} x_3^j
     \end{matrix} \right]
 \end{aligned}
 $$
+
+We will consider using the Taylor series expansion of $\cos(x_3)$ and $\sin(x_3)$ with the hope that we can include enough terms to propagate $\cos$ and $\sin$ successfully.
