@@ -180,11 +180,7 @@ It is important to note that for this system, the $cos(x_3)$ and $sin(x_3)$ term
 
 $$
 \begin{aligned}
-    \Psi_x = \left[ \begin{matrix}
-        x_1 \\
-        x_2 \\
-        x_3
-    \end{matrix} \right]
+    \Psi_x = x
     &&
     \Psi_u = \left[ \begin{matrix} 
         \cos(x_3) \\
@@ -193,9 +189,9 @@ $$
     \end{matrix} \right]
     &&
     h = \left[ \begin{matrix} 
+        1 \\
         u_1 \\
-        u_2 \\
-        \sum_{j=0}^{N_p} x_3^j
+        u_2 
     \end{matrix} \right]
 \end{aligned}
 $$

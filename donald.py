@@ -156,6 +156,7 @@ def obsXU(X=None, mvar=None):
         return meta;
 
     x = X[:Nx].reshape(Nx,1);
+    u = X[Nx:].reshape(Nu,1);
 
     PsiX = obsX(x);
     PsiU = obsU(x);
@@ -168,8 +169,7 @@ def obsX(x=None):
     if x is None:
         meta = {'Nk':Nx};
         return meta;
-    xR = np.array(x).reshape(Nx,1);
-    PsiX = xR;
+    PsiX = x;
     return PsiX;
 
 def obsU(x=None):
@@ -177,15 +177,13 @@ def obsU(x=None):
         Ntrig = 2;
         meta = {'Nk':Ntrig+1};
         return meta;
-
     PsiU = np.vstack( (np.cos(x[2]), np.sin(x[2]), [1]) );
-    
     return PsiU;
 
 def obsH(X=None, mvar=None):
     if X is None:
         # meta = {'Nk':Nu*(PH + 1)};
-        meta = {'Nk':Nu};
+        meta = {'Nk':Nu+1};
         return meta;
 
     # x = X[:Nx].reshape(Nx,);
@@ -193,7 +191,7 @@ def obsH(X=None, mvar=None):
 
     # dCu = np.array( mvar.gradient(x, u) );
 
-    PsiH = u;
+    PsiH = np.vstack( ([1], u) );
     return PsiH;
 
 
@@ -256,6 +254,8 @@ if __name__ == "__main__":
 
     print('Kx:', kxvar.err, Kx.shape);
     print(Kx);
+
+    print(Kx[NkX:,:].T);
 
 
     # compile data for traing Ku
