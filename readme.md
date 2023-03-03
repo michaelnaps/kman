@@ -148,6 +148,32 @@ $$
     x^+ = x + \Delta t \cdot \dot{x}
 $$
 
+$$
+    \begin{bmatrix}
+        f_1(x_1) \\
+        f_2(x_2) \\
+        f_3(x_3)
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        x_1^+ \\
+        x_2^+ \\
+        x_3^+
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        x_1 \\
+        x_2 \\
+        x_3
+    \end{bmatrix}
+    + \Delta t
+    \begin{bmatrix}
+        \cos(x_3) (u_1 + u_2) \\ 
+        \sin(x_3) (u_1 + u_2) \\
+        \frac{1}{R} (u_1 + u_2)
+    \end{bmatrix}
+$$
+
 **Observation Functions Structure:**
 
 It is important to note that for this system, the $cos(x_3)$ and $sin(x_3)$ terms must be included in $\Psi_u$ because of their bilinear combination in the model equations. For this reason, the measured observation list, $h$ must contain a method for propagating them forward as well as computing the control.
@@ -174,4 +200,19 @@ $$
 \end{aligned}
 $$
 
-We will consider using the Taylor series expansion of $\cos(x_3)$ and $\sin(x_3)$ with the hope that we can include enough terms to propagate the trigonomateric functions successfully.
+Because the $\cos$ and $\sin$ terms are contained in the $\Psi_u$ observables, they must be propagated when moving from $\Psi$ to $\Psi^+$. It may be possible to use a linearization of the two trigonometric functions.
+
+$$
+\begin{aligned}
+    & f_3(x_3) = x_3 + \Delta t \frac{1}{R}(u_1 + u_2) \\
+    & \cos(f_3(x_3^+)) = \cos(x_3 + \Delta t \frac{1}{R}(u_1 + u_2)) \\
+    & L(\cos(f_3(x_3))) = L(\cos(x_3^+)) = \cos(x_3) + \left( \frac{d}{dx} \cos(x_3) \right) (x_3^+ - x_3)\\
+    & L_3(\cos(x_3^+)) = \cos(x_3) - \sin(x_3) (x_3^+ - x_3) \\
+    & L_3(\cos(x_3^+)) = \cos(x_3) - \sin(x_3) (x_3 + \Delta t \frac{1}{R}(u_1 + u_2) - x_3) \\
+    & L_3(\cos(x_3^+)) = \cos(x_3) - \sin(x_3) (\Delta t \frac{1}{R}(u_1 + u_2)) \\
+    \\
+    & cos(x_3^+) \approx \cos(x_3) - \sin(x_3) (\Delta t \frac{1}{R}(u_1 + u_2))
+\end{aligned}
+$$
+
+Meaning that for a small enough change in $x_3$ the function $\cos(x_3)$ can be propagated using a bilinear combination with the model equation $f_3$.

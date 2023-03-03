@@ -20,7 +20,7 @@ np.set_printoptions(precision=3, suppress=True);
 
 # hyper parameter(s)
 pi = math.pi;
-PH = 10;
+PH = 1;
 kl = 2;
 Nx = 3;
 Nu = 2;
@@ -150,7 +150,7 @@ def cost(mpc_var, xlist, ulist):
 
 
 # observable functions
-def obs(X=None):
+def obsXU(X=None, mvar=None):
     if X is None:
         meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsH()['Nk']};
         return meta;
@@ -159,7 +159,7 @@ def obs(X=None):
 
     PsiX = obsX(x);
     PsiU = obsU(x);
-    PsiH = obsH(X);
+    PsiH = obsH(X, mvar);
 
     Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
     return Psi;
@@ -184,10 +184,14 @@ def obsU(x=None):
 
 def obsH(X=None, mvar=None):
     if X is None:
+        # meta = {'Nk':Nu*(PH + 1)};
         meta = {'Nk':Nu};
         return meta;
 
+    # x = X[:Nx].reshape(Nx,);
     u = X[Nx:].reshape(Nu,1);
+
+    # dCu = np.array( mvar.gradient(x, u) );
 
     PsiH = u;
     return PsiH;
@@ -228,8 +232,8 @@ if __name__ == "__main__":
     T = 10;  Nt = round(T/dt)+1;
     tList = [[i*dt for i in range(Nt)]];
 
-    control = lambda x: 10*np.random.rand(Nu,1)-5;
-    xTrain, uTrain = data.generate_data(tList, modelTrain, X0, control, Nu);
+    controlRand = lambda x: 10*np.random.rand(Nu,1)-5;
+    xTrain, uTrain = data.generate_data(tList, modelTrain, X0, controlRand, Nu);
 
     # split training data into X and Y sets
     uData = data.stack_data(uTrain, N0, Nu, Nt-1);
@@ -245,8 +249,13 @@ if __name__ == "__main__":
     NkH = obsH()['Nk'];
 
     XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
+
+    obs = lambda X=None: obsXU(X, mpc_var);
     kxvar = kman.KoopmanOperator(obs);
     Kx = kxvar.edmd(X, Y, XU0);
 
     print('Kx:', kxvar.err, Kx.shape);
     print(Kx);
+
+
+    # compile data for traing Ku
