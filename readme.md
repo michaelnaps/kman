@@ -58,9 +58,12 @@ $$
 \begin{aligned}
     \Psi_x = x
     &&
-    \Psi_u = u
+    \Psi_u = 1
     &&
-    h = 1
+    h = \begin{bmatrix}
+        x \\
+        u
+    \end{bmatrix}
 \end{aligned}
 $$
 
