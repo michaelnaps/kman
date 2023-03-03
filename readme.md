@@ -72,7 +72,7 @@ In other words, for a wholistically linear system, we can represent the model in
 The Koopman operator for this was formed using the KCE and resulted in good behavior...
 
 <p align="center">
-    <img src=./Figures/point.png width=550 />
+    <img src=./Figures/point.png width=450 />
 </p>
 
 ___

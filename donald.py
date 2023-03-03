@@ -182,7 +182,7 @@ def obsU(x=None):
     
     return PsiU;
 
-def obsH(X=None):
+def obsH(X=None, mvar=None):
     if X is None:
         meta = {'Nk':Nu};
         return meta;
