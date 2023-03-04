@@ -1,13 +1,19 @@
 import numpy as np
 
 class KoopmanOperator:
-    def __init__(self, observables):
+    def __init__(self, obsX, obsY=None):
         # function parameters
-        self.obs = observables;
+        self.obsX = obsX;
+        if obsY is None:
+            self.obsY = obsX;
+        else:
+            self.obsY = obsY;
+
 
         # Koopman parameters
         self.K = None;
-        self.meta = self.obs();
+        self.metaX = self.obsX();
+        self.metaY = self.obsY();
         self.eps = None;
 
         # accuracy variables
@@ -19,8 +25,10 @@ class KoopmanOperator:
         TOL = 1e-12;
 
         # get class variables
-        observables = self.obs;
-        Nk = self.meta['Nk'];
+        obsX = self.obsX;
+        obsY = self.obsY;
+        NkX = self.metaX['Nk'];
+        NkY = self.metaY['Nk'];
 
         # evaluate for observable functions over X and Y
         Mx = len(X[0]);
@@ -31,8 +39,8 @@ class KoopmanOperator:
             N0 = 1;
         Nt = round(Mx/N0);
 
-        PsiX = np.empty( (Nk, N0*(Nt-1)) );
-        PsiY = np.empty( (Nk, N0*(Nt-1)) );
+        PsiX = np.empty( (NkX, N0*(Nt-1)) );
+        PsiY = np.empty( (NkY, N0*(Nt-1)) );
 
         i = 0;
         j = 0;
@@ -41,11 +49,11 @@ class KoopmanOperator:
 
             for m in range(Nt-1):
 
-                PsiX_new = observables(X[:,i].reshape(Nx,1));
-                PsiY_new = observables(Y[:,i].reshape(Nx,1));
+                PsiX_new = obsX(X[:,i].reshape(Nx,1));
+                PsiY_new = obsY(Y[:,i].reshape(Nx,1));
 
-                PsiX[:,j] = PsiX_new.reshape(Nk,);
-                PsiY[:,j] = PsiY_new.reshape(Nk,);
+                PsiX[:,j] = PsiX_new.reshape(NkX,);
+                PsiY[:,j] = PsiY_new.reshape(NkY,);
 
                 i += 1;
                 j += 1;

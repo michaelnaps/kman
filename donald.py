@@ -76,6 +76,8 @@ class Parameters:
 
         self.pause = pause;
         self.xd = xd;
+        
+        plt.close(self.fig);  # suppress figure from output till update is called
 
     def update(self, t, x, xPH):
         self.trail_patch.remove();
@@ -148,23 +150,26 @@ def cost(mpc_var, xlist, ulist):
 
     return C;
 
+def plotcomp(x1List, x2List, filename=None):
+    fig, axs = plt.subplots();
+    axs.plot(x1List[0], x1List[1], label='Model');
+    axs.plot(x2List[0], x2List[1], linestyle='--', label='KCE');
+
+    plt.title('$x_0 = [3, -1.4, 3, -10]^\intercal$');
+    plt.xlabel('$x_1$')
+    plt.ylabel('$x_2$')
+    axs.axis('equal');
+    fig.tight_layout();
+    plt.legend();
+    plt.grid();
+    
+    if filename is None:
+        plt.show();
+    else:
+        plt.savefig(filename, dpi=600);
+
 
 # observable functions
-def obsXU(X=None, mvar=None):
-    if X is None:
-        meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsH()['Nk']};
-        return meta;
-
-    x = X[:Nx].reshape(Nx,1);
-    u = X[Nx:].reshape(Nu,1);
-
-    PsiX = obsX(x);
-    PsiU = obsU(x);
-    PsiH = obsH(X, mvar);
-
-    Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
-    return Psi;
-
 def obsX(x=None):
     if x is None:
         meta = {'Nk':Nx};
@@ -180,19 +185,50 @@ def obsU(x=None):
     PsiU = np.vstack( (np.cos(x[2]), np.sin(x[2]), [1]) );
     return PsiU;
 
-def obsH(X=None, mvar=None):
+def obsXU(X=None, mvar=None):
     if X is None:
-        # meta = {'Nk':Nu*(PH + 1)};
-        meta = {'Nk':Nu+1};
+        meta = {'Nk':obsX()['Nk']+obsU()['Nk']};
         return meta;
 
-    # x = X[:Nx].reshape(Nx,);
+    x = X[:Nx].reshape(Nx,1);
     u = X[Nx:].reshape(Nu,1);
+
+    PsiX = obsX(x);
+    PsiU = obsU(x);
+
+    PsiXU = np.vstack( (PsiX, PsiU) );
+    return PsiXU;
+
+def obsH(X=None, mvar=None):
+    if X is None:
+        Ntrig = 2;
+        meta = {'Nk':1+Ntrig+Nu};
+        # meta = {'Nk':1+Nu};
+        return meta;
+
+    x = X[:Nx].reshape(Nx,);
+    u = X[-Nu:].reshape(Nu,1);
 
     # dCu = np.array( mvar.gradient(x, u) );
 
-    PsiH = np.vstack( ([1], u) );
+    PsiH = np.vstack( ([1], np.cos(x[2]), np.sin(x[2]), u) );
+    # PsiH = np.vstack( ([1], u) );
     return PsiH;
+
+def obsXUH(X=None, mvar=None):
+    if X is None:
+        meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsH()['Nk']};
+        return meta;
+
+    x = X[:Nx].reshape(Nx,1);
+    u = X[Nx:].reshape(Nu,1);
+
+    PsiX = obsX(x);
+    PsiU = obsU(x);
+    PsiH = obsH(X);
+
+    PsiXUH = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
+    return PsiXUH;
 
 
 if __name__ == "__main__":
@@ -248,14 +284,36 @@ if __name__ == "__main__":
 
     XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
 
-    obs = lambda X=None: obsXU(X, mpc_var);
-    kxvar = kman.KoopmanOperator(obs);
+    kxvar = kman.KoopmanOperator(obsXUH, obsXU);
     Kx = kxvar.edmd(X, Y, XU0);
 
     print('Kx:', kxvar.err, Kx.shape);
-    print(Kx);
+    print('Kx.PsiX:\n', Kx[:NkX,:].T);
+    print('Kx.PsiU:\n', Kx[NkX:,:].T);
 
-    print(Kx[NkX:,:].T);
 
+    # exavluate the behavior of Kx with remeasurement function
+    dModel1 = lambda x: modelTrain(x, np.array( [[1.0],[1.5]] ));
+    kModel1 = lambda Psi: Kx@rmes(Psi);
+    def rmes(Psi):
+        PsiX = Psi[:NkX].reshape(NkX,1);
+        PsiU = Psi[NkX:].reshape(NkU,1);
 
-    # compile data for traing Ku
+        x = Psi[:Nx].reshape(Nx,1);
+        u = np.array( [[1.0],[1.5]] );
+        X = np.vstack( (x,u) );
+
+        PsiH = obsH(X);
+        
+        Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
+
+        return Psin;
+
+    Psi0 = obsXU(XU0[:,0].reshape(Nx+Nu,1));
+    PsiTest = data.generate_data(tList, kModel1, Psi0)[0];
+    xTest = data.generate_data(tList, dModel1, X0[:,0].reshape(Nx,1))[0];
+
+    # plot test results
+    # plotcomp(xTest, PsiTest);
+    plotcomp(xTest, PsiTest, './Figures/donaldTrigH.png');
+
