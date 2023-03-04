@@ -291,7 +291,7 @@ if __name__ == "__main__":
     print('Kx.PsiU:\n', Kx[NkX:,:].T);
 
 
-    # exavluate the behavior of Kx with remeasurement function
+    # evaluate the behavior of Kx with remeasurement function
     x0ref = np.array( [[0],[0],[pi]] );
     uref = np.array( [[1],[2]] );
     dModel1 = lambda x: modelTrain(x, uref);
