@@ -155,7 +155,6 @@ def plotcomp(x1List, x2List, filename=None):
     axs.plot(x1List[0], x1List[1], label='Model');
     axs.plot(x2List[0], x2List[1], linestyle='--', label='KCE');
 
-    plt.title('$x_0 = [3, -1.4, 3, -10]^\intercal$');
     plt.xlabel('$x_1$')
     plt.ylabel('$x_2$')
     axs.axis('equal');
@@ -293,14 +292,16 @@ if __name__ == "__main__":
 
 
     # exavluate the behavior of Kx with remeasurement function
-    dModel1 = lambda x: modelTrain(x, np.array( [[1.0],[1.5]] ));
+    x0ref = np.array( [[0],[0],[pi]] );
+    uref = np.array( [[1],[2]] );
+    dModel1 = lambda x: modelTrain(x, uref);
     kModel1 = lambda Psi: Kx@rmes(Psi);
     def rmes(Psi):
         PsiX = Psi[:NkX].reshape(NkX,1);
         PsiU = Psi[NkX:].reshape(NkU,1);
 
         x = Psi[:Nx].reshape(Nx,1);
-        u = np.array( [[1.0],[1.5]] );
+        u = uref;
         X = np.vstack( (x,u) );
 
         PsiH = obsH(X);
@@ -309,9 +310,9 @@ if __name__ == "__main__":
 
         return Psin;
 
-    Psi0 = obsXU(XU0[:,0].reshape(Nx+Nu,1));
+    Psi0 = obsXU(np.vstack( (x0ref, uref) ));
     PsiTest = data.generate_data(tList, kModel1, Psi0)[0];
-    xTest = data.generate_data(tList, dModel1, X0[:,0].reshape(Nx,1))[0];
+    xTest = data.generate_data(tList, dModel1, x0ref)[0];
 
     # plot test results
     plotcomp(xTest, PsiTest);

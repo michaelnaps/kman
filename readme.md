@@ -251,3 +251,12 @@ $$
     \end{matrix} \right]
 \end{aligned}
 $$
+
+Which facilitates a high accuracy for the propagation of $\Psi$ with constant input and over a relatively short simulation time. See below.
+
+<p align="center">
+    <img src=./Figures/donaldNoTrigH.png width=325 />
+    <img src=./Figures/donaldTrigH.png width=325 />
+</p>
+
+The left image shows the propagation of $\Psi$ with the linearization terms, and the trig functions excluded from $h$; the right image shows the same simulation with trig functions maually updated in $h$.
