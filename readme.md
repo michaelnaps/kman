@@ -230,4 +230,24 @@ $$
 \end{aligned}
 $$
 
-Which shows that the bilinear term $\sin(x_3) u_i$ would require infinitely expansions to achieve an accuracy which falls below the acceptable tolerance. To avoid this issue, we can exploit the $h$ observation list and manually update the bilinear terms along with the propagation of the full set of observations.
+Which shows that the bilinear term $\sin(x_3) u_i$ would require infinitely expansions to achieve an accuracy which falls below the acceptable tolerance. To avoid this issue, we can exploit the $h$ observation list and manually update the linearized terms along with the propagation of the full set of observations. In other words our observable lists become...
+
+$$
+\begin{aligned}
+    \Psi_x = x
+    &&
+    \Psi_u = \left[ \begin{matrix} 
+        \cos(x_3) \\
+        \sin(x_3) \\
+        1
+    \end{matrix} \right]
+    &&
+    h = \left[ \begin{matrix} 
+        1 \\
+        \cos(x_3) \\
+        \sin(x_3) \\
+        u_1 \\
+        u_2 
+    \end{matrix} \right]
+\end{aligned}
+$$

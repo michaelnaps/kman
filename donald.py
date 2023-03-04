@@ -314,6 +314,6 @@ if __name__ == "__main__":
     xTest = data.generate_data(tList, dModel1, X0[:,0].reshape(Nx,1))[0];
 
     # plot test results
-    # plotcomp(xTest, PsiTest);
-    plotcomp(xTest, PsiTest, './Figures/donaldTrigH.png');
+    plotcomp(xTest, PsiTest);
+    # plotcomp(xTest, PsiTest, './Figures/donaldTrigH.png');
 
