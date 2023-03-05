@@ -287,6 +287,7 @@ if __name__ == "__main__":
     Kx = kxvar.edmd(X, Y, XU0);
 
     print('Kx:', kxvar.err, Kx.shape);
+    print(Kx.T);
     print('Kx.PsiX:\n', Kx[:NkX,:].T);
     print('Kx.PsiU:\n', Kx[NkX:,:].T);
 
