@@ -31,13 +31,14 @@ class KoopmanOperator:
         self.err = None;
         self.ind = None;
 
-    def liftData(self, X, X0, obs=None):
+    def dimnData(self, X, X0, obs=None):
         # default observation is obsX
         if obs is None:
-            obs = self.obsX;
+            Nk = None;
+        else:
+            Nk = obs()['Nk'];
 
         # dimension variables
-        Nk = obs()['Nk'];
         Mx = len(X[0]);
         Nx = len(X0);
         
@@ -48,7 +49,13 @@ class KoopmanOperator:
         
         Nt = round(Mx/N0);
 
-        dim = (N0, Nt, Nx, Nk);  # for return
+        return N0, Nt, Nx, Nk;
+
+    def liftData(self, X, X0, obs=None):
+        # default observation is obsX
+        if obs is None:
+            obs = self.obsX;
+        (N0, Nt, Nx, Nk) = self.dimnData(X, X0, obs);
 
         # observation initialization
         Psi = np.empty( (Nk, N0*(Nt-1)) );
@@ -70,15 +77,33 @@ class KoopmanOperator:
             i += 1;
             j = n*(Nt - 1);
 
-        return Psi, dim;
+        return Psi, Nk;
+
+    def resError(self, X, Y, X0, K=None):
+        # set operator
+        if K is None:
+            K = self.K;
+
+        # get data parameters
+        (N0, Nt, Nx, _) = self.dimnData(X, X0);
+        PsiX, NkX = self.liftData(X, X0);
+        PsiY, NkY = self.liftData(Y, X0, self.obsY);
+
+        # calculate residual error
+        err = 0;
+        for n in range(N0*(Nt-1)):
+            err += np.linalg.norm(PsiY[:,n] - K@PsiX[:,n]);
+
+        return err;
 
     def edmd(self, X, Y, X0, eps=None):
         # tolerance variable
         TOL = 1e-12;
 
         # evaluate for observable functions over X and Y
-        PsiX, (N0, Nt, Nx, Nk) = self.liftData(X, X0);
-        PsiY, _ = self.liftData(Y, X0, self.obsY);
+        (N0, Nt, Nx, _) = self.dimnData(X, X0);
+        PsiX, NkX = self.liftData(X, X0);
+        PsiY, NkY = self.liftData(Y, X0, self.obsY);
 
         # perform EDMD
         # create matrices for least squares
@@ -103,16 +128,25 @@ class KoopmanOperator:
         # solve for the Koopman operator
         K = A.T @ (U @ Sinv @ V.T);
 
-        # calculate residual error
-        err = 0;
-        for n in range(N0*(Nt-1)):
-            err += np.linalg.norm(PsiY[:,n] - K@PsiX[:,n]);
-
         self.K = K;
-        self.err = err;
+        self.err = self.resError(X, Y, X0, self.K);
         self.ind = ind;
 
         return K;
 
-    def cd(self, X, Y, X0, G, eps=None):
-        pass;
+    def cd(self, X, Y, X0, S, eps=1e-3):
+        # evaluate for observable functions over X and Y
+        (N0, Nt, Nx, _) = self.dimnData(X, X0);
+        PsiX, NkX = self.liftData(X, X0);
+        PsiY, NkY = self.liftData(Y, X0, self.obsY);
+
+        # initialize operator matrices
+        K = np.eye(NkY, NkX);
+
+        cSum = 1;
+        while cSum > eps:
+            break;
+
+        return K;
+
+        
