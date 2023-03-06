@@ -162,36 +162,24 @@ if __name__ == "__main__":
     print('\n');
 
 
-    # generate cumulate operator
+    # generate cumulative operator
     m = Nu;
     p = obsX()['Nk'];
     q = obsU()['Nk'];
     b = obsH()['Nk'];
 
-    Ktemp = np.vstack( (
-        np.hstack( (np.eye(p), np.zeros( (p,q*b) )) ),
-        np.hstack( (np.zeros( (m*q, p) ), np.kron(np.eye(q), Ku[-m:,:])) )
-    ) );
+    # Ktemp = np.vstack( (
+    #     np.hstack( (np.eye(p), np.zeros( (p,q*b) )) ),
+    #     np.hstack( (np.zeros( (m*q, p) ), np.kron(np.eye(q), Ku[-m:,:])) )
+    # ) );
 
-    K = Kx @ Ktemp;
+    K = Kx @ Ku;
 
     print('K\n', K, '\n')
 
 
     # test the cumulative operator
-    kModel = lambda Psi: K@rmes(Psi);
-    def rmes(Psi):
-        Nkx = obsX()['Nk'];
-        Nku = obsU()['Nk'];
-        Nkh = obsH()['Nk'];
-
-        PsiX = Psi[:Nkx].reshape(Nkx,1);
-        PsiU = [1];
-        PsiH = obsH(Psi.reshape(Nkx+Nku*Nu,1));
-
-        Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
-
-        return Psin;
+    kModel = lambda Psi: K@Psi;
 
     x0 = np.array( [[3],[-1.4],[3],[-10],[0],[0]] );
     Psi0 = obsXU(x0);

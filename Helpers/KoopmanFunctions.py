@@ -1,7 +1,11 @@
 import numpy as np
 
+def vec(A):
+    (n, m) = A.shape;
+    return A.reshape(n*m,1);
+
 class KoopmanOperator:
-    def __init__(self, obsX, obsY=None):
+    def __init__(self, obsX, obsY=None, params=None):
         # function parameters
         if params is None:
             self.obsX = obsX;
@@ -27,28 +31,29 @@ class KoopmanOperator:
         self.err = None;
         self.ind = None;
 
-    def edmd(self, X, Y, X0, eps=None):
-        # tolerance variable
-        TOL = 1e-12;
+    def liftData(self, X, X0, obs=None):
+        # default observation is obsX
+        if obs is None:
+            obs = self.obsX;
 
-        # get class variables
-        obsX = self.obsX;
-        obsY = self.obsY;
-        NkX = self.metaX['Nk'];
-        NkY = self.metaY['Nk'];
-
-        # evaluate for observable functions over X and Y
+        # dimension variables
+        Nk = obs()['Nk'];
         Mx = len(X[0]);
         Nx = len(X0);
+        
         if len(X0.shape) > 1:
             N0 = len(X0[0]);
         else:
             N0 = 1;
+        
         Nt = round(Mx/N0);
 
-        PsiX = np.empty( (NkX, N0*(Nt-1)) );
-        PsiY = np.empty( (NkY, N0*(Nt-1)) );
+        dim = (N0, Nt, Nx, Nk);  # for return
 
+        # observation initialization
+        Psi = np.empty( (Nk, N0*(Nt-1)) );
+
+        # loop variables
         i = 0;
         j = 0;
 
@@ -56,17 +61,24 @@ class KoopmanOperator:
 
             for m in range(Nt-1):
 
-                PsiX_new = obsX(X[:,i].reshape(Nx,1));
-                PsiY_new = obsY(Y[:,i].reshape(Nx,1));
-
-                PsiX[:,j] = PsiX_new.reshape(NkX,);
-                PsiY[:,j] = PsiY_new.reshape(NkY,);
+                Psi_new = obs(X[:,i].reshape(Nx,1));
+                Psi[:,j] = Psi_new.reshape(Nk,);
 
                 i += 1;
                 j += 1;
 
             i += 1;
             j = n*(Nt - 1);
+
+        return Psi, dim;
+
+    def edmd(self, X, Y, X0, eps=None):
+        # tolerance variable
+        TOL = 1e-12;
+
+        # evaluate for observable functions over X and Y
+        PsiX, (N0, Nt, Nx, Nk) = self.liftData(X, X0);
+        PsiY, _ = self.liftData(Y, X0, self.obsY);
 
         # perform EDMD
         # create matrices for least squares
@@ -89,9 +101,7 @@ class KoopmanOperator:
         Sinv = np.diag([1/S[i] for i in range(len(S))]);
 
         # solve for the Koopman operator
-        # K = (V @ (1/S) @ U.T) @ A;
-        K = (V @ Sinv @ U.T) @ A;
-        K = K.T;
+        K = A.T @ (U @ Sinv @ V.T);
 
         # calculate residual error
         err = 0;
@@ -103,3 +113,6 @@ class KoopmanOperator:
         self.ind = ind;
 
         return K;
+
+    def cd(self, X, Y, X0, G, eps=None):
+        pass;
