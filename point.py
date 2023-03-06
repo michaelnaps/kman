@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
 
     # generate training data for Kx
-    N0 = 10;
+    N0 = 1;
     X0 = 20*np.random.rand(Nx,N0) - 10;
 
     xData, uData = data.generate_data(tList, model, X0,
@@ -192,6 +192,8 @@ if __name__ == "__main__":
     # plotcomp(xTest, PsiTest);
     # plotcomp(xTest, PsiTest, './Figures/point.png');
 
-    S = ();  # NEXT STEP
-    print(kuvar.cd(Xu, Yu, XU0, None));
+    sx = [i for i in range(p)];
+    su = [i for i in range(p,p+q*b)];
+    S = (sx, su);  # NEXT STEP
+    print(kuvar.cd(Xu, Yu, XU0, S));
     

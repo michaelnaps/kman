@@ -4,6 +4,21 @@ def vec(A):
     (n, m) = A.shape;
     return A.reshape(n*m,1);
 
+def sind(A, s):
+    (n, m) = A.shape;
+
+    if s > n*m-1:
+        print("ERROR: Index to large for matrix.");
+        return None;
+    
+    i = 0;
+    j = s;
+    while j > m-1:
+        i = i + 1;
+        j = j - m;
+
+    return i, j;
+
 class KoopmanOperator:
     def __init__(self, obsX, obsY=None, params=None):
         # function parameters
@@ -134,6 +149,10 @@ class KoopmanOperator:
 
         return K;
 
+    def fdm(self, X, Y, X0, s):
+
+        return ds;
+
     def cd(self, X, Y, X0, S, eps=1e-3):
         # evaluate for observable functions over X and Y
         (N0, Nt, Nx, _) = self.dimnData(X, X0);
@@ -145,7 +164,9 @@ class KoopmanOperator:
 
         cSum = 1;
         while cSum > eps:
-            break;
+            cSum = 0;
+            for s in S:
+                pass;
 
         return K;
 
