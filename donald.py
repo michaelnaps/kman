@@ -25,7 +25,7 @@ kl = 2;
 Nx = 3;
 Nu = 2;
 R = 1/2;  # robot-body radius
-dt = 0.01;
+dt = 0.001;
 
 
 # callback function and parameters
@@ -150,23 +150,6 @@ def cost(mpc_var, xlist, ulist):
 
     return C;
 
-def plotcomp(x1List, x2List, filename=None):
-    fig, axs = plt.subplots();
-    axs.plot(x1List[0], x1List[1], label='Model');
-    axs.plot(x2List[0], x2List[1], linestyle='--', label='KCE');
-
-    plt.xlabel('$x_1$')
-    plt.ylabel('$x_2$')
-    axs.axis('equal');
-    fig.tight_layout();
-    plt.legend();
-    plt.grid();
-    
-    if filename is None:
-        plt.show();
-    else:
-        plt.savefig(filename, dpi=600);
-
 
 # observable functions
 def obsX(x=None):
@@ -236,6 +219,7 @@ if __name__ == "__main__":
     xd = [1,1,3*pi/2];
     uinit = [0 for i in range(Nu*PH)];
 
+    
     # create MPC class variable
     model_type = 'discrete';
     params = Parameters(x0, xd, buffer_length=25);
@@ -255,11 +239,13 @@ if __name__ == "__main__":
     # print(len(obsU(uinit)) == obsU()['Nk']);
     # print(len(obs( np.hstack( (x0, uinit) ) )) == obs()['Nk']);
 
+    
     # model function for training syntax
     modelTrain = lambda x, u: np.array( model(x,u,None) ).reshape(Nx,1);
 
+    
     # generate initial conditions for training
-    N0 = 10;
+    N0 = 5;
     X0 = np.random.rand(Nx,N0);
 
     T = 10;  Nt = round(T/dt)+1;
@@ -268,6 +254,7 @@ if __name__ == "__main__":
     controlRand = lambda x: 10*np.random.rand(Nu,1)-5;
     xTrain, uTrain = data.generate_data(tList, modelTrain, X0, controlRand, Nu);
 
+    
     # split training data into X and Y sets
     uData = data.stack_data(uTrain, N0, Nu, Nt-1);
     xData = data.stack_data(xTrain[:,:-1], N0, Nx, Nt-1);
@@ -276,6 +263,7 @@ if __name__ == "__main__":
     X = np.vstack( (xData, uData) );
     Y = np.vstack( (yData, uData) );
 
+    
     # solve for K
     NkX = obsX()['Nk'];  # for reference
     NkU = obsU()['Nk'];
@@ -315,7 +303,39 @@ if __name__ == "__main__":
     PsiTest = data.generate_data(tList, kModel1, Psi0)[0];
     xTest = data.generate_data(tList, dModel1, x0ref)[0];
 
+    
     # plot test results
-    plotcomp(xTest, PsiTest);
-    # plotcomp(xTest, PsiTest, './Figures/donaldTrigH.png');
+    figRes, axsRes = plt.subplots();
+
+    axsRes.plot(xTest[0], xTest[1], label='Model');
+    axsRes.plot(PsiTest[0], PsiTest[1], linestyle='--', label='KCE');
+
+    plt.xlabel('$x_1$')
+    plt.ylabel('$x_2$')
+    axsRes.axis('equal');
+    figRes.tight_layout();
+    axsRes.legend();
+    plt.grid();
+
+
+    # evaluate error
+    Te = 1;  Ne = round(Te/dt) + 1;
+    figError, axsError = plt.subplots();
+
+    axsError.plot(tList[0][:Ne], PsiTest[0,:Ne]-xTest[0,:Ne], label='$x_1$');
+    axsError.plot(tList[0][:Ne], PsiTest[1,:Ne]-xTest[1,:Ne], label='$x_2$');
+    axsError.plot([tList[0][0], tList[0][Ne]], [0,0], color='r', linestyle='--');
+
+    axsError.set_ylim( (-1,1) );
+    axsError.grid();
+    axsError.legend();
+
+
+    # save results
+    save = 1;
+    if save:
+        figRes.savefig('/home/michaelnaps/prog/kman/.figures/donald.png', dpi=600);
+        figError.savefig('/home/michaelnaps/prog/kman/.figures/donaldError.png', dpi=600);
+    else:
+        plt.show();
 
