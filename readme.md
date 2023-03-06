@@ -1,3 +1,8 @@
+---
+header-includes:
+  - \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+---
+
 ### **Koopman Operator Notes**
 
 This repository serves as the testing ground for my research at Boston University (being performed with the intent of being published). This readme currently discusses noteworthy models being evaluated and the results of their tests with the Koopman control equation (KCE). It also serves as a testing ground for my ideas on gradient flow mapping, etc.
@@ -10,7 +15,7 @@ ___
 
 <p align='center'>
 
-| Pseudocode | | |
+| Pseudocode: | Coordinate Descent | |
 | --: | :-- | :-- |
 | 1. | Initialize $N$ objective functions | $G = \left[g_1, g_2, \cdots, g_N\right]$ |
 | 2. | Initialize guess list | $X^{(0)} = \left[x^{(0)}_1, x^{(0)}_2, \cdots, x^{(0)}_N\right]^\intercal$ |
@@ -18,6 +23,7 @@ ___
 | 4. | For each objective function | $i : 1 \rightarrow N$ |
 | 4.1. | Calculate gradient of current guess | $\nabla C_i \leftarrow \nabla g_i(X^{(0)})$ |
 | 4.2. | Take step using gradient | $x^{(j+1)}_i \leftarrow x_i^{(j)} - \alpha \nabla C_i$ |
+| 4.3. | Repeat from step 4 until below tolerance | $\|\|\nabla C_{i \in N}\|\|_2 < \epsilon$ |
 <!-- | 4.1. | Calculate cost of current guess | $C_i \leftarrow g_i(x_i^{(i)})$ | -->
 
 </p>
