@@ -219,6 +219,11 @@ $$
 
 Meaning that for a small enough time-step, $\Delta t$, the function $\cos(x_3)$ can be propagated using a bilinear combination with the model equation $f_3$.
 
+<p align="center">
+    <img src=./.figures/donald.png width=400 />
+    <img src=./.figures/donaldError.png width=400 />
+</p>
+
 To propagate the function $\cos(x_3) u_1$ we can explore similar series of steps.
 
 $$
@@ -253,10 +258,5 @@ $$
 $$
 
 Which facilitates a high accuracy for the propagation of $\Psi$ with constant input and over a relatively short simulation time. See below.
-
-<p align="center">
-    <img src=./.figures/donald.png width=400 />
-    <img src=./.figures/donaldError.png width=400 />
-</p>
 
 The left image shows the propagation of $\Psi$ with the linearization terms, and the trig functions excluded from $h$; the right image shows the same simulation with trig functions maually updated in $h$.

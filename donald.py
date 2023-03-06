@@ -25,7 +25,7 @@ kl = 2;
 Nx = 3;
 Nu = 2;
 R = 1/2;  # robot-body radius
-dt = 0.001;
+dt = 0.0005;
 
 
 # callback function and parameters
@@ -184,8 +184,8 @@ def obsXU(X=None, mvar=None):
 def obsH(X=None, mvar=None):
     if X is None:
         Ntrig = 2;
-        meta = {'Nk':1+Ntrig+Nu};
-        # meta = {'Nk':1+Nu};
+        # meta = {'Nk':1+Ntrig+Nu};
+        meta = {'Nk':1+Nu};
         return meta;
 
     x = X[:Nx].reshape(Nx,);
@@ -193,8 +193,8 @@ def obsH(X=None, mvar=None):
 
     # dCu = np.array( mvar.gradient(x, u) );
 
-    PsiH = np.vstack( ([1], np.cos(x[2]), np.sin(x[2]), u) );
-    # PsiH = np.vstack( ([1], u) );
+    # PsiH = np.vstack( ([1], np.cos(x[2]), np.sin(x[2]), u) );
+    PsiH = np.vstack( ([1], u) );
     return PsiH;
 
 def obsXUH(X=None, mvar=None):
@@ -332,7 +332,7 @@ if __name__ == "__main__":
 
 
     # save results
-    save = 1;
+    save = 0;
     if save:
         figRes.savefig('/home/michaelnaps/prog/kman/.figures/donald.png', dpi=600);
         figError.savefig('/home/michaelnaps/prog/kman/.figures/donaldError.png', dpi=600);
