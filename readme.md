@@ -4,6 +4,26 @@ This repository serves as the testing ground for my research at Boston Universit
 
 
 ___
+### **Notes on Coordinate Descent**
+
+*Coordinate descent* is a method for iteratively minimizing the cost of multiple objective functions with overlapping parameters. Similar to gradient descent, the algorithm is exited when the change in objective function is zero, or falls below some tolerance. We will be working under tunder the assumption that the objective function is continuously differentiable.
+
+<p align='center'>
+
+| Pseudocode | | |
+| --: | :-- | :-- |
+| 1. | Initialize $N$ objective functions | $G = \left[g_1, g_2, \cdots, g_N\right]$ |
+| 2. | Initialize guess list | $X^{(0)} = \left[x^{(0)}_1, x^{(0)}_2, \cdots, x^{(0)}_N\right]^\intercal$ |
+| 3. | Initialize guess iterator | $j \leftarrow 0$ |
+| 4. | For each objective function | $i : 1 \rightarrow N$ |
+| 4.1. | Calculate gradient of current guess | $\nabla C_i \leftarrow \nabla g_i(X^{(0)})$ |
+| 4.2. | Take step using gradient | $x^{(j+1)}_i \leftarrow x_i^{(j)} - \alpha \nabla C_i$ |
+<!-- | 4.1. | Calculate cost of current guess | $C_i \leftarrow g_i(x_i^{(i)})$ | -->
+
+</p>
+
+
+___
 ### **Linear System:**
 **State/Model Selection:** linear/second-order/discrete
 
