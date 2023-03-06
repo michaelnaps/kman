@@ -213,73 +213,8 @@ def obsXUH(X=None, mvar=None):
     return PsiXUH;
 
 
-if __name__ == "__main__":
-    # initialize states
-    x0 = [-1,-1,3*pi/2];
-    xd = [1,1,3*pi/2];
-    uinit = [0 for i in range(Nu*PH)];
-
-    
-    # create MPC class variable
-    model_type = 'discrete';
-    params = Parameters(x0, xd, buffer_length=25);
-    mpc_var = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
-        num_ssvar=Nx, PH_length=PH, knot_length=kl, time_step=dt,
-        max_iter=10, model_type=model_type);
-    mpc_var.setAlpha(0.01);
-
-    # # solve over 10 [s] time frame
-    # sim_time = 10;
-    # sim_results = mpc_var.sim_root(sim_time, x0, uinit,
-    #     callback=callback, output=1);
-    # plt.close('all');
-
-    # # check obs function
-    # print(len(obsX(x0)) == obsX()['Nk']);
-    # print(len(obsU(uinit)) == obsU()['Nk']);
-    # print(len(obs( np.hstack( (x0, uinit) ) )) == obs()['Nk']);
-
-    
-    # model function for training syntax
-    modelTrain = lambda x, u: np.array( model(x,u,None) ).reshape(Nx,1);
-
-    
-    # generate initial conditions for training
-    N0 = 5;
-    X0 = np.random.rand(Nx,N0);
-
-    T = 10;  Nt = round(T/dt)+1;
-    tList = [[i*dt for i in range(Nt)]];
-
-    controlRand = lambda x: 10*np.random.rand(Nu,1)-5;
-    xTrain, uTrain = data.generate_data(tList, modelTrain, X0, controlRand, Nu);
-
-    
-    # split training data into X and Y sets
-    uData = data.stack_data(uTrain, N0, Nu, Nt-1);
-    xData = data.stack_data(xTrain[:,:-1], N0, Nx, Nt-1);
-    yData = data.stack_data(xTrain[:,1:], N0, Nx, Nt-1);
-
-    X = np.vstack( (xData, uData) );
-    Y = np.vstack( (yData, uData) );
-
-    
-    # solve for K
-    NkX = obsX()['Nk'];  # for reference
-    NkU = obsU()['Nk'];
-    NkH = obsH()['Nk'];
-
-    XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
-
-    kxvar = kman.KoopmanOperator(obsXUH, obsXU);
-    Kx = kxvar.edmd(X, Y, XU0);
-
-    print('Kx:', kxvar.err, Kx.shape);
-    print(Kx.T);
-    print('Kx.PsiX:\n', Kx[:NkX,:].T);
-    print('Kx.PsiU:\n', Kx[NkX:,:].T);
-
-
+# plot comparisons
+def plotcomp(xTest, PsiTest, save=0):
     # evaluate the behavior of Kx with remeasurement function
     x0ref = np.array( [[0],[0],[pi]] );
     uref = np.array( [[1],[2]] );
@@ -303,7 +238,6 @@ if __name__ == "__main__":
     PsiTest = data.generate_data(tList, kModel1, Psi0)[0];
     xTest = data.generate_data(tList, dModel1, x0ref)[0];
 
-    
     # plot test results
     figRes, axsRes = plt.subplots();
 
@@ -316,7 +250,6 @@ if __name__ == "__main__":
     figRes.tight_layout();
     axsRes.legend();
     plt.grid();
-
 
     # evaluate error
     Te = 2;  Ne = round(Te/dt) + 1;
@@ -331,12 +264,77 @@ if __name__ == "__main__":
     axsError.grid();
     axsError.legend();
 
-
     # save results
-    save = 0;
     if save:
         figRes.savefig('/home/michaelnaps/prog/kman/.figures/donald.png', dpi=600);
         figError.savefig('/home/michaelnaps/prog/kman/.figures/donaldError.png', dpi=600);
     else:
         plt.show();
 
+
+if __name__ == "__main__":
+    # observable dimensions variables
+    NkX = obsX()['Nk'];  # for reference
+    NkU = obsU()['Nk'];
+    NkH = obsH()['Nk'];
+
+    
+    # initialize states
+    x0 = [-1,-1,3*pi/2];
+    xd = [1,1,3*pi/2];
+    uinit = [0 for i in range(Nu*PH)];
+
+    
+    # create MPC class variable
+    model_type = 'discrete';
+    params = Parameters(x0, xd, buffer_length=25);
+    mpc_var = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
+        num_ssvar=Nx, PH_length=PH, knot_length=kl, time_step=dt,
+        max_iter=10, model_type=model_type);
+    mpc_var.setAlpha(0.01);
+
+    
+    # model function for training syntax
+    modelTrain = lambda x, u: np.array( model(x,u,None) ).reshape(Nx,1);
+
+    
+    # generate initial conditions for training
+    N0 = 1;
+    X0 = np.random.rand(Nx,N0);
+
+    T = 10;  Nt = round(T/dt)+1;
+    tList = [[i*dt for i in range(Nt)]];
+
+    randControl = lambda x: 10*np.random.rand(Nu,1)-5;
+    xTrain, uRand = data.generate_data(tList, modelTrain, X0, randControl, Nu);
+
+    
+    # split training data into X and Y sets
+    uStack = data.stack_data(uRand, N0, Nu, Nt-1);
+    xStack = data.stack_data(xTrain[:,:-1], N0, Nx, Nt-1);
+    yStack = data.stack_data(xTrain[:,1:], N0, Nx, Nt-1);
+
+    X = np.vstack( (xStack, uStack) );
+    Y = np.vstack( (yStack, uStack) );
+
+    
+    # solve for K
+    XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
+
+    kxvar = kman.KoopmanOperator(obsXUH, obsXU);
+    Kx = kxvar.edmd(X, Y, XU0);
+
+    print('Kx:', kxvar.err, Kx.shape);
+    print(Kx.T);
+    print('Kx.PsiX:\n', Kx[:NkX,:].T);
+    print('Kx.PsiU:\n', Kx[NkX:,:].T);
+
+
+    # generate data for training of Ku
+    randModel = lambda x, u: np.random.rand(Nx,1);
+    def controlTrain(x):  # NEXT STEP
+        pass;
+
+
+    xRand, uTrain = data.generate_data(tList, randModel, X0,
+        control=controlTrain, Nu=Nu)

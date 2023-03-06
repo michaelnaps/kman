@@ -20,6 +20,7 @@ def sind(A, s):
     return i, j;
 
 class KoopmanOperator:
+    # initialize class
     def __init__(self, obsX, obsY=None, params=None):
         # function parameters
         if params is None:
@@ -46,6 +47,7 @@ class KoopmanOperator:
         self.err = None;
         self.ind = None;
 
+    # return the dimensions of the data set
     def dimnData(self, X, X0, obs=None):
         # default observation is obsX
         if obs is None:
@@ -66,6 +68,7 @@ class KoopmanOperator:
 
         return N0, Nt, Nx, Nk;
 
+    # lift data from state space to function domain
     def liftData(self, X, X0, obs=None):
         # default observation is obsX
         if obs is None:
@@ -94,6 +97,7 @@ class KoopmanOperator:
 
         return Psi, Nk;
 
+    # residual error over supplied data set
     def resError(self, X, Y, X0, K=None):
         # set operator
         if K is None:
