@@ -3,11 +3,18 @@ import numpy as np
 class KoopmanOperator:
     def __init__(self, obsX, obsY=None):
         # function parameters
-        self.obsX = obsX;
-        if obsY is None:
-            self.obsY = obsX;
+        if params is None:
+            self.obsX = obsX;
+            if obsY is None:
+                self.obsY = self.obsX;
+            else:
+                self.obsY = obsY;
         else:
-            self.obsY = obsY;
+            self.obsX = lambda x=None: obsX(x, params);
+            if obsY is None:
+                self.obsY = self.obsX;
+            else:
+                self.obsY = lambda y=None: obsY(y, params);
 
 
         # Koopman parameters
