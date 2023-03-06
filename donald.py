@@ -319,7 +319,7 @@ if __name__ == "__main__":
 
 
     # evaluate error
-    Te = 1;  Ne = round(Te/dt) + 1;
+    Te = 2;  Ne = round(Te/dt) + 1;
     figError, axsError = plt.subplots();
 
     axsError.plot([tList[0][0], tList[0][Ne]], [0,0], color='r', linestyle='--');
@@ -327,7 +327,7 @@ if __name__ == "__main__":
     axsError.plot(tList[0][:Ne], PsiTest[1,:Ne]-xTest[1,:Ne], label='$x_2$');
     axsError.plot(tList[0][:Ne], PsiTest[2,:Ne]-xTest[2,:Ne], label='$x_3$');
 
-    axsError.set_ylim( (-1,1) );
+    axsError.set_ylim( (-0.2,0.2) );
     axsError.grid();
     axsError.legend();
 
