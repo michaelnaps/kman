@@ -192,5 +192,6 @@ if __name__ == "__main__":
     # plotcomp(xTest, PsiTest);
     # plotcomp(xTest, PsiTest, './Figures/point.png');
 
+    S = ();  # NEXT STEP
     print(kuvar.cd(Xu, Yu, XU0, None));
     
