@@ -113,7 +113,7 @@ $$
 We purposely limit the $h$ observation list from having knowledge of the states so that we can demonstrate the robustness of the KCE under considerable limitations.
 
 ___
-### **Caterpillar Track System:**
+### **Differential Drive System:**
 **State/Model Selection:** nonlinear/first-order/discrete
 
 $$
