@@ -168,11 +168,6 @@ if __name__ == "__main__":
     q = obsU()['Nk'];
     b = obsH()['Nk'];
 
-    # Ktemp = np.vstack( (
-    #     np.hstack( (np.eye(p), np.zeros( (p,q*b) )) ),
-    #     np.hstack( (np.zeros( (m*q, p) ), np.kron(np.eye(q), Ku[-m:,:])) )
-    # ) );
-
     K = Kx @ Ku;
 
     print('K\n', K, '\n')
@@ -195,5 +190,5 @@ if __name__ == "__main__":
     sx = [i for i in range(p)];
     su = [i for i in range(p,p+q*b)];
     S = (sx, su);  # NEXT STEP
-    print(kuvar.cd(Xu, Yu, XU0, S));
+    # print(kuvar.cd(Xu, Yu, XU0, S));
     
