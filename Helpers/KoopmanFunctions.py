@@ -111,6 +111,7 @@ class KoopmanOperator:
 
         return err;
 
+    # extended dynamical mode decomposition (EDMD)
     def edmd(self, X, Y, X0, eps=None):
         # tolerance variable
         TOL = 1e-12;
@@ -149,10 +150,20 @@ class KoopmanOperator:
 
         return K;
 
-    def fdm(self, X, Y, X0, s):
+    # finite difference method (FDM)
+    def fdm(self, K, s, X, Y, X0, h=1e-3):
+        ij = sind(K, s);
 
-        return ds;
+        Kn = K.copy();  Kp = K.copy();
+        Kn[ij] = Kp[ij] - h;
+        Kp[ij] = Kp[ij] + h;
 
+        ep = self.resError(X, Y, X0, Kp);
+        en = self.resError(X, Y, X0, Kn);
+
+        return (ep - en)/(2*h);
+
+    # coordinate descent (CD)
     def cd(self, X, Y, X0, S, eps=1e-3):
         # evaluate for observable functions over X and Y
         (N0, Nt, Nx, _) = self.dimnData(X, X0);
@@ -160,13 +171,21 @@ class KoopmanOperator:
         PsiY, NkY = self.liftData(Y, X0, self.obsY);
 
         # initialize operator matrices
-        K = np.eye(NkY, NkX);
+        K = 2*np.random.rand(NkY,NkX) - 1;
 
-        cSum = 1;
-        while cSum > eps:
-            cSum = 0;
-            for s in S:
-                pass;
+        gnorm = 1;
+        glist = [0 for i in range(NkY*NkX)];
+        while gnorm > eps:
+            gnorm = 0;
+            for s in range(NkY*NkX):
+                i, j = sind(K, s)
+                glist[s] = self.fdm(K, s, X, Y, X0);
+                K[i,j] = K[i,j] - 0.001*glist[s];
+            gnorm = np.linalg.norm(glist);
+
+        self.K = K;
+        self.err = self.resError(X, Y, X0, K);
+        self.ind = None;
 
         return K;
 
