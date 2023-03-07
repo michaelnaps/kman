@@ -20,7 +20,7 @@ np.set_printoptions(precision=3, suppress=True);
 
 # hyper parameter(s)
 pi = math.pi;
-PH = 10;
+PH = 1;
 kl = 1;
 Nx = 3;
 Nu = 2;
@@ -361,4 +361,4 @@ if __name__ == "__main__":
     PsiTest = obsH(xTest, mpc_var);
 
     mpc_var.solve(xTest.reshape(Nx,),uinit,output=1)[0];
-    print('Psi:',Ku[-Nu*PH:,:]@PsiTest);
+    print('Psi:',PsiTest.T@Ku[-Nu*PH:,:].T);
