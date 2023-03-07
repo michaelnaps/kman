@@ -25,7 +25,7 @@ kl = 1;
 Nx = 3;
 Nu = 2;
 R = 1/2;  # robot-body radius
-dt = 0.01;
+dt = 0.01/2;
 
 
 # callback function and parameters
