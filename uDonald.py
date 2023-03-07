@@ -16,11 +16,12 @@ import matplotlib.path as path
 
 
 # print precision
-np.set_printoptions(precision=3, suppress=True);
+np.set_printoptions(precision=5, suppress=True);
+
 
 # hyper parameter(s)
 pi = math.pi;
-PH = 1;
+PH = 2;
 kl = 1;
 Nx = 3;
 Nu = 2;
@@ -182,21 +183,23 @@ def obsXU(X=None, mvar=None):
     return PsiXU;
 
 def obsH(X=None, mvar=None):
-    Ng = Nu*PH;
+    Ngx = Nx*(PH +1);
+    Ngu = Nu*PH;
     if X is None:
-        meta = {'Nk':1+Nx+2*Ng};
+        meta = {'Nk':Ngx+2*Ngu};
         return meta;
 
     x = X[:Nx].reshape(Nx,1);
 
     if len(X) != Nx:
-        u = X[-Nu*PH:].reshape(Ng,1);
+        u = X[-Nu*PH:].reshape(Ngu,1);
     else:
-        u = np.zeros( (Ng,1) );
+        u = np.zeros( (Ngu,1) );
 
-    dCu = np.array( mvar.gradient(x, u) ).reshape(Ng,1);
+    xList = np.array( mvar.simulate(x, u) ).reshape(Ngx,1);
+    gList = np.array( mvar.gradient(x, u) ).reshape(Ngu,1);
 
-    PsiH = np.vstack( ([1], x, dCu, u) );
+    PsiH = np.vstack( (xList, gList, u) );
     return PsiH;
 
 def obsXUH(X=None, mvar=None):
@@ -281,9 +284,14 @@ if __name__ == "__main__":
     NkH = obsH()['Nk'];
 
     
+    # initial position list
+    N0 = 1;
+    X0 = 10*np.random.rand(Nx,N0) - 5
+
+    
     # initialize states
-    x0 = [-1,-1,3*pi/2];
-    xd = [1,1,3*pi/2];
+    x0 = X0[:,0].reshape(Nx,);
+    xd = [0,0,pi/2];
     uinit = [0 for i in range(Nu*PH)];
 
     
@@ -295,41 +303,10 @@ if __name__ == "__main__":
         max_iter=100, model_type=model_type);
     mpc_var.setAlpha(0.01);
 
-    
-    # model function for training syntax
-    modelTrain = lambda x, u: np.array( model(x,u,None) ).reshape(Nx,1);
 
-    
-    # generate initial conditions for training
-    N0 = 1;
-    X0 = np.random.rand(Nx,N0);
-
-    T = 10;  Nt = round(T/dt)+1;
-    tList = [[i*dt for i in range(Nt)]];
-
-    randControl = lambda x: 10*np.random.rand(Nu,1)-5;
-    xTrain, uRand = data.generate_data(tList, modelTrain, X0, randControl, Nu);
-
-    
-    # split training data into X and Y sets
-    uStack = data.stack_data(uRand, N0, Nu, Nt-1);
-    xStack = data.stack_data(xTrain[:,:-1], N0, Nx, Nt-1);
-    yStack = data.stack_data(xTrain[:,1:], N0, Nx, Nt-1);
-
-    X = np.vstack( (xStack, uStack) );
-    Y = np.vstack( (yStack, uStack) );
-
-    
-    # solve for K
-    XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
-
-    kxvar = kman.KoopmanOperator(obsXUH, obsXU, mpc_var);
-    # Kx = kxvar.edmd(X, Y, XU0);
-
-    # print('Kx:', Kx.shape, kxvar.err);
-    # print(Kx.T);
-    # print('Kx.PsiX:\n', Kx[:NkX,:].T);
-    # print('Kx.PsiU:\n', Kx[NkX:,:].T);
+    # simulation time frame
+    T = 10;  Nt = round(T/dt) + 1;
+    tList = np.array( [[i*dt for i in range(Nt)]] );
 
 
     # generate data for training of Ku
@@ -339,6 +316,7 @@ if __name__ == "__main__":
         return np.array(umpc).reshape(Nu*PH,1);
 
 
+    # generate and stack data
     xRand, uTrain = data.generate_data(tList, randModel, X0,
         control=trainControl, Nu=Nu*PH);
 
