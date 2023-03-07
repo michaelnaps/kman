@@ -20,7 +20,7 @@ np.set_printoptions(precision=3, suppress=True);
 
 # hyper parameter(s)
 pi = math.pi;
-PH = 1;
+PH = 2;
 kl = 1;
 Nx = 3;
 Nu = 2;
