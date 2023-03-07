@@ -20,12 +20,12 @@ np.set_printoptions(precision=3, suppress=True);
 
 # hyper parameter(s)
 pi = math.pi;
-PH = 5;
-kl = 2;
+PH = 10;
+kl = 1;
 Nx = 3;
 Nu = 2;
 R = 1/2;  # robot-body radius
-dt = 0.0005;
+dt = 0.01;
 
 
 # callback function and parameters
@@ -292,7 +292,7 @@ if __name__ == "__main__":
     params = Parameters(x0, xd, buffer_length=25);
     mpc_var = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
         num_ssvar=Nx, PH_length=PH, knot_length=kl, time_step=dt,
-        max_iter=10, model_type=model_type);
+        max_iter=100, model_type=model_type);
     mpc_var.setAlpha(0.01);
 
     
@@ -361,4 +361,4 @@ if __name__ == "__main__":
     PsiTest = obsH(xTest, mpc_var);
 
     mpc_var.solve(xTest.reshape(Nx,),uinit,output=1)[0];
-    print('Psi:',Ku@PsiTest);
+    print('Psi:',Ku[-Nu*PH:,:]@PsiTest);
