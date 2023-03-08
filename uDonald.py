@@ -170,12 +170,24 @@ def obsX(X=None, mvar=None):  # DONE?
 
     return PsiX;
 
-def obsU(x=None):
-    if x is None:
-        Ntrig = 2;
-        meta = {'Nk':Ntrig+1};
+def obsU(X=None, mvar=None):  # DONE?
+    Ngx = Nx*(PH + 1);
+    Ngu = Nu*PH;
+    Ntr = PH + 1;
+    if X is None:
+        meta = {'Nk':2*Ntr+1};
         return meta;
-    PsiU = np.vstack( (np.cos(x[2]), np.sin(x[2]), [1]) );
+
+    x = X[:Nx].reshape(Nx,1);
+    u = X[-Ngu:].reshape(Ngu,1);
+
+    xList = np.array( mvar.simulate(x, u) ).reshape(Nx,PH+1);
+
+    xCos = np.cos(xList[2]).reshape(Ntr,1);
+    xSin = np.sin(xList[2]).reshape(Ntr,1);
+    
+    PsiU = np.vstack( (xCos, xSin, [1]) );
+
     return PsiU;
 
 def obsH(X=None, mvar=None):
@@ -333,7 +345,7 @@ if __name__ == "__main__":
 
     xTest = np.array( [[0],[0],[pi/2],[1],[1]] );
     PsiX = obsX(xTest, mpc_var);
-    PsiU = obsU(xTest);
+    PsiU = obsU(xTest, mpc_var);
     PsiH = obsH(xTest, mpc_var);
 
     print(xTest);
