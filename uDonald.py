@@ -190,24 +190,16 @@ def obsU(X=None, mvar=None):  # DONE?
 
     return PsiU;
 
-def obsH(X=None, mvar=None):
-    Ngx = Nx*(PH + 1);
+def obsH(X=None, mvar=None):  # DONE?
     Ngu = Nu*PH;
     if X is None:
-        meta = {'Nk':Ngx+2*Ngu};
+        meta = {'Nk':Ngu};
         return meta;
 
-    x = X[:Nx].reshape(Nx,1);
+    u = X[-Ngu:].reshape(Ngu,1);
 
-    if len(X) != Nx:
-        u = X[-Nu*PH:].reshape(Ngu,1);
-    else:
-        u = np.zeros( (Ngu,1) );
+    PsiH = np.vstack( ([1], u) );
 
-    xList = np.array( mvar.simulate(x, u) ).reshape(Ngx,1);
-    gList = np.array( mvar.gradient(x, u) ).reshape(Ngu,1);
-
-    PsiH = np.vstack( (xList, gList, u) );
     return PsiH;
 
 def obsXUH(X=None, mvar=None):
@@ -215,14 +207,12 @@ def obsXUH(X=None, mvar=None):
         meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsH()['Nk']};
         return meta;
 
-    x = X[:Nx].reshape(Nx,1);
-    u = X[Nx:].reshape(Nu,1);
-
-    PsiX = obsX(x);
-    PsiU = obsU(x);
+    PsiX = obsX(X, mvar);
+    PsiU = obsU(X, mvar);
     PsiH = obsH(X, mvar);
 
     PsiXUH = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
+    
     return PsiXUH;
 
 
@@ -352,5 +342,6 @@ if __name__ == "__main__":
     print(PsiX);
     print(PsiU);
     print(PsiH);
+    print(obsXUH(xTest, mpc_var));
 
 
