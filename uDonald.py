@@ -16,12 +16,12 @@ import matplotlib.path as path
 
 
 # print precision
-np.set_printoptions(precision=5, suppress=True);
+np.set_printoptions(precision=3, suppress=True);
 
 
 # hyper parameter(s)
 pi = math.pi;
-PH = 2;
+PH = 1;
 kl = 1;
 Nx = 3;
 Nu = 2;
@@ -153,11 +153,21 @@ def cost(mpc_var, xlist, ulist):
 
 
 # observable functions
-def obsX(x=None):
-    if x is None:
-        meta = {'Nk':Nx};
+def obsX(X=None, mvar=None):  # DONE?
+    Ngx = Nx*(PH + 1);
+    Ngu = Nu*PH;
+    if X is None:
+        meta = {'Nk':Ngx+Ngu};
         return meta;
-    PsiX = x;
+
+    x = X[:Nx].reshape(Nx,1);
+    u = X[-Ngu:].reshape(Ngu,1);
+
+    xList = np.array( mvar.simulate(x, u) ).reshape(Ngx,1);
+    gList = np.array( mvar.gradient(x, u) ).reshape(Ngu,1);
+
+    PsiX = np.vstack( (xList, gList) );
+
     return PsiX;
 
 def obsU(x=None):
@@ -168,22 +178,8 @@ def obsU(x=None):
     PsiU = np.vstack( (np.cos(x[2]), np.sin(x[2]), [1]) );
     return PsiU;
 
-def obsXU(X=None, mvar=None):
-    if X is None:
-        meta = {'Nk':obsX()['Nk']+obsU()['Nk']};
-        return meta;
-
-    x = X[:Nx].reshape(Nx,1);
-    u = X[Nx:].reshape(Nu,1);
-
-    PsiX = obsX(x);
-    PsiU = obsU(x);
-
-    PsiXU = np.vstack( (PsiX, PsiU) );
-    return PsiXU;
-
 def obsH(X=None, mvar=None):
-    Ngx = Nx*(PH +1);
+    Ngx = Nx*(PH + 1);
     Ngu = Nu*PH;
     if X is None:
         meta = {'Nk':Ngx+2*Ngu};
@@ -304,39 +300,45 @@ if __name__ == "__main__":
     mpc_var.setAlpha(0.01);
 
 
-    # simulation time frame
-    T = 10;  Nt = round(T/dt) + 1;
-    tList = np.array( [[i*dt for i in range(Nt)]] );
+    # # simulation time frame
+    # T = 10;  Nt = round(T/dt) + 1;
+    # tList = np.array( [[i*dt for i in range(Nt)]] );
 
 
-    # generate data for training of Ku
-    randModel = lambda x, u: np.random.rand(Nx,1);
-    def trainControl(x):  # from MPC class
-        umpc = mpc_var.solve(x, uinit)[0];
-        return np.array(umpc).reshape(Nu*PH,1);
+    # # generate data for training of Ku
+    # randModel = lambda x, u: np.random.rand(Nx,1);
+    # def trainControl(x):  # from MPC class
+    #     umpc = mpc_var.solve(x, uinit)[0];
+    #     return np.array(umpc).reshape(Nu*PH,1);
 
 
-    # generate and stack data
-    xRand, uTrain = data.generate_data(tList, randModel, X0,
-        control=trainControl, Nu=Nu*PH);
+    # # generate and stack data
+    # xRand, uTrain = data.generate_data(tList, randModel, X0,
+    #     control=trainControl, Nu=Nu*PH);
 
-    uStack = data.stack_data(uTrain, N0, Nu*PH, Nt-1);
-    xStack = data.stack_data(xRand[:,:-1], N0, Nx, Nt-1);
+    # uStack = data.stack_data(uTrain, N0, Nu*PH, Nt-1);
+    # xStack = data.stack_data(xRand[:,:-1], N0, Nx, Nt-1);
 
 
-    # solve for Ku
-    Xu = np.vstack( (xStack, np.zeros( (Nu*PH,N0*(Nt-1)) )) );
-    Yu = np.vstack( (xStack, uStack) );
+    # # solve for Ku
+    # Xu = np.vstack( (xStack, np.zeros( (Nu*PH,N0*(Nt-1)) )) );
+    # Yu = np.vstack( (xStack, uStack) );
 
     XU0 = np.vstack( (X0, np.zeros( (Nu*PH, N0) )) );
-    kuvar = kman.KoopmanOperator(obsH, params=mpc_var);
-    Ku = kuvar.edmd(Xu, Yu, XU0);
+    # kuvar = kman.KoopmanOperator(obsH, params=mpc_var);
+    # # Ku = kuvar.edmd(Xu, Yu, XU0);
 
-    print('Ku:', Ku.shape, kuvar.err);
-    print(Ku);
+    # # print('Ku:', Ku.shape, kuvar.err);
+    # # print(Ku);
 
-    xTest = 2*np.random.rand(Nx,1)-1;
-    PsiTest = obsH(xTest, mpc_var);
+    xTest = np.array( [[0],[0],[pi/2],[1],[1]] );
+    PsiX = obsX(xTest, mpc_var);
+    PsiU = obsU(xTest);
+    PsiH = obsH(xTest, mpc_var);
 
-    mpc_var.solve(xTest.reshape(Nx,),uinit,output=1)[0];
-    print('Psi:',PsiTest.T@Ku[-Nu*PH:,:].T);
+    print(xTest);
+    print(PsiX);
+    print(PsiU);
+    print(PsiH);
+
+
