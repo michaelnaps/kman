@@ -6,7 +6,7 @@ This repository serves as the testing ground for my research at Boston Universit
 ___
 ### **Notes on Coordinate Descent**
 
-*Coordinate descent* is a method for iteratively minimizing the cost of multiple objective functions with overlapping parameters. Similar to gradient descent, the algorithm is exited when the change in objective function is zero, or falls below some tolerance. We will be working under tunder the assumption that the objective function is continuously differentiable.
+*Coordinate descent* is a method for iteratively minimizing the cost of multiple objective functions with overlapping parameters. Similar to gradient descent, the algorithm is exited when the change in objective function is zero, or falls below some tolerance. We will be working under the assumption that the objective function is continuously differentiable and its gradient can be found through the FDM calculation method (to be developed more in the future).
 
 
 ___
