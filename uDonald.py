@@ -153,24 +153,25 @@ def cost(mpc_var, xlist, ulist):
 
 
 # observable functions
-def obsX(X=None, mvar=None):  # DONE?
+def obsX(X=None, mvar=None):
     Ngx = Nx*(PH + 1);
     Ngu = Nu*PH;
     if X is None:
-        meta = {'Nk':Ngx+Ngu};
+        meta = {'Nk':Ngx};
         return meta;
 
     x = X[:Nx].reshape(Nx,1);
     u = X[-Ngu:].reshape(Ngu,1);
 
     xList = np.array( mvar.simulate(x, u) ).reshape(Ngx,1);
-    gList = np.array( mvar.gradient(x, u) ).reshape(Ngu,1);
+    # gList = np.array( mvar.gradient(x, u) ).reshape(Ngu,1);
 
-    PsiX = np.vstack( (xList, gList) );
+    # PsiX = np.vstack( (xList, gList) );
+    PsiX = xList;
 
     return PsiX;
 
-def obsU(X=None, mvar=None):  # DONE?
+def obsU(X=None, mvar=None):
     Ngx = Nx*(PH + 1);
     Ngu = Nu*PH;
     Ntr = PH + 1;
@@ -190,7 +191,7 @@ def obsU(X=None, mvar=None):  # DONE?
 
     return PsiU;
 
-def obsH(X=None, mvar=None):  # DONE?
+def obsH(X=None, mvar=None):
     Ngu = Nu*PH;
     if X is None:
         meta = {'Nk':1+Ngu};
@@ -283,7 +284,7 @@ if __name__ == "__main__":
 
     
     # initial position list
-    N0 = 1;
+    N0 = 10;
     X0 = 10*np.random.rand(Nx,N0) - 5
 
     

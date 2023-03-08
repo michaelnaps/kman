@@ -182,21 +182,13 @@ def obsXU(X=None, mvar=None):
     return PsiXU;
 
 def obsH(X=None, mvar=None):
-    Ng = Nu*PH;
     if X is None:
-        meta = {'Nk':1+Nx+2*Ng};
+        meta = {'Nk':1+Nu};
         return meta;
 
-    x = X[:Nx].reshape(Nx,1);
+    u = X[Nx:].reshape(Nu,1);
 
-    if len(X) != Nx:
-        u = X[-Nu*PH:].reshape(Ng,1);
-    else:
-        u = np.zeros( (Ng,1) );
-
-    dCu = np.array( mvar.gradient(x, u) ).reshape(Ng,1);
-
-    PsiH = np.vstack( ([1], x, dCu, u) );
+    PsiH = np.vstack( ([1], u) );
     return PsiH;
 
 def obsXUH(X=None, mvar=None):
@@ -301,7 +293,7 @@ if __name__ == "__main__":
 
     
     # generate initial conditions for training
-    N0 = 1;
+    N0 = 10;
     X0 = np.random.rand(Nx,N0);
 
     T = 10;  Nt = round(T/dt)+1;
@@ -324,41 +316,10 @@ if __name__ == "__main__":
     XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
 
     kxvar = kman.KoopmanOperator(obsXUH, obsXU, mpc_var);
-    # Kx = kxvar.edmd(X, Y, XU0);
+    Kx = kxvar.edmd(X, Y, XU0);
 
-    # print('Kx:', Kx.shape, kxvar.err);
-    # print(Kx.T);
-    # print('Kx.PsiX:\n', Kx[:NkX,:].T);
-    # print('Kx.PsiU:\n', Kx[NkX:,:].T);
+    print('Kx:', Kx.shape, kxvar.err);
+    print(Kx.T);
+    print('Kx.PsiX:\n', Kx[:NkX,:].T);
+    print('Kx.PsiU:\n', Kx[NkX:,:].T);
 
-
-    # generate data for training of Ku
-    randModel = lambda x, u: np.random.rand(Nx,1);
-    def trainControl(x):  # from MPC class
-        umpc = mpc_var.solve(x, uinit)[0];
-        return np.array(umpc).reshape(Nu*PH,1);
-
-
-    xRand, uTrain = data.generate_data(tList, randModel, X0,
-        control=trainControl, Nu=Nu*PH);
-
-    uStack = data.stack_data(uTrain, N0, Nu*PH, Nt-1);
-    xStack = data.stack_data(xRand[:,:-1], N0, Nx, Nt-1);
-
-
-    # solve for Ku
-    Xu = np.vstack( (xStack, np.zeros( (Nu*PH,N0*(Nt-1)) )) );
-    Yu = np.vstack( (xStack, uStack) );
-
-    XU0 = np.vstack( (X0, np.zeros( (Nu*PH, N0) )) );
-    kuvar = kman.KoopmanOperator(obsH, params=mpc_var);
-    Ku = kuvar.edmd(Xu, Yu, XU0);
-
-    print('Ku:', Ku.shape, kuvar.err);
-    print(Ku);
-
-    xTest = 2*np.random.rand(Nx,1)-1;
-    PsiTest = obsH(xTest, mpc_var);
-
-    mpc_var.solve(xTest.reshape(Nx,),uinit,output=1)[0];
-    print('Psi:',PsiTest.T@Ku[-Nu*PH:,:].T);
