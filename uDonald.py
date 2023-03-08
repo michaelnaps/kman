@@ -193,7 +193,7 @@ def obsU(X=None, mvar=None):  # DONE?
 def obsH(X=None, mvar=None):  # DONE?
     Ngu = Nu*PH;
     if X is None:
-        meta = {'Nk':Ngu};
+        meta = {'Nk':1+Ngu};
         return meta;
 
     u = X[-Ngu:].reshape(Ngu,1);
@@ -302,46 +302,38 @@ if __name__ == "__main__":
     mpc_var.setAlpha(0.01);
 
 
-    # # simulation time frame
-    # T = 10;  Nt = round(T/dt) + 1;
-    # tList = np.array( [[i*dt for i in range(Nt)]] );
+    # simulation time frame
+    T = 10;  Nt = round(T/dt) + 1;
+    tList = np.array( [[i*dt for i in range(Nt)]] );
 
 
-    # # generate data for training of Ku
-    # randModel = lambda x, u: np.random.rand(Nx,1);
-    # def trainControl(x):  # from MPC class
-    #     umpc = mpc_var.solve(x, uinit)[0];
-    #     return np.array(umpc).reshape(Nu*PH,1);
+    # generate data for training of Ku
+    modelFunc = lambda x, u: np.array( model(x, u, None) ).reshape(Nx,1);
+    def trainControl(x):  # from MPC class
+        umpc = mpc_var.solve(x, uinit)[0];
+        return np.array(umpc).reshape(Nu*PH,1);
 
 
-    # # generate and stack data
-    # xRand, uTrain = data.generate_data(tList, randModel, X0,
-    #     control=trainControl, Nu=Nu*PH);
+    # generate and stack data
+    xRand, uTrain = data.generate_data(tList, modelFunc, X0,
+        control=trainControl, Nu=Nu*PH);
 
-    # uStack = data.stack_data(uTrain, N0, Nu*PH, Nt-1);
-    # xStack = data.stack_data(xRand[:,:-1], N0, Nx, Nt-1);
+    uStack = data.stack_data(uTrain, N0, Nu*PH, Nt-1);
+    xStack = data.stack_data(xRand[:,:-1], N0, Nx, Nt-1);
 
 
-    # # solve for Ku
-    # Xu = np.vstack( (xStack, np.zeros( (Nu*PH,N0*(Nt-1)) )) );
-    # Yu = np.vstack( (xStack, uStack) );
+    # solve for K
+    X = np.vstack( (xStack, np.zeros( (Nu*PH,N0*(Nt-1)) )) );
+    Y = np.vstack( (xStack, uStack) );
 
     XU0 = np.vstack( (X0, np.zeros( (Nu*PH, N0) )) );
-    # kuvar = kman.KoopmanOperator(obsH, params=mpc_var);
-    # # Ku = kuvar.edmd(Xu, Yu, XU0);
+    kvar = kman.KoopmanOperator(obsXUH, params=mpc_var);
+    K = kvar.edmd(X, Y, XU0);
 
-    # # print('Ku:', Ku.shape, kuvar.err);
-    # # print(Ku);
+    print('K:', K.shape, kvar.err);
+    print(K);
 
-    xTest = np.array( [[0],[0],[pi/2],[1],[1]] );
-    PsiX = obsX(xTest, mpc_var);
-    PsiU = obsU(xTest, mpc_var);
-    PsiH = obsH(xTest, mpc_var);
-
-    print(xTest);
-    print(PsiX);
-    print(PsiU);
-    print(PsiH);
-    print(obsXUH(xTest, mpc_var));
+    print('Kx:', K[:NkX,:].T);
+    print('Ku:', K[NkX:,:].T);
 
 
