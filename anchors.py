@@ -7,7 +7,7 @@ import Helpers.DataFunctions as data
 
 
 # set global output setting
-np.set_printoptions(precision=3, suppress=True);
+np.set_printoptions(precision=5, suppress=True);
 
 
 # hyper paramter(s)
@@ -66,29 +66,29 @@ def anchorExpand(x, u):
 def obs(X=None):
     if X is None:
         meta = obsA();
-        meta['Nk'] = Nx+Nu+Nx*Nx+Nu*Nu+Nx*Nu;
+        meta['Nk'] = Nx+Nu+0*Nx*Nx+0*Nu*Nu+0*Nx*Nu;
         return meta;
     
     x = X[:Nx].reshape(Nx,1);
     u = X[Nx:].reshape(Nu,1);
 
-    xx = vec(x@x.T);
-    uu = vec(u@u.T);
-    xu = vec(x@u.T);
+    # xx = vec(x@x.T);
+    # uu = vec(u@u.T);
+    # xu = vec(x@u.T);
 
-    Psi = np.vstack( (x, u, xx, uu, xu) );
+    Psi = np.vstack( (x, u) );
 
     return Psi;
 
 def obsA(X=None):
     if X is None:
         meta = {
-            'Nk': Nx+Nu+Nx*Nx+Nu*Nu+Nx*Nu + 1*Na*Nx*Nx+0*Na*Nu*Nx+1,
+            'Nk': Nx+Nu+0*Nx*Nx+0*Nu*Nu+0*Nx*Nu + 1*Na*Nx*Nx+0*Na*Nu*Nx+1,
             'x':  [i for i in range(Nx)],
             'u':  [i for i in range(Nx, Nx+Nu)],
-            'xx': [i for i in range(Nx+Nu, Nx+Nu+Nx*Nx)],
-            'uu': [i for i in range(Nx+Nu+Nx*Nx, Nx+Nu+2*Nx*Nx)],
-            'xu': [i for i in range(Nx+Nu+2*Nx*Nx, Nx+Nu+3*Nx*Nx)],
+            # 'xx': [i for i in range(Nx+Nu, Nx+Nu+Nx*Nx)],
+            # 'uu': [i for i in range(Nx+Nu+Nx*Nx, Nx+Nu+2*Nx*Nx)],
+            # 'xu': [i for i in range(Nx+Nu+2*Nx*Nx, Nx+Nu+3*Nx*Nx)],
             # 'da': [i for i in range(Nx+Nu+3*Nx*Nx, Nx+Nu+3*Nx*Nx+1)],
             # 'xa': [i for i in range(Nx+Nu+3*Nx*Nx+1, Nx+Nu+3*Nx*Nx+1+Nx*Na)],
             # 'ua': [i for i in range(Nx+Nu+3*Nx*Nx+1+Nx*Na, Nx+Nu+3*Nx*Nx+1+Nx*Na+Nu*Na)]
@@ -97,7 +97,6 @@ def obsA(X=None):
 
     x = X[:Nx].reshape(Nx,1);
     u = X[Nx:].reshape(Nu,1);
-    a = aList;
 
     da, xa, ua = anchorExpand(x, u);   
 
@@ -177,9 +176,9 @@ if __name__ == "__main__":
     print(meta);
     print('Kx:\n', K[meta['x'],:].T);
     print('Ku:\n', K[meta['u'],:].T);
-    print('Kxx:\n', K[meta['xx'],:].T);
-    print('Kuu:\n', K[meta['uu'],:].T);
-    print('Kxu:\n', K[meta['xu'],:].T);
+    # print('Kxx:\n', K[meta['xx'],:].T);
+    # print('Kuu:\n', K[meta['uu'],:].T);
+    # print('Kxu:\n', K[meta['xu'],:].T);
     # print('Kda:\n', K[meta['da'],:].T);
     # print('Kxa:\n', K[meta['xa'],:].T);
     # print('Kua:\n', K[meta['ua'],:].T);
@@ -198,6 +197,9 @@ if __name__ == "__main__":
     xTest, uTest = data.generate_data(tList, model, x0,
         control=control, Nu=Nu);
     PsiTest = data.generate_data(tList, kModel, Psi0)[0];
+
+    print(Psi0)
+    print(kModel(Psi0))
 
 
     # plot results
