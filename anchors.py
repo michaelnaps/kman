@@ -14,8 +14,8 @@ np.set_printoptions(precision=3, suppress=True);
 dt = 0.01;
 Nx = 2;
 Nu = 2;
-Na = 2;
-aList = np.array( [[1],[1]] );
+Na = 3;
+aList = np.array( [[10, 10, -10],[10, -10, -10]] );
 
 
 # model and control functions
@@ -35,8 +35,8 @@ def model(x, u):
 
 def control(x):
     C = np.array( [
-        [10, 0],
-        [0, 10]
+        [1, 0],
+        [0, 1]
     ] );
     xg = np.zeros( (Nx,1) );
 
@@ -44,14 +44,22 @@ def control(x):
 
     return u;
 
-def anchorDist(x):
-    d = np.empty( (Na,1) );
+def anchorExpand(x, u):
+    da = np.empty( (Na,Nx*Nx) );
+    xa = np.empty( (Na,Nx*Nx) );
+    ua = np.empty( (Na,Nu*Nx) );
 
     for i, a in enumerate(aList.T):
         a = a.reshape(Nx,1);
-        d[i] = (x - a).T@(x - a);
+        da[i,:] = vec((x - a)@(x - a).T).reshape(1,Nx*Nx);
+        xa[i,:] = vec(x@a.T).reshape(1,Nx*Nx);
+        ua[i,:] = vec(u@a.T).reshape(1,Nu*Nx);
 
-    return d;
+    da = vec(da);
+    xa = vec(xa);
+    ua = vec(ua);
+
+    return da, xa, ua;
 
 
 # observable functions PsiX, PsiU, PsiH
@@ -75,15 +83,15 @@ def obs(X=None):
 def obsA(X=None):
     if X is None:
         meta = {
-            'Nk': Nx+Nu+Nx*Nx+Nu*Nu+Nx*Nu + 2*Nx*Na+Nu*Na,
+            'Nk': Nx+Nu+Nx*Nx+Nu*Nu+Nx*Nu + 2*Na*Nx*Nx+0*Na*Nu*Nx+1,
             'x':  [i for i in range(Nx)],
             'u':  [i for i in range(Nx, Nx+Nu)],
             'xx': [i for i in range(Nx+Nu, Nx+Nu+Nx*Nx)],
             'uu': [i for i in range(Nx+Nu+Nx*Nx, Nx+Nu+2*Nx*Nx)],
             'xu': [i for i in range(Nx+Nu+2*Nx*Nx, Nx+Nu+3*Nx*Nx)],
-            'da': [i for i in range(Nx+Nu+3*Nx*Nx, Nx+Nu+3*Nx*Nx+Nx*Na)],
-            'xa': [i for i in range(Nx+Nu+3*Nx*Nx+Nx*Na, Nx+Nu+3*Nx*Nx+2*Nx*Na)],
-            'ua': [i for i in range(Nx+Nu+3*Nx*Nx+2*Nx*Na, Nx+Nu+3*Nx*Nx+2*Nx*Na+Nu*Na)]
+            # 'da': [i for i in range(Nx+Nu+3*Nx*Nx, Nx+Nu+3*Nx*Nx+1)],
+            # 'xa': [i for i in range(Nx+Nu+3*Nx*Nx+1, Nx+Nu+3*Nx*Nx+1+Nx*Na)],
+            # 'ua': [i for i in range(Nx+Nu+3*Nx*Nx+1+Nx*Na, Nx+Nu+3*Nx*Nx+1+Nx*Na+Nu*Na)]
         };
         return meta;
 
@@ -91,12 +99,10 @@ def obsA(X=None):
     u = X[Nx:].reshape(Nu,1);
     a = aList;
 
-    da = vec((x-a)@(x-a).T);
-    xa = vec(x@a.T);
-    ua = vec(x@a.T);    
+    da, xa, ua = anchorExpand(x, u);   
 
     PsiX = obs(X);
-    PsiA = np.vstack( (PsiX, da, xa, ua ) );
+    PsiA = np.vstack( (PsiX, da, xa, [1]) );
 
     return PsiA;
 
@@ -107,7 +113,6 @@ def plotcomp(x1List, x2List, filename=None):
     axs.plot(x1List[0], x1List[1], label='Model');
     axs.plot(x2List[0], x2List[1], linestyle='--', label='KCE');
 
-    plt.title('$x_0 = [3, -1.4, 3, -10]^\intercal$');
     plt.xlabel('$x_1$')
     plt.ylabel('$x_2$')
     axs.axis('equal');
@@ -128,19 +133,15 @@ if __name__ == "__main__":
     tList = np.array( [ [i*dt for i in range(Nt)] ] );
 
 
-    # generate the randomized control policy
-    randControl = lambda x: np.random.rand(Nu,1);
-
-
     # generate training data for Kx
     N0 = 10;
     X0 = 10*np.random.rand(Nx,N0) - 5;
 
     xData, uData = data.generate_data(tList, model, X0,
-        control=randControl, Nu=Nu);
+        control=control, Nu=Nu);
 
 
-    # construct training data from xData and uData
+    # formatting training data from xData and uData
     uStack = data.stack_data(uData, N0, Nu, Nt-1);
     xStack = data.stack_data(xData[:,:-1], N0, Nx, Nt-1);
     yStack = data.stack_data(xData[:,1:], N0, Nx, Nt-1);
@@ -166,5 +167,24 @@ if __name__ == "__main__":
     # print('Kda:\n', K[meta['da'],:].T);
     # print('Kxa:\n', K[meta['xa'],:].T);
     # print('Kua:\n', K[meta['ua'],:].T);
+
+
+    # test results
+    x0 = 5*np.random.rand(Nx,1) - 2.5;
+    xu0 = np.vstack( (x0, [[0],[0]]) );
+    Psi0 = obs(xu0);
+
+    kModel = lambda Psi: K@rmes(Psi);
+    def rmes(Psi):
+        PsiA = obsA(Psi[:Nx+Nu].reshape(Nx+Nu,1));
+        return PsiA;
+
+    xTest, uTest = data.generate_data(tList, model, x0,
+        control=control, Nu=Nu);
+    PsiTest = data.generate_data(tList, kModel, Psi0)[0];
+
+
+    # plot results
+    plotcomp(xTest, PsiTest);
 
 

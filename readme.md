@@ -81,17 +81,38 @@ The Koopman operator for this was formed using the KCE and resulted in good beha
     <img src=./.figures/point.png width=450 />
 </p>
 
+
 ___
 ### **Anchor System:**
-**State/model equations** are the same as those shown for the *Linear System*.
-
-The interesting component introduced here is the idea that the state is not observed directly, but instead observed through *anchors*. For practical purposes there are four evenly distanced *anchors* which, when called, give the object its respective linear distance. That is,
+**State/model equations:** linear/holonomic/first-order/discrete
 
 $$
-    d_i(x) = ||x - a_i||_2
+x = \begin{bmatrix}
+    x \\
+    y
+\end{bmatrix}
+= \begin{bmatrix}
+    x_1 \\
+    x_2
+\end{bmatrix}
 $$
 
-Where $d_i$ is the $L_2$-norm distance from the anchor, $a_i$, located at index $i$. The goal here is to utilize the EDMD learning structure to find a correlation between the *anchor* distances and the policy.
+and the system is modeled as...
+
+$$
+\begin{matrix}
+    x^+ = Ax + Bu \\
+    \textrm{where } u = C(x_g - x)
+\end{matrix}
+$$
+
+The interesting component introduced here is the idea that the state is not observed directly, but instead observed through *anchors*. For practical purposes we assume there are four randomly distrubuted anchors which, when called, give the object its respective $L_2$-norm squared distance. That is,
+
+$$
+    d_i(x) = (x - a_i)^\intercal (x - a_i)
+$$
+
+Where $d_i$ references the distance from the anchor, $a_i$, located at index $i$. The goal here is to utilize the EDMD learning structure to find a correlation between the anchor distances and the control policy.
 
 **Observation Function Structure:**
 
@@ -99,24 +120,31 @@ Here the observables are listed as
 
 $$
 \begin{aligned}
-    \Psi_x = x
-    &&
-    \Psi_u = \begin{bmatrix}
+    \Psi = \begin{bmatrix}
+        x \\
         u \\
-        1
+        x x^\intercal \\
+        u u^\intercal \\
+        x u^\intercal
     \end{bmatrix}
     &&
     h = \begin{bmatrix}
-        1 \\
+        \Psi \\
         d_1(x) \\
-        d_2(x) \\
         \vdots \\
-        d_a(x)
+        d_{N_a} \\
+        x a_i^\intercal \\
+        \vdots \\
+        x a_{N_a}^\intercal \\
+        u a_i^\intercal \\
+        \vdots \\
+        u a_{N_a}^\intercal
     \end{bmatrix}
 \end{aligned}
 $$
 
-We purposely limit the $h$ observation list from having knowledge of the states so that we can demonstrate the robustness of the KCE under considerable limitations.
+In general we work under the assumption that the initial state of the system is known. That said, the $h$ observation list ideally updates this value as time progresses using predictions from the anchor values.
+
 
 ___
 ### **Differential Drive System:**
