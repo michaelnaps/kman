@@ -223,6 +223,7 @@ def obsXUH(X=None, mvar=None):
     PsiU = obsU(X, mvar);
     PsiH = obsH(X, mvar);
 
+    # kron is not the best operation here
     PsiXUH = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
     
     return PsiXUH;
