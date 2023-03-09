@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import Helpers.KoopmanFunctions as kman
+from Helpers.KoopmanFunctions import vec
 import Helpers.DataFunctions as data
 
 
@@ -11,26 +12,19 @@ np.set_printoptions(precision=3, suppress=True);
 
 # hyper paramter(s)
 dt = 0.01;
-Nx = 4;
+Nx = 2;
 Nu = 2;
-Na = 4;
-aList = np.array( [
-    [10, 10, -10, -10],
-    [10, -10, -10, 10]
-] );
+Na = 2;
+aList = np.array( [[1],[1]] );
 
 
 # model and control functions
 def model(x, u):
     A = np.array( [
-        [1, 0, dt, 0],
-        [0, 1, 0, dt],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]
+        [1, 0],
+        [0, 1]
     ] );
     B = np.array( [
-        [0, 0],
-        [0, 0],
         [dt, 0],
         [0, dt]
     ] );
@@ -41,8 +35,8 @@ def model(x, u):
 
 def control(x):
     C = np.array( [
-        [10, 0, 2.5, 0],
-        [0, 10, 0, 2.5]
+        [10, 0],
+        [0, 10]
     ] );
     xg = np.zeros( (Nx,1) );
 
@@ -50,54 +44,61 @@ def control(x):
 
     return u;
 
-def anchors(x):
-    d = np.empty( (Na, 1) );
+def anchorDist(x):
+    d = np.empty( (Na,1) );
+
     for i, a in enumerate(aList.T):
-        d[i] = np.linalg.norm(a.reshape(2,1) - x[:2].reshape(2,1));
-    return d;    
+        a = a.reshape(Nx,1);
+        d[i] = (x - a).T@(x - a);
+
+    return d;
 
 
 # observable functions PsiX, PsiU, PsiH
 def obs(X=None):
     if X is None:
-        meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsH()['Nk']};
+        meta = obsA();
+        meta['Nk'] = Nx+Nu+Nx*Nx+Nu*Nu+Nx*Nu;
         return meta;
     
-    x = X[:Nx];
-    u = X[Nx:];
+    x = X[:Nx].reshape(Nx,1);
+    u = X[Nx:].reshape(Nu,1);
 
-    PsiX = obsX(x);
-    PsiU = obsU(u);
-    PsiH = obsH(X);
-    PsiXU = np.vstack( (PsiX, np.kron(PsiU,PsiH)) );
+    xx = vec(x@x.T);
+    uu = vec(u@u.T);
+    xu = vec(x@u.T);
 
-    return PsiXU;
+    Psi = np.vstack( (x, u, xx, uu, xu) );
 
-def obsX(x=None):
-    if x is None:
-        meta = {'Nk': Nx};
-        return meta;
-    PsiX = x;
-    return PsiX;
+    return Psi;
 
-def obsU(u=None):
-    if u is None:
-        meta = {'Nk': 1}
-        return meta;
-    PsiU = [1];
-    return PsiU;
-
-def obsH(X=None):
+def obsA(X=None):
     if X is None:
-        meta = {'Nk':Nu+Na+1};
+        meta = {
+            'Nk': Nx+Nu+Nx*Nx+Nu*Nu+Nx*Nu + 2*Nx*Na+Nu*Na,
+            'x':  [i for i in range(Nx)],
+            'u':  [i for i in range(Nx, Nx+Nu)],
+            'xx': [i for i in range(Nx+Nu, Nx+Nu+Nx*Nx)],
+            'uu': [i for i in range(Nx+Nu+Nx*Nx, Nx+Nu+2*Nx*Nx)],
+            'xu': [i for i in range(Nx+Nu+2*Nx*Nx, Nx+Nu+3*Nx*Nx)],
+            'da': [i for i in range(Nx+Nu+3*Nx*Nx, Nx+Nu+3*Nx*Nx+Nx*Na)],
+            'xa': [i for i in range(Nx+Nu+3*Nx*Nx+Nx*Na, Nx+Nu+3*Nx*Nx+2*Nx*Na)],
+            'ua': [i for i in range(Nx+Nu+3*Nx*Nx+2*Nx*Na, Nx+Nu+3*Nx*Nx+2*Nx*Na+Nu*Na)]
+        };
         return meta;
-    
-    x = X[:Nx];
-    u = X[Nx:];
 
-    PsiH = np.vstack( (u, anchors(x), [1]) );
+    x = X[:Nx].reshape(Nx,1);
+    u = X[Nx:].reshape(Nu,1);
+    a = aList;
 
-    return PsiH;
+    da = vec((x-a)@(x-a).T);
+    xa = vec(x@a.T);
+    ua = vec(x@a.T);    
+
+    PsiX = obs(X);
+    PsiA = np.vstack( (PsiX, da, xa, ua ) );
+
+    return PsiA;
 
 
 # plot results
@@ -133,7 +134,7 @@ if __name__ == "__main__":
 
     # generate training data for Kx
     N0 = 10;
-    X0 = 20*np.random.rand(Nx,N0) - 10;
+    X0 = 10*np.random.rand(Nx,N0) - 5;
 
     xData, uData = data.generate_data(tList, model, X0,
         control=randControl, Nu=Nu);
@@ -145,91 +146,25 @@ if __name__ == "__main__":
     yStack = data.stack_data(xData[:,1:], N0, Nx, Nt-1);
 
     XU0 = np.vstack( (X0, np.zeros( (Nu,N0) )) );
-    X = np.vstack( (xStack, uStack) );
+    X = np.vstack( (xStack, np.zeros( (Nu,N0*(Nt-1)) )) );
     Y = np.vstack( (yStack, uStack) );
 
 
-    # solve for Kx from data
-    def obsXU(X=None):
-        if X is None:
-            meta = {'Nk':Nx+Nu};
-            return meta;
-        PsiXU = X;
-        return PsiXU;
+    # train for operator
+    meta = obsA();
+    kvar = kman.KoopmanOperator(obsA, obs);
+    K = kvar.edmd(X, Y, XU0);
 
-    kxvar = kman.KoopmanOperator(obsXU);
-    Kx = kxvar.edmd(X, Y, XU0);
+    print('K:', K.shape, kvar.err)
 
-    print('Kx:', Kx.shape, kxvar.err)
-    print(Kx);
-    print('\n');
-
-
-    # construct data for Ku
-    randModel = lambda x, u: np.random.rand(Nx,1);
-    xRand, uTrain = data.generate_data(tList, randModel, X0,
-        control=control, Nu=Nu);
-
-    uStack = data.stack_data(uTrain, N0, Nu, Nt-1);
-    xStack = data.stack_data(xRand[:,:-1], N0, Nx, Nt-1);
+    print(meta);
+    print('Kx:\n', K[meta['x'],:].T);
+    print('Ku:\n', K[meta['u'],:].T);
+    print('Kxx:\n', K[meta['xx'],:].T);
+    print('Kuu:\n', K[meta['uu'],:].T);
+    print('Kxu:\n', K[meta['xu'],:].T);
+    # print('Kda:\n', K[meta['da'],:].T);
+    # print('Kxa:\n', K[meta['xa'],:].T);
+    # print('Kua:\n', K[meta['ua'],:].T);
 
 
-    # solve for Ku
-    Xu = np.vstack( (xStack, np.zeros( (Nu,N0*(Nt-1)) )) );
-    Yu = np.vstack( (xStack, uStack) );
-
-    kuvar = kman.KoopmanOperator(obsH);
-    Ku = kuvar.edmd(Xu, Yu, XU0)
-
-    print('Ku:', Ku.shape, kuvar.err)
-    print(Ku);
-    print('\n');
-
-
-    # generate cumulate operator
-    m = Nu;
-    p = obsX()['Nk'];
-    q = obsU()['Nk'];
-    b = obsH()['Nk'];
-
-    Ktemp = np.vstack( (
-        np.hstack( (np.eye(p), np.zeros( (p,q*b) )) ),
-        np.hstack( (np.zeros( (m*q, p) ), np.kron(np.eye(q), Ku[:Nu,:])) )
-    ) );
-
-    K = Kx @ Ktemp;
-
-    print('K:', K.shape);
-    print(K, '\n');
-
-
-    # define the remeasure function
-    def rmes(Psi):
-        Nkx = obsX()['Nk'];
-        Nku = obsU()['Nk'];
-        Nkh = obsH()['Nk'];
-
-        X = Psi[:Nx+Nu].reshape(Nx+Nu,1);
-
-        PsiX = Psi[:Nkx].reshape(Nkx,1);
-        PsiU = [1];
-        PsiH = obsH(X);
-
-        Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
-
-        return Psin;
-
-
-    # test the cumulative operator
-    kModel = lambda Psi: K@rmes(Psi);
-
-    x0 = np.array( [[3],[-1.4],[3],[-10],[0],[0]] );
-    Psi0 = obsXU(x0);
-
-    xTest = data.generate_data(tList, model, x0[:Nx].reshape(Nx,1), control=control, Nu=Nu)[0];
-    PsiTest = data.generate_data(tList, kModel, Psi0)[0];
-
-    
-    # plot test results
-    plotcomp(xTest, PsiTest[p:])
-    
