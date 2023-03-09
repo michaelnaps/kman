@@ -108,22 +108,38 @@ def obsA(X=None):
 
 
 # plot results
-def plotcomp(x1List, x2List, filename=None):
-    fig, axs = plt.subplots();
-    axs.plot(x1List[0], x1List[1], label='Model');
-    axs.plot(x2List[0], x2List[1], linestyle='--', label='KCE');
+def plotcomp(xTest, PsiTest, save=0):
+    # plot test results
+    figRes, axsRes = plt.subplots();
+
+    axsRes.plot(xTest[0], xTest[1], label='Model');
+    axsRes.plot(PsiTest[0], PsiTest[1], linestyle='--', label='KCE');
 
     plt.xlabel('$x_1$')
     plt.ylabel('$x_2$')
-    axs.axis('equal');
-    fig.tight_layout();
-    plt.legend();
+    axsRes.axis('equal');
+    figRes.tight_layout();
+    axsRes.legend();
     plt.grid();
-    
-    if filename is None:
-        plt.show();
+
+    # show error
+    Te = 2;  Ne = round(Te/dt) + 1;
+    figError, axsError = plt.subplots();
+
+    axsError.plot([tList[0][0], tList[0][Ne]], [0,0], color='r', linestyle='--');
+    axsError.plot(tList[0][:Ne], PsiTest[0,:Ne]-xTest[0,:Ne], label='$x_1$');
+    axsError.plot(tList[0][:Ne], PsiTest[1,:Ne]-xTest[1,:Ne], label='$x_2$');
+
+    axsError.set_ylim( (-1,1) );
+    axsError.grid();
+    axsError.legend();
+
+    # save results
+    if save:
+        figRes.savefig('/home/michaelnaps/prog/kman/.figures/uDonald.png', dpi=600);
+        figError.savefig('/home/michaelnaps/prog/kman/.figures/uDonaldError.png', dpi=600);
     else:
-        plt.savefig(filename, dpi=600);
+        plt.show();
 
 
 # main executable section
