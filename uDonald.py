@@ -21,12 +21,12 @@ np.set_printoptions(precision=3, suppress=True);
 
 # hyper parameter(s)
 pi = math.pi;
-PH = 20;
+PH = 10;
 kl = 1;
 Nx = 3;
 Nu = 2;
 R = 1/2;  # robot-body radius
-dt = 0.01;
+dt = 0.001;
 
 
 # callback function and parameters
@@ -133,6 +133,7 @@ def cost(mpc_var, xlist, ulist):
     TOL = 1e-6;
     kx = 500;
     ko = 10;
+    ku = 1;
 
     # calculate cost of current input and state
     C = 0;
@@ -143,6 +144,10 @@ def cost(mpc_var, xlist, ulist):
 
         C += kx*dx;
         C += ko*do;
+
+        if (i != PH):
+            C += ku*(ulist[k]**2 + ulist[k+1]**2);
+            k += Nu;
 
     return C;
 
@@ -261,18 +266,19 @@ def plotcomp(xTest, PsiTest, save=0):
 
 if __name__ == "__main__":
     # observable dimensions variables
+    print("Initializing Variables");
     NkX = obsX()['Nk'];  # for reference
     NkU = obsU()['Nk'];
     NkH = obsH()['Nk'];
 
     
     # initial position list
-    N0 = 10;
-    X0 = 10*np.random.rand(Nx,N0) - 5
+    N0 = 1;
+    X0 = 2*np.random.rand(Nx,N0) - 1
 
     
     # initialize states
-    x0 = X0[:,0].reshape(Nx,);
+    x0 = list( X0[:,0].reshape(Nx,) );
     xd = [0,0,pi/2];
     uinit = [0 for i in range(Nu*PH)];
 
@@ -299,12 +305,13 @@ if __name__ == "__main__":
 
 
     # generate and stack data
+    print("Generating Training Data");
     xTrain, uTrain = data.generate_data(tList, modelFunc, X0,
         control=trainControl, Nu=Nu*PH);
 
     uStack = data.stack_data(uTrain, N0, Nu*PH, Nt-1);
-    xStack = data.stack_data(xTrain[:,1:], N0, Nx, Nt-1);
-    yStack = data.stack_data(xTrain[:,:-1], N0, Nx, Nt-1);
+    xStack = data.stack_data(xTrain[:,:-1], N0, Nx, Nt-1);
+    yStack = data.stack_data(xTrain[:,1:], N0, Nx, Nt-1);
 
 
     # solve for K
@@ -313,6 +320,8 @@ if __name__ == "__main__":
 
     XU0 = np.vstack( (X0, np.zeros( (Nu*PH, N0) )) );
     kvar = kman.KoopmanOperator(obsXUH, obsXU, mpc_var);
+
+    print("Solving for K using EDMD");
     K = kvar.edmd(X, Y, XU0);
 
     print('K:', K.shape, kvar.err);
@@ -323,6 +332,7 @@ if __name__ == "__main__":
 
 
     # simulate results and compare
+    print("Generating Comparison Tests");
     koopFunc = lambda Psi: K@rmes(Psi);
     def rmes(Psi):
         PsiX = Psi[:NkX].reshape(NkX,1);
