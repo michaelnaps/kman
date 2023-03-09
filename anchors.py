@@ -83,7 +83,7 @@ def obs(X=None):
 def obsA(X=None):
     if X is None:
         meta = {
-            'Nk': Nx+Nu+Nx*Nx+Nu*Nu+Nx*Nu + 2*Na*Nx*Nx+0*Na*Nu*Nx+1,
+            'Nk': Nx+Nu+Nx*Nx+Nu*Nu+Nx*Nu + 1*Na*Nx*Nx+0*Na*Nu*Nx+1,
             'x':  [i for i in range(Nx)],
             'u':  [i for i in range(Nx, Nx+Nu)],
             'xx': [i for i in range(Nx+Nu, Nx+Nu+Nx*Nx)],
@@ -102,7 +102,7 @@ def obsA(X=None):
     da, xa, ua = anchorExpand(x, u);   
 
     PsiX = obs(X);
-    PsiA = np.vstack( (PsiX, da, xa, [1]) );
+    PsiA = np.vstack( (PsiX, da, [1]) );
 
     return PsiA;
 
@@ -123,10 +123,10 @@ def plotcomp(xTest, PsiTest, save=0):
     plt.grid();
 
     # show error
-    Te = 2;  Ne = round(Te/dt) + 1;
+    Te = tList[0][-1];  Ne = round(Te/dt);
     figError, axsError = plt.subplots();
 
-    axsError.plot([tList[0][0], tList[0][Ne]], [0,0], color='r', linestyle='--');
+    axsError.plot([tList[0][0], tList[0][Ne]], [0,0], color='r', linestyle='--', label='ref');
     axsError.plot(tList[0][:Ne], PsiTest[0,:Ne]-xTest[0,:Ne], label='$x_1$');
     axsError.plot(tList[0][:Ne], PsiTest[1,:Ne]-xTest[1,:Ne], label='$x_2$');
 
@@ -150,7 +150,7 @@ if __name__ == "__main__":
 
 
     # generate training data for Kx
-    N0 = 10;
+    N0 = 5;
     X0 = 10*np.random.rand(Nx,N0) - 5;
 
     xData, uData = data.generate_data(tList, model, X0,

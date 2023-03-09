@@ -135,10 +135,7 @@ $$
         d_{N_a} \\
         x a_i^\intercal \\
         \vdots \\
-        x a_{N_a}^\intercal \\
-        u a_i^\intercal \\
-        \vdots \\
-        u a_{N_a}^\intercal
+        x a_{N_a}^\intercal
     \end{bmatrix}
 \end{aligned}
 $$
