@@ -26,7 +26,7 @@ kl = 1;
 Nx = 3;
 Nu = 2;
 R = 1/2;  # robot-body radius
-dt = 0.001;
+dt = 0.01;
 
 
 # callback function and parameters
@@ -187,7 +187,7 @@ def obsU(X=None, mvar=None):
     xCos = np.cos(xList[2]).reshape(Ntr,1);
     xSin = np.sin(xList[2]).reshape(Ntr,1);
     
-    PsiU = np.vstack( (xCos, xSin, [1]) );
+    PsiU = np.vstack( (xCos, xSin) );
 
     return PsiU;
 
@@ -210,7 +210,7 @@ def obsH(X=None, mvar=None):
 
     u = X[-Ngu:].reshape(Ngu,1);
 
-    PsiH = np.vstack( ([1], u) );
+    PsiH = u;
 
     return PsiH;
 
@@ -223,10 +223,14 @@ def obsXUH(X=None, mvar=None):
     PsiU = obsU(X, mvar);
     PsiH = obsH(X, mvar);
 
-    # kron is not the best operation here
-    PsiXUH = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
+    PsiUH = trigExpand(PsiU, PsiH);
+
+    PsiXUH = np.vstack( (PsiX, PsiUH) );
     
     return PsiXUH;
+
+def trigExpand(PsiU, PsiH):
+    pass;
 
 
 # plot comparisons
@@ -274,7 +278,7 @@ if __name__ == "__main__":
 
     
     # initial position list
-    N0 = 1;
+    N0 = 2;
     X0 = 2*np.random.rand(Nx,N0) - 1
 
     
