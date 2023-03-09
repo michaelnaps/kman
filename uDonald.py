@@ -21,7 +21,7 @@ np.set_printoptions(precision=3, suppress=True);
 
 # hyper parameter(s)
 pi = math.pi;
-PH = 1;
+PH = 20;
 kl = 1;
 Nx = 3;
 Nu = 2;
@@ -131,9 +131,8 @@ def cost(mpc_var, xlist, ulist):
 
     # gain parameters
     TOL = 1e-6;
-    kh = 150;
-    kl = 10;
-    ku = 1;
+    kx = 500;
+    ko = 10;
 
     # calculate cost of current input and state
     C = 0;
@@ -142,12 +141,8 @@ def cost(mpc_var, xlist, ulist):
         dx = (x[0] - xd[0])**2 + (x[1] - xd[1])**2;
         do = (x[2] - xd[2])**2;
 
-        C += kh*dx;
-        C += kl*do;
-
-        if (i != PH):
-            C += ku*(ulist[k]**2 + ulist[k+1]**2);
-            k += Nu;
+        C += kx*dx;
+        C += ko*do;
 
     return C;
 
@@ -157,17 +152,17 @@ def obsX(X=None, mvar=None):
     Ngx = Nx*(PH + 1);
     Ngu = Nu*PH;
     if X is None:
-        meta = {'Nk':Ngx};
+        meta = {'Nk':Ngx+Ngu};
         return meta;
 
     x = X[:Nx].reshape(Nx,1);
     u = X[-Ngu:].reshape(Ngu,1);
 
     xList = np.array( mvar.simulate(x, u) ).reshape(Ngx,1);
-    # gList = np.array( mvar.gradient(x, u) ).reshape(Ngu,1);
+    gList = np.array( mvar.gradient(x, u) ).reshape(Ngu,1);
 
-    # PsiX = np.vstack( (xList, gList) );
-    PsiX = xList;
+    PsiX = np.vstack( (xList, gList) );
+    # PsiX = xList;
 
     return PsiX;
 
@@ -190,6 +185,17 @@ def obsU(X=None, mvar=None):
     PsiU = np.vstack( (xCos, xSin, [1]) );
 
     return PsiU;
+
+def obsXU(X=None, mvar=None):
+    if X is None:
+        meta = {'Nk':obsX()['Nk']+obsU()['Nk']};
+        return meta;
+    
+    PsiX = obsX(X, mvar);
+    PsiU = obsU(X, mvar);
+    PsiXU = np.vstack( (PsiX, PsiU) );
+
+    return PsiXU;
 
 def obsH(X=None, mvar=None):
     Ngu = Nu*PH;
@@ -219,29 +225,6 @@ def obsXUH(X=None, mvar=None):
 
 # plot comparisons
 def plotcomp(xTest, PsiTest, save=0):
-    # evaluate the behavior of Kx with remeasurement function
-    x0ref = np.array( [[0],[0],[pi]] );
-    uref = np.array( [[1],[2]] );
-    dModel1 = lambda x: modelTrain(x, uref);
-    kModel1 = lambda Psi: Kx@rmes(Psi);
-    def rmes(Psi):
-        PsiX = Psi[:NkX].reshape(NkX,1);
-        PsiU = Psi[NkX:].reshape(NkU,1);
-
-        x = Psi[:Nx].reshape(Nx,1);
-        u = uref;
-        X = np.vstack( (x,u) );
-
-        PsiH = obsH(X);
-        
-        Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
-
-        return Psin;
-
-    Psi0 = obsXU(np.vstack( (x0ref, uref) ));
-    PsiTest = data.generate_data(tList, kModel1, Psi0)[0];
-    xTest = data.generate_data(tList, dModel1, x0ref)[0];
-
     # plot test results
     figRes, axsRes = plt.subplots();
 
@@ -264,14 +247,14 @@ def plotcomp(xTest, PsiTest, save=0):
     axsError.plot(tList[0][:Ne], PsiTest[1,:Ne]-xTest[1,:Ne], label='$x_2$');
     axsError.plot(tList[0][:Ne], PsiTest[2,:Ne]-xTest[2,:Ne], label='$x_3$');
 
-    axsError.set_ylim( (-0.2,0.2) );
+    axsError.set_ylim( (-1,1) );
     axsError.grid();
     axsError.legend();
 
     # save results
     if save:
-        figRes.savefig('/home/michaelnaps/prog/kman/.figures/donald.png', dpi=600);
-        figError.savefig('/home/michaelnaps/prog/kman/.figures/donaldError.png', dpi=600);
+        figRes.savefig('/home/michaelnaps/prog/kman/.figures/uDonald.png', dpi=600);
+        figError.savefig('/home/michaelnaps/prog/kman/.figures/uDonaldError.png', dpi=600);
     else:
         plt.show();
 
@@ -299,7 +282,7 @@ if __name__ == "__main__":
     params = Parameters(x0, xd, buffer_length=25);
     mpc_var = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
         num_ssvar=Nx, PH_length=PH, knot_length=kl, time_step=dt,
-        max_iter=100, model_type=model_type);
+        max_iter=10, model_type=model_type);
     mpc_var.setAlpha(0.01);
 
 
@@ -316,25 +299,49 @@ if __name__ == "__main__":
 
 
     # generate and stack data
-    xRand, uTrain = data.generate_data(tList, modelFunc, X0,
+    xTrain, uTrain = data.generate_data(tList, modelFunc, X0,
         control=trainControl, Nu=Nu*PH);
 
     uStack = data.stack_data(uTrain, N0, Nu*PH, Nt-1);
-    xStack = data.stack_data(xRand[:,:-1], N0, Nx, Nt-1);
+    xStack = data.stack_data(xTrain[:,1:], N0, Nx, Nt-1);
+    yStack = data.stack_data(xTrain[:,:-1], N0, Nx, Nt-1);
 
 
     # solve for K
     X = np.vstack( (xStack, np.zeros( (Nu*PH,N0*(Nt-1)) )) );
-    Y = np.vstack( (xStack, uStack) );
+    Y = np.vstack( (yStack, uStack) );
 
     XU0 = np.vstack( (X0, np.zeros( (Nu*PH, N0) )) );
-    kvar = kman.KoopmanOperator(obsXUH, params=mpc_var);
+    kvar = kman.KoopmanOperator(obsXUH, obsXU, mpc_var);
     K = kvar.edmd(X, Y, XU0);
 
     print('K:', K.shape, kvar.err);
-    print(K);
+    # print(K);
 
-    print('Kx:', K[:NkX,:].T);
-    print('Ku:', K[NkX:,:].T);
+    print('Kx:\n', K[:NkX,:].T);
+    # print('Ku:\n', K[NkX:,:].T);
 
 
+    # simulate results and compare
+    koopFunc = lambda Psi: K@rmes(Psi);
+    def rmes(Psi):
+        PsiX = Psi[:NkX].reshape(NkX,1);
+        PsiU = Psi[-NkU:].reshape(NkU,1);
+        
+        x = Psi[:Nx].reshape(Nx,1);
+        u = np.array( uinit ).reshape(Nu*PH,1);
+        X = np.vstack( (x, u) );
+        PsiH = obsH(X);
+
+        Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
+        return Psin;
+    
+    x0 = np.array( [[-1],[-1],[pi/2]] );
+    xTest, uTest = data.generate_data(tList, modelFunc, x0,
+        control=trainControl, Nu=Nu*PH);
+
+    xu0 = np.vstack( (x0, np.array(uinit).reshape(Nu*PH,1)) );
+    Psi0 = obsXU(xu0, mpc_var);
+    PsiTest = data.generate_data(tList, koopFunc, Psi0)[0];
+
+    plotcomp(xTest, PsiTest);
