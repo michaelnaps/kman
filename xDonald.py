@@ -205,66 +205,7 @@ def obsXUH(X=None, mvar=None):
 
     PsiXUH = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
     return PsiXUH;
-
-
-# plot comparisons
-def plotcomp(xTest, PsiTest, save=0):
-    # evaluate the behavior of Kx with remeasurement function
-    x0ref = np.array( [[0],[0],[pi]] );
-    uref = np.array( [[1],[2]] );
-    dModel1 = lambda x: modelTrain(x, uref);
-    kModel1 = lambda Psi: Kx@rmes(Psi);
-    def rmes(Psi):
-        PsiX = Psi[:NkX].reshape(NkX,1);
-        PsiU = Psi[NkX:].reshape(NkU,1);
-
-        x = Psi[:Nx].reshape(Nx,1);
-        u = uref;
-        X = np.vstack( (x,u) );
-
-        PsiH = obsH(X);
-        
-        Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
-
-        return Psin;
-
-    Psi0 = obsXU(np.vstack( (x0ref, uref) ));
-    PsiTest = data.generate_data(tList, kModel1, Psi0)[0];
-    xTest = data.generate_data(tList, dModel1, x0ref)[0];
-
-    # plot test results
-    figRes, axsRes = plt.subplots();
-
-    axsRes.plot(xTest[0], xTest[1], label='Model');
-    axsRes.plot(PsiTest[0], PsiTest[1], linestyle='--', label='KCE');
-
-    plt.xlabel('$x_1$')
-    plt.ylabel('$x_2$')
-    axsRes.axis('equal');
-    figRes.tight_layout();
-    axsRes.legend();
-    plt.grid();
-
-    # evaluate error
-    Te = 2;  Ne = round(Te/dt) + 1;
-    figError, axsError = plt.subplots();
-
-    axsError.plot([tList[0][0], tList[0][Ne]], [0,0], color='r', linestyle='--');
-    axsError.plot(tList[0][:Ne], PsiTest[0,:Ne]-xTest[0,:Ne], label='$x_1$');
-    axsError.plot(tList[0][:Ne], PsiTest[1,:Ne]-xTest[1,:Ne], label='$x_2$');
-    axsError.plot(tList[0][:Ne], PsiTest[2,:Ne]-xTest[2,:Ne], label='$x_3$');
-
-    axsError.set_ylim( (-0.2,0.2) );
-    axsError.grid();
-    axsError.legend();
-
-    # save results
-    if save:
-        figRes.savefig('/home/michaelnaps/prog/kman/.figures/donald.png', dpi=600);
-        figError.savefig('/home/michaelnaps/prog/kman/.figures/donaldError.png', dpi=600);
-    else:
-        plt.show();
-
+    
 
 if __name__ == "__main__":
     # observable dimensions variables
@@ -322,4 +263,62 @@ if __name__ == "__main__":
     print(Kx.T);
     print('Kx.PsiX:\n', Kx[:NkX,:].T);
     print('Kx.PsiU:\n', Kx[NkX:,:].T);
+
+
+    # evaluate the behavior of Kx with remeasurement function
+    x0ref = np.array( [[0],[0],[pi]] );
+    uref = np.array( [[1],[2]] );
+    dModel1 = lambda x: modelTrain(x, uref);
+    kModel1 = lambda Psi: Kx@rmes(Psi);
+    def rmes(Psi):
+        PsiX = Psi[:NkX].reshape(NkX,1);
+        PsiU = Psi[NkX:].reshape(NkU,1);
+
+        x = Psi[:Nx].reshape(Nx,1);
+        u = uref;
+        X = np.vstack( (x,u) );
+
+        PsiH = obsH(X);
+        
+        Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
+
+        return Psin;
+
+    Psi0 = obsXU(np.vstack( (x0ref, uref) ));
+    PsiTest = data.generate_data(tList, kModel1, Psi0)[0];
+    xTest = data.generate_data(tList, dModel1, x0ref)[0];
+
+    # plot test results
+    figRes, axsRes = plt.subplots();
+
+    axsRes.plot(xTest[0], xTest[1], label='Model');
+    axsRes.plot(PsiTest[0], PsiTest[1], linestyle='--', label='KCE');
+
+    plt.xlabel('$x_1$')
+    plt.ylabel('$x_2$')
+    axsRes.axis('equal');
+    figRes.tight_layout();
+    axsRes.legend();
+    plt.grid();
+
+    # evaluate error
+    Te = 2;  Ne = round(Te/dt) + 1;
+    figError, axsError = plt.subplots();
+
+    axsError.plot([tList[0][0], tList[0][Ne]], [0,0], color='r', linestyle='--');
+    axsError.plot(tList[0][:Ne], PsiTest[0,:Ne]-xTest[0,:Ne], label='$x_1$');
+    axsError.plot(tList[0][:Ne], PsiTest[1,:Ne]-xTest[1,:Ne], label='$x_2$');
+    axsError.plot(tList[0][:Ne], PsiTest[2,:Ne]-xTest[2,:Ne], label='$x_3$');
+
+    axsError.set_ylim( (-0.2,0.2) );
+    axsError.grid();
+    axsError.legend();
+
+    # save results
+    save = 0;
+    if save:
+        figRes.savefig('/home/michaelnaps/prog/kman/.figures/donald.png', dpi=600);
+        figError.savefig('/home/michaelnaps/prog/kman/.figures/donaldError.png', dpi=600);
+    else:
+        plt.show();
 
