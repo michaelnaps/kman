@@ -133,7 +133,7 @@ def cost(mpc_var, xlist, ulist):
     TOL = 1e-6;
     kx = 500;
     ko = 10;
-    ku = 1;
+    ku = 0;
 
     # calculate cost of current input and state
     C = 0;
@@ -153,85 +153,130 @@ def cost(mpc_var, xlist, ulist):
 
 
 # observable functions
-def obsX(X=None, mvar=None):
+def obsH(X=None, mvar=None):
     Ngx = Nx*(PH + 1);
     Ngu = Nu*PH;
+    Ntr = 2;
     if X is None:
-        meta = {'Nk':Ngx+Ngu};
-        return meta;
-
-    x = X[:Nx].reshape(Nx,1);
-    u = X[-Ngu:].reshape(Ngu,1);
-
-    xList = np.array( mvar.simulate(x, u) ).reshape(Ngx,1);
-    gList = np.array( mvar.gradient(x, u) ).reshape(Ngu,1);
-
-    PsiX = np.vstack( (xList, gList) );
-    # PsiX = xList;
-
-    return PsiX;
-
-def obsU(X=None, mvar=None):
-    Ngx = Nx*(PH + 1);
-    Ngu = Nu*PH;
-    Ntr = PH + 1;
-    if X is None:
-        meta = {'Nk':2*Ntr+1};
+        meta = {'Nk':Ngx+Ngu+PH*Nu*(Ntr + 1)};
         return meta;
 
     x = X[:Nx].reshape(Nx,1);
     u = X[-Ngu:].reshape(Ngu,1);
 
     xList = np.array( mvar.simulate(x, u) ).reshape(Nx,PH+1);
+    uList = u.reshape(PH,Nu).T;
+    gList = np.array( mvar.gradient(x, u) ).reshape(Ngu,1);
+    xTrig = np.vstack( (
+        np.cos(xList[2]).reshape(1,PH+1),
+        np.sin(xList[2]).reshape(1,PH+1)
+    ) );
 
-    xCos = np.cos(xList[2]).reshape(Ntr,1);
-    xSin = np.sin(xList[2]).reshape(Ntr,1);
+    utr = np.empty( (PH, Ntr*Nu) );
+    for p in range(PH):
+        x3 = xTrig[:,p].reshape(Ntr,1);
+        up = uList[:,p].reshape(Nu,1);
+        utr[p,:] = kman.vec(x3@up.T).reshape(Ntr*Nu,);
+
+    Psi = np.vstack( (kman.vec(xList), gList, kman.vec(utr), u) );
+    return Psi;
     
-    PsiU = np.vstack( (xCos, xSin) );
 
-    return PsiU;
+# def obsX(X=None, mvar=None):
+#     Ngx = Nx*(PH + 1);
+#     Ngu = Nu*PH;
+#     if X is None:
+#         meta = {'Nk':Ngx+Ngu};
+#         return meta;
 
-def obsXU(X=None, mvar=None):
-    if X is None:
-        meta = {'Nk':obsX()['Nk']+obsU()['Nk']};
-        return meta;
+#     x = X[:Nx].reshape(Nx,1);
+#     u = X[-Ngu:].reshape(Ngu,1);
+
+#     xList = np.array( mvar.simulate(x, u) ).reshape(Ngx,1);
+#     gList = np.array( mvar.gradient(x, u) ).reshape(Ngu,1);
+
+#     PsiX = np.vstack( (xList, gList) );
+#     # PsiX = xList;
+
+#     return PsiX;
+
+# def obsU(X=None, mvar=None):
+#     Ngx = Nx*(PH + 1);
+#     Ngu = Nu*PH;
+#     Ntr = 2;
+#     if X is None:
+#         meta = {'Nk':PH*Nu*(Ntr + 1)};
+#         return meta;
+
+#     x = X[:Nx].reshape(Nx,1);
+#     u = X[-Ngu:].reshape(Ngu,1);
+
+#     xList = np.array( mvar.simulate(x, u) ).reshape(Nx,PH+1);
+#     uList = u.reshape(PH,Nu).T;
+
+#     xTrig = np.vstack( (
+#         np.cos(xList[2]).reshape(1,PH+1),
+#         np.sin(xList[2]).reshape(1,PH+1)
+#     ) );
+
+#     trList = np.empty( (PH, Ntr*Nu) );
+#     for p in range(PH):
+#         x3 = xTrig[:,p].reshape(Ntr,1);
+#         up = uList[:,p].reshape(Nu,1);
+#         trList[p,:] = kman.vec(x3@up.T).reshape(Ntr*Nu,);
+
+#     PsiU = np.vstack( (u, trList.reshape(PH*Ntr*Nu,1)) );
+#     return PsiU;
+
+# def obsXU(X=None, mvar=None):
+#     if X is None:
+#         meta = {'Nk':obsX()['Nk']+obsU()['Nk']};
+#         return meta;
     
-    PsiX = obsX(X, mvar);
-    PsiU = obsU(X, mvar);
-    PsiXU = np.vstack( (PsiX, PsiU) );
+#     PsiX = obsX(X, mvar);
+#     PsiU = obsU(X, mvar);
+#     PsiXU = np.vstack( (PsiX, PsiU) );
 
-    return PsiXU;
+#     return PsiXU;
 
-def obsH(X=None, mvar=None):
-    Ngu = Nu*PH;
-    if X is None:
-        meta = {'Nk':1+Ngu};
-        return meta;
+# def obsW(X=None, mvar=None):
+#     Ngu = Nu*PH;
+#     if X is None:
+#         meta = {'Nk':1+Ngu};
+#         return meta;
 
-    u = X[-Ngu:].reshape(Ngu,1);
+#     u = X[-Ngu:].reshape(Ngu,1);
 
-    PsiH = u;
+#     PsiH = u;
 
-    return PsiH;
+#     return PsiH;
 
-def obsXUH(X=None, mvar=None):
-    if X is None:
-        meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsH()['Nk']};
-        return meta;
+# def obsXUH(X=None, mvar=None):
+#     if X is None:
+#         meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsH()['Nk']};
+#         return meta;
 
-    PsiX = obsX(X, mvar);
-    PsiU = obsU(X, mvar);
-    PsiH = obsH(X, mvar);
+#     PsiX = obsX(X, mvar);
+#     PsiU = obsU(X, mvar);
+#     PsiH = obsH(X, mvar);
 
-    PsiUH = trigExpand(PsiU, PsiH);
+#     PsiUH = trigExpand(PsiU, PsiH);
 
-    PsiXUH = np.vstack( (PsiX, PsiUH) );
+#     PsiXUH = np.vstack( (PsiX, PsiU) );
     
-    return PsiXUH;
+#     return PsiXUH;
 
-def trigExpand(PsiU, PsiH):
-    pass;
+# def rmes(Psi):
+#     PsiX = Psi[:NkX].reshape(NkX,1);
+#     PsiU = Psi[-NkU:].reshape(NkU,1);
+    
+#     x = Psi[:Nx].reshape(Nx,1);
+#     u = np.array( uinit ).reshape(Nu*PH,1);
+#     X = np.vstack( (x, u) );
+#     PsiH = obsH(X);
 
+#     Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
+#     return Psin;
 
 # plot comparisons
 def plotcomp(xTest, PsiTest, save=0):
@@ -272,20 +317,17 @@ def plotcomp(xTest, PsiTest, save=0):
 if __name__ == "__main__":
     # observable dimensions variables
     print("Initializing Variables");
-    NkX = obsX()['Nk'];  # for reference
-    NkU = obsU()['Nk'];
-    NkH = obsH()['Nk'];
 
     
     # initial position list
-    N0 = 2;
+    N0 = 10;
     X0 = 2*np.random.rand(Nx,N0) - 1
 
     
     # initialize states
     x0 = list( X0[:,0].reshape(Nx,) );
     xd = [0,0,pi/2];
-    uinit = [0 for i in range(Nu*PH)];
+    uinit = [i for i in range(Nu*PH)];
 
     
     # create MPC class variable
@@ -324,39 +366,29 @@ if __name__ == "__main__":
     Y = np.vstack( (yStack, uStack) );
 
     XU0 = np.vstack( (X0, np.zeros( (Nu*PH, N0) )) );
-    kvar = kman.KoopmanOperator(obsXUH, obsXU, mpc_var);
+    kvar = kman.KoopmanOperator(obsH, params=mpc_var);
 
     print("Solving for K using EDMD");
     K = kvar.edmd(X, Y, XU0);
 
     print('K:', K.shape, kvar.err);
-    # print(K);
-
-    print('Kx:\n', K[:NkX,:].T);
-    # print('Ku:\n', K[NkX:,:].T);
+    print(K);
 
 
     # simulate results and compare
     print("Generating Comparison Tests");
-    koopFunc = lambda Psi: K@rmes(Psi);
-    def rmes(Psi):
-        PsiX = Psi[:NkX].reshape(NkX,1);
-        PsiU = Psi[-NkU:].reshape(NkU,1);
-        
-        x = Psi[:Nx].reshape(Nx,1);
-        u = np.array( uinit ).reshape(Nu*PH,1);
-        X = np.vstack( (x, u) );
-        PsiH = obsH(X);
-
-        Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
-        return Psin;
+    koopFunc = lambda Psi: K@Psi;
     
     x0 = np.array( [[-1],[-1],[pi/2]] );
-    xTest, uTest = data.generate_data(tList, modelFunc, x0,
-        control=trainControl, Nu=Nu*PH);
-
     xu0 = np.vstack( (x0, np.array(uinit).reshape(Nu*PH,1)) );
-    Psi0 = obsXU(xu0, mpc_var);
-    PsiTest = data.generate_data(tList, koopFunc, Psi0)[0];
+    Psi0 = obsH(xu0, mpc_var);
 
-    plotcomp(xTest, PsiTest);
+    print(trainControl(x0.T[0]))
+    print(K[-Nu*PH:,:]@Psi0);
+
+    # xTest, uTest = data.generate_data(tList, modelFunc, x0,
+    #     control=trainControl, Nu=Nu*PH);
+
+    # PsiTest = data.generate_data(tList, koopFunc, Psi0)[0];
+
+    # plotcomp(xTest, PsiTest);

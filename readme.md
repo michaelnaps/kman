@@ -123,9 +123,9 @@ $$
     \Psi = \begin{bmatrix}
         x \\
         u \\
-        x x^\intercal \\
-        u u^\intercal \\
-        x u^\intercal
+        \texttt{vec}(x x^\intercal) \\
+        \texttt{vec}(u u^\intercal) \\
+        \texttt{vec}(x u^\intercal)
     \end{bmatrix}
     &&
     h = \begin{bmatrix}
@@ -133,9 +133,9 @@ $$
         d_1(x) \\
         \vdots \\
         d_{N_a} \\
-        x a_i^\intercal \\
+        \texttt{vec}(x a_i^\intercal) \\
         \vdots \\
-        x a_{N_a}^\intercal
+        \texttt{vec}(x a_{N_a}^\intercal)
     \end{bmatrix}
 \end{aligned}
 $$
