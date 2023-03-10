@@ -2,6 +2,32 @@
 
 This repository serves as the testing ground for my research at Boston University (being performed with the intent of being published). This readme currently discusses noteworthy models being evaluated and the results of their tests with the Koopman control equation (KCE). It also serves as a testing ground for my ideas on gradient flow mapping, etc.
 
+$$
+    \Psi^+ = \mathcal{K}_x \begin{bmatrix}
+        \mathbf{I}_p & 0_{p \times qb} \\
+        0_{qb \times p} & \mathbf{I}_q \otimes \mathcal{K}_u
+    \end{bmatrix}
+    \begin{bmatrix}
+        \Psi_x \\
+        \Psi_u \otimes h
+    \end{bmatrix}
+$$
+
+We can then define a cumulative operator, $\mathcal{K}$ as
+
+$$
+    \mathcal{K} = \mathcal{K}_x \begin{bmatrix}
+        \mathbf{I}_p & 0_{p \times qb} \\
+        0_{qb \times p} & \mathbf{I}_q \otimes \mathcal{K}_u
+    \end{bmatrix}
+$$
+
+such that
+
+$$
+    \Psi^+ = \mathcal{K} \Psi.
+$$
+
 
 ___
 ### **Notes on Coordinate Descent**
