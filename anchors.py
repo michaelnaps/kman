@@ -45,13 +45,13 @@ def control(x):
     return u;
 
 def anchorExpand(x, u):
-    da = np.empty( (Na,Nx*Nx) );
+    da = np.empty( (Na,1) );
     xa = np.empty( (Na,Nx*Nx) );
     ua = np.empty( (Na,Nu*Nx) );
 
     for i, a in enumerate(aList.T):
         a = a.reshape(Nx,1);
-        da[i,:] = vec((x - a)@(x - a).T).reshape(1,Nx*Nx);
+        da[i,:] = vec((x - a).T@(x - a));
         xa[i,:] = vec(x@a.T).reshape(1,Nx*Nx);
         ua[i,:] = vec(u@a.T).reshape(1,Nu*Nx);
 
@@ -83,7 +83,7 @@ def obs(X=None):
 def obsA(X=None):
     if X is None:
         meta = {
-            'Nk': Nx+Nu+0*Nx*Nx+0*Nu*Nu+0*Nx*Nu + 1*Na*Nx*Nx+0*Na*Nu*Nx+1,
+            'Nk': Nx+Nu+0*Nx*Nx+0*Nu*Nu+0*Nx*Nu + 1*Na+0*Na*Nu*Nx+1,
             'x':  [i for i in range(Nx)],
             'u':  [i for i in range(Nx, Nx+Nu)],
             # 'xx': [i for i in range(Nx+Nu, Nx+Nu+Nx*Nx)],
@@ -172,6 +172,7 @@ if __name__ == "__main__":
     K = kvar.edmd(X, Y, XU0);
 
     print('K:', K.shape, kvar.err)
+    print(K);
 
     print(meta);
     print('Kx:\n', K[meta['x'],:].T);
@@ -198,8 +199,11 @@ if __name__ == "__main__":
         control=control, Nu=Nu);
     PsiTest = data.generate_data(tList, kModel, Psi0)[0];
 
-    print(Psi0)
-    print(kModel(Psi0))
+    print('Psi0\n', Psi0);
+    print('K*Psi0\n', kModel(Psi0));
+    
+    print('model x0\n', model(x0, control(x0)));
+    print('control x0\n', control(x0));
 
 
     # plot results
