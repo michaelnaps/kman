@@ -155,7 +155,7 @@ if __name__ == "__main__":
     Yu = np.vstack( (xStack, uStack) );
 
     kuvar = kman.KoopmanOperator(obsH);
-    Ku = kuvar.edmd(Xu, Yu, XU0)
+    Ku = kuvar.cd(Xu, Yu, XU0, None)
 
     print('Ku:', Ku.shape, kuvar.err)
     print(Ku);

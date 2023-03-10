@@ -186,6 +186,7 @@ class KoopmanOperator:
                 glist[s] = self.fdm(K, s, X, Y, X0);
                 K[i,j] = K[i,j] - 0.001*glist[s];
             gnorm = np.linalg.norm(glist);
+            print(gnorm);
 
         self.K = K;
         self.err = self.resError(X, Y, X0, K);

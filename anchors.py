@@ -15,7 +15,7 @@ dt = 0.01;
 Nx = 2;
 Nu = 2;
 Na = 3;
-aList = np.array( [[10, 10, -10],[10, -10, -10]] );
+aList = np.array( [[1, 1, -1],[1, -1, -1]] );
 
 
 # model and control functions
@@ -112,7 +112,7 @@ def plotcomp(xTest, PsiTest, save=0):
     figRes, axsRes = plt.subplots();
 
     axsRes.plot(xTest[0], xTest[1], label='Model');
-    axsRes.plot(PsiTest[0], PsiTest[1], linestyle='--', label='KCE');
+    axsRes.plot(PsiTest[0], PsiTest[1], linestyle='--', marker='o', label='KCE');
 
     plt.xlabel('$x_1$')
     plt.ylabel('$x_2$')
@@ -151,6 +151,8 @@ if __name__ == "__main__":
     # generate training data for Kx
     N0 = 5;
     X0 = 10*np.random.rand(Nx,N0) - 5;
+
+    print(X0);
 
     xData, uData = data.generate_data(tList, model, X0,
         control=control, Nu=Nu);
@@ -192,6 +194,7 @@ if __name__ == "__main__":
 
     kModel = lambda Psi: K@rmes(Psi);
     def rmes(Psi):
+        # should be dependent on "real" measurement - not Psi
         PsiA = obsA(Psi[:Nx+Nu].reshape(Nx+Nu,1));
         return PsiA;
 
