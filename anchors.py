@@ -63,47 +63,54 @@ def anchorExpand(x, u):
 
 
 # observable functions PsiX, PsiU, PsiH
-def obs(X=None):
+def obsX(X=None):
     if X is None:
-        meta = obsA();
-        meta['Nk'] = Nx+Nu+0*Nx*Nx+0*Nu*Nu+0*Nx*Nu;
+        meta = {'Nk':Nx};
         return meta;
-    
+    PsiX = X[:Nx].reshape(Nx,1);
+    return PsiX;
+
+def obsU(X=None):
+    if X is None:
+        meta = {'Nk':Nu};
+        return meta;
+    PsiU = X[Nx:].reshape(Nu,1);
+    return PsiU;
+
+def obsXU(X=None):
+    if X is None:
+        meta = {'Nk':obsX()['Nk']+obsU()['Nk']};
+        return meta;
+    PsiX = obsX(X);
+    PsiU = obsU(X);
+    PsiXU = np.vstack( (PsiX, PsiU) );
+    return PsiXU;
+
+def obsH(X=None):
+    if X is None:
+        meta = {'Nk':Na};
+        return meta;
+
     x = X[:Nx].reshape(Nx,1);
     u = X[Nx:].reshape(Nu,1);
 
-    # xx = vec(x@x.T);
-    # uu = vec(u@u.T);
-    # xu = vec(x@u.T);
+    da = anchorExpand(x, u)[0];
+    PsiH = da;
 
-    Psi = np.vstack( (x, u) );
+    return PsiH;
+
+def obsXUH(X=None):
+    if X is None:
+        meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsX()['Nk']}
+        return meta;
+
+    PsiX = obsX(X);
+    PsiU = [1];
+    PsiH = obsH(X);
+
+    Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
 
     return Psi;
-
-def obsA(X=None):
-    if X is None:
-        meta = {
-            'Nk': Nx+Nu+0*Nx*Nx+0*Nu*Nu+0*Nx*Nu + 1*Na+0*Na*Nu*Nx+1,
-            'x':  [i for i in range(Nx)],
-            'u':  [i for i in range(Nx, Nx+Nu)],
-            # 'xx': [i for i in range(Nx+Nu, Nx+Nu+Nx*Nx)],
-            # 'uu': [i for i in range(Nx+Nu+Nx*Nx, Nx+Nu+2*Nx*Nx)],
-            # 'xu': [i for i in range(Nx+Nu+2*Nx*Nx, Nx+Nu+3*Nx*Nx)],
-            # 'da': [i for i in range(Nx+Nu+3*Nx*Nx, Nx+Nu+3*Nx*Nx+1)],
-            # 'xa': [i for i in range(Nx+Nu+3*Nx*Nx+1, Nx+Nu+3*Nx*Nx+1+Nx*Na)],
-            # 'ua': [i for i in range(Nx+Nu+3*Nx*Nx+1+Nx*Na, Nx+Nu+3*Nx*Nx+1+Nx*Na+Nu*Na)]
-        };
-        return meta;
-
-    x = X[:Nx].reshape(Nx,1);
-    u = X[Nx:].reshape(Nu,1);
-
-    da, xa, ua = anchorExpand(x, u);   
-
-    PsiX = obs(X);
-    PsiA = np.vstack( (PsiX, da, [1]) );
-
-    return PsiA;
 
 
 # plot results
@@ -149,36 +156,54 @@ if __name__ == "__main__":
 
 
     # generate training data for Kx
-    N0 = 5;
+    N0 = 10;
     X0 = 10*np.random.rand(Nx,N0) - 5;
 
-    print(X0);
-
-    xData, uData = data.generate_data(tList, model, X0,
-        control=control, Nu=Nu);
+    randControl = lambda x: 2*np.random.rand(Nu,1)-1;
+    xData, uRand = data.generate_data(tList, model, X0,
+        control=randControl, Nu=Nu);
 
 
     # formatting training data from xData and uData
-    uStack = data.stack_data(uData, N0, Nu, Nt-1);
+    uStack = data.stack_data(uRand, N0, Nu, Nt-1);
     xStack = data.stack_data(xData[:,:-1], N0, Nx, Nt-1);
     yStack = data.stack_data(xData[:,1:], N0, Nx, Nt-1);
 
     XU0 = np.vstack( (X0, np.zeros( (Nu,N0) )) );
-    X = np.vstack( (xStack, np.zeros( (Nu,N0*(Nt-1)) )) );
+    X = np.vstack( (xStack, uStack) );
     Y = np.vstack( (yStack, uStack) );
 
 
-    # train for operator
-    meta = obsA();
-    kvar = kman.KoopmanOperator(obsA, obs);
-    K = kvar.edmd(X, Y, XU0);
+    # train Kx
+    metaX = obsXU();
+    kxvar = kman.KoopmanOperator(obsXU);
+    Kx = kxvar.edmd(X, Y, XU0);
 
-    print('K:', K.shape, kvar.err)
-    print(K);
+    print('Kx:', Kx.shape, kxvar.err)
+    print(Kx);
+
+
+    # training data for Ku
+    randModel = lambda x,u: 10*np.random.rand(Nx,1)-5;
+    xRand, uData = data.generate_data(tList, randModel, X0,
+        control=control, Nu=Nu);
+
+    uStack = data.stack_data(uData, N0, Nu, Nt-1);
+    xStack = data.stack_data(xRand[:,:-1], N0, Nx, Nt-1);
+
+    Xu = np.vstack( (xStack, np.zeros( (Nu,Nt-1) )) );
+    Yu = np.vstack( (xStack, uStack) );
+
+
+    # train Ku
+    metaH = obsH();
+    kuvar = kman.KoopmanOperator(obsXUH);
+    Ku = kuvar.edmd(Xu, Yu, XU0);
+
 
     print(meta);
-    print('Kx:\n', K[meta['x'],:].T);
-    print('Ku:\n', K[meta['u'],:].T);
+    print('Kx:\n', K[Nx:,:]);
+    print('Ku:\n', K[:Nx,:]);
     # print('Kxx:\n', K[meta['xx'],:].T);
     # print('Kuu:\n', K[meta['uu'],:].T);
     # print('Kxu:\n', K[meta['xu'],:].T);
@@ -187,29 +212,29 @@ if __name__ == "__main__":
     # print('Kua:\n', K[meta['ua'],:].T);
 
 
-    # test results
-    x0 = 5*np.random.rand(Nx,1) - 2.5;
-    xu0 = np.vstack( (x0, [[0],[0]]) );
-    Psi0 = obs(xu0);
+    # # test results
+    # x0 = 5*np.random.rand(Nx,1) - 2.5;
+    # xu0 = np.vstack( (x0, [[0],[0]]) );
+    # Psi0 = obs(xu0);
 
-    kModel = lambda Psi: K@rmes(Psi);
-    def rmes(Psi):
-        # should be dependent on "real" measurement - not Psi
-        PsiA = obsA(Psi[:Nx+Nu].reshape(Nx+Nu,1));
-        return PsiA;
+    # kModel = lambda Psi: K@rmes(Psi);
+    # def rmes(Psi):
+    #     # should be dependent on "real" measurement - not Psi
+    #     PsiA = obsA(Psi[:Nx+Nu].reshape(Nx+Nu,1));
+    #     return PsiA;
 
-    xTest, uTest = data.generate_data(tList, model, x0,
-        control=control, Nu=Nu);
-    PsiTest = data.generate_data(tList, kModel, Psi0)[0];
+    # xTest, uTest = data.generate_data(tList, model, x0,
+    #     control=control, Nu=Nu);
+    # PsiTest = data.generate_data(tList, kModel, Psi0)[0];
 
-    print('Psi0\n', Psi0);
-    print('K*Psi0\n', kModel(Psi0));
+    # print('Psi0\n', Psi0);
+    # print('K*Psi0\n', kModel(Psi0));
     
-    print('model x0\n', model(x0, control(x0)));
-    print('control x0\n', control(x0));
+    # print('model x0\n', model(x0, control(x0)));
+    # print('control x0\n', control(x0));
 
 
-    # plot results
-    plotcomp(xTest, PsiTest);
+    # # plot results
+    # plotcomp(xTest, PsiTest);
 
 
