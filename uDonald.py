@@ -153,32 +153,46 @@ def cost(mpc_var, xlist, ulist):
 
 
 # observable functions
-def obsH(X=None, mvar=None):
+def obsH1(X=None, mvar=None):
     Ngx = Nx*(PH + 1);
     Ngu = Nu*PH;
     Ntr = 2;
     if X is None:
-        meta = {'Nk':Ngx+Ngu+PH*Nu*(Ntr + 1)};
+        meta = {'Nk':Nx+2*Ngu};
         return meta;
 
     x = X[:Nx].reshape(Nx,1);
     uinit = X[Nx:].reshape(Ngu,1);
 
-    xList = np.array( mvar.simulate(x, uinit) ).reshape(Nx,PH+1);
-    uList = uinit.reshape(PH,Nu).T;
+    # xList = np.array( mvar.simulate(x, uinit) ).reshape(Nx,PH+1);
+    # uList = uinit.reshape(PH,Nu).T;
     xGrad = np.array( mvar.gradient(x, uinit) ).reshape(Ngu,1);
-    xTrig = np.vstack( (
-        np.cos(xList[2]).reshape(1,PH+1),
-        np.sin(xList[2]).reshape(1,PH+1)
-    ) );
+    # xTrig = np.vstack( (
+    #     np.cos(xList[2]).reshape(1,PH+1),
+    #     np.sin(xList[2]).reshape(1,PH+1)
+    # ) );
 
-    utr = np.empty( (PH, Ntr*Nu) );
-    for p in range(PH):
-        x3 = xTrig[:,p].reshape(Ntr,1);
-        up = uList[:,p].reshape(Nu,1);
-        utr[p,:] = kman.vec(x3@up.T).reshape(Ntr*Nu,);
+    # utr = np.empty( (PH, Ntr*Nu) );
+    # for p in range(PH):
+    #     x3 = xTrig[:,p].reshape(Ntr,1);
+    #     up = uList[:,p].reshape(Nu,1);
+    #     utr[p,:] = kman.vec(x3@up.T).reshape(Ntr*Nu,);
 
-    Psi = np.vstack( (kman.vec(xList), xGrad, kman.vec(utr), uinit) );
+    # Psi = np.vstack( (kman.vec(xList), xGrad, kman.vec(utr), uinit) );
+    Psi = np.vstack( (x, uinit, xGrad) );
+    return Psi;
+
+def obsH2(X=None, mvar=None):
+    Ngu = Nu*PH;
+    if X is None:
+        meta = {'Nk':Nx+Ngu};
+        return meta;
+
+    x = X[:Nx].reshape(Nx,1);
+    uinit = X[Nx:].reshape(Ngu,1);
+
+    Psi = np.vstack( (x, uinit) );
+
     return Psi;
 
 
@@ -225,8 +239,8 @@ if __name__ == "__main__":
 
     
     # initial position list
-    N0 = 200;
-    X0 = 10*np.random.rand(Nx+Nu*PH,N0) - 5
+    N0 = 500;
+    X0 = 2*np.random.rand(Nx+Nu*PH,N0) - 1;
 
     
     # initialize states
@@ -236,7 +250,7 @@ if __name__ == "__main__":
 
     
     # create MPC class variable
-    training_iter = 1;  # max_iter for training
+    training_iter = 1;  # max_iter for training purposes
     max_iter = 20;
     model_type = 'discrete';
     params = Parameters(x0, xd, buffer_length=25);
@@ -247,15 +261,8 @@ if __name__ == "__main__":
 
 
     # simulation time frame
-    T = 10;  Nt = round(T/dt) + 1;
-    tList = np.array( [[i*dt for i in range(Nt)]] );
-
-
-    # # generate data for training of Ku
-    # modelFunc = lambda x, u: np.array( model(x, u, None) ).reshape(Nx,1);
-    # def trainControl(x):  # from MPC class
-    #     umpc = mpc_var.solve(x, uinit)[0];
-    #     return np.array(umpc).reshape(Nu*PH,1);
+    # T = 10;  Nt = round(T/dt) + 1;
+    iList = np.array( [[i for i in range(max_iter)]] );
 
 
     # DATA STRUCTURE IDEA
@@ -269,19 +276,13 @@ if __name__ == "__main__":
     def trainModel(X):
         x0 = X[:Nx];
         uinit = X[Nx:];
-        unext = np.array( mpc_var.solve(x0, uinit)[0] );
-
-        # print(uinit);
-        # print(unext);
-
-        Xnext = np.hstack( (x0, unext) ).reshape(Nx+Nu*PH,1);
-
-        return Xnext;
+        un = np.array( mpc_var.solve(x0, uinit)[0] );
+        Xn = np.hstack( (x0, un) ).reshape(Nx+Nu*PH,1);
+        return Xn;
 
 
     # generate and stack data
     print("Generating Training Data");
-    iList = np.array( [[i for i in range(max_iter)]] );
     xTrain, _ = data.generate_data(iList, trainModel, X0);
 
     xStack = data.stack_data(xTrain[:,:-1], N0, Nx+Nu*PH, max_iter-1);
@@ -292,29 +293,28 @@ if __name__ == "__main__":
 
 
     # solve for K
-    kvar = kman.KoopmanOperator(obsH, params=mpc_var);
+    kvar = kman.KoopmanOperator(obsH1, obsH2, params=mpc_var);
 
     print("Solving for K using EDMD");
     K = kvar.edmd(X, Y, X0);
 
     print('K:', K.shape, kvar.err);
-    print(K);
+    print(K.T);
 
 
     # simulate results and compare
     print("Generating Comparison Tests");
     koopFunc = lambda Psi: K@Psi;
     
-    x0 = np.array( [[-1],[-1],[pi/2]] );
-    xu0 = np.vstack( (x0, np.array(uinit).reshape(Nu*PH,1)) );
-    Psi0 = obsH(xu0, mpc_var);
+    x0 = np.random.rand(Nx+Nu*PH,1);
+    Psi0 = obsH1(x0, mpc_var);
 
-    xu1  = obsH(trainModel(xu0.T[0]), mpc_var);
+    x1  = obsH2(trainModel(x0.T[0]), mpc_var);
     Psi1 = K@Psi0;
     
-    Nk = obsH()['Nk'];
+    Nk = obsH2()['Nk'];
     for i in range(Nk):
-        print('r:', xu1[i], ' K:', Psi1[i], ' err:', xu1[i]-Psi1[i]);
+        print('r:', x1[i], ' K:', Psi1[i], ' err:', x1[i]-Psi1[i]);
 
 
 
