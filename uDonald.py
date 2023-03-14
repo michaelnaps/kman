@@ -166,7 +166,7 @@ def obsH(X=None, mvar=None):
 
     xList = np.array( mvar.simulate(x, u) ).reshape(Nx,PH+1);
     uList = u.reshape(PH,Nu).T;
-    gList = np.array( mvar.gradient(x, u) ).reshape(Ngu,1);
+    xGrad = np.array( mvar.gradient(x, u) ).reshape(Ngu,1);
     xTrig = np.vstack( (
         np.cos(xList[2]).reshape(1,PH+1),
         np.sin(xList[2]).reshape(1,PH+1)
@@ -178,105 +178,9 @@ def obsH(X=None, mvar=None):
         up = uList[:,p].reshape(Nu,1);
         utr[p,:] = kman.vec(x3@up.T).reshape(Ntr*Nu,);
 
-    Psi = np.vstack( (kman.vec(xList), gList, kman.vec(utr), u) );
+    Psi = np.vstack( (kman.vec(xList), xGrad, kman.vec(utr), u) );
     return Psi;
-    
 
-# def obsX(X=None, mvar=None):
-#     Ngx = Nx*(PH + 1);
-#     Ngu = Nu*PH;
-#     if X is None:
-#         meta = {'Nk':Ngx+Ngu};
-#         return meta;
-
-#     x = X[:Nx].reshape(Nx,1);
-#     u = X[-Ngu:].reshape(Ngu,1);
-
-#     xList = np.array( mvar.simulate(x, u) ).reshape(Ngx,1);
-#     gList = np.array( mvar.gradient(x, u) ).reshape(Ngu,1);
-
-#     PsiX = np.vstack( (xList, gList) );
-#     # PsiX = xList;
-
-#     return PsiX;
-
-# def obsU(X=None, mvar=None):
-#     Ngx = Nx*(PH + 1);
-#     Ngu = Nu*PH;
-#     Ntr = 2;
-#     if X is None:
-#         meta = {'Nk':PH*Nu*(Ntr + 1)};
-#         return meta;
-
-#     x = X[:Nx].reshape(Nx,1);
-#     u = X[-Ngu:].reshape(Ngu,1);
-
-#     xList = np.array( mvar.simulate(x, u) ).reshape(Nx,PH+1);
-#     uList = u.reshape(PH,Nu).T;
-
-#     xTrig = np.vstack( (
-#         np.cos(xList[2]).reshape(1,PH+1),
-#         np.sin(xList[2]).reshape(1,PH+1)
-#     ) );
-
-#     trList = np.empty( (PH, Ntr*Nu) );
-#     for p in range(PH):
-#         x3 = xTrig[:,p].reshape(Ntr,1);
-#         up = uList[:,p].reshape(Nu,1);
-#         trList[p,:] = kman.vec(x3@up.T).reshape(Ntr*Nu,);
-
-#     PsiU = np.vstack( (u, trList.reshape(PH*Ntr*Nu,1)) );
-#     return PsiU;
-
-# def obsXU(X=None, mvar=None):
-#     if X is None:
-#         meta = {'Nk':obsX()['Nk']+obsU()['Nk']};
-#         return meta;
-    
-#     PsiX = obsX(X, mvar);
-#     PsiU = obsU(X, mvar);
-#     PsiXU = np.vstack( (PsiX, PsiU) );
-
-#     return PsiXU;
-
-# def obsW(X=None, mvar=None):
-#     Ngu = Nu*PH;
-#     if X is None:
-#         meta = {'Nk':1+Ngu};
-#         return meta;
-
-#     u = X[-Ngu:].reshape(Ngu,1);
-
-#     PsiH = u;
-
-#     return PsiH;
-
-# def obsXUH(X=None, mvar=None):
-#     if X is None:
-#         meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsH()['Nk']};
-#         return meta;
-
-#     PsiX = obsX(X, mvar);
-#     PsiU = obsU(X, mvar);
-#     PsiH = obsH(X, mvar);
-
-#     PsiUH = trigExpand(PsiU, PsiH);
-
-#     PsiXUH = np.vstack( (PsiX, PsiU) );
-    
-#     return PsiXUH;
-
-# def rmes(Psi):
-#     PsiX = Psi[:NkX].reshape(NkX,1);
-#     PsiU = Psi[-NkU:].reshape(NkU,1);
-    
-#     x = Psi[:Nx].reshape(Nx,1);
-#     u = np.array( uinit ).reshape(Nu*PH,1);
-#     X = np.vstack( (x, u) );
-#     PsiH = obsH(X);
-
-#     Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
-#     return Psin;
 
 # plot comparisons
 def plotcomp(xTest, PsiTest, save=0):
@@ -314,6 +218,7 @@ def plotcomp(xTest, PsiTest, save=0):
         plt.show();
 
 
+# brain
 if __name__ == "__main__":
     # observable dimensions variables
     print("Initializing Variables");
