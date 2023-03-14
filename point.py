@@ -155,7 +155,7 @@ if __name__ == "__main__":
     Yu = np.vstack( (xStack, uStack) );
 
     kuvar = kman.KoopmanOperator(obsH);
-    Ku = kuvar.cd(Xu, Yu, XU0, None)
+    Ku = kuvar.edmd(Xu, Yu, XU0)
 
     print('Ku:', Ku.shape, kuvar.err)
     print(Ku);
@@ -184,11 +184,11 @@ if __name__ == "__main__":
 
     
     # plot test results
-    # plotcomp(xTest, PsiTest);
-    # plotcomp(xTest, PsiTest, './Figures/point.png');
+    plotcomp(xTest, PsiTest);
+    # plotcomp(xTest, PsiTest, './.figures/point.png');
 
-    sx = [i for i in range(p)];
-    su = [i for i in range(p,p+q*b)];
-    S = (sx, su);  # NEXT STEP
-    # print(kuvar.cd(Xu, Yu, XU0, S));
+    # sx = [i for i in range(p)];
+    # su = [i for i in range(p,p+q*b)];
+    # S = (sx, su);  # NEXT STEP
+    # # print(kuvar.cd(Xu, Yu, XU0, S));
     
