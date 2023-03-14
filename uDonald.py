@@ -239,8 +239,8 @@ if __name__ == "__main__":
 
     
     # initial position list
-    N0 = 500;
-    X0 = 2*np.random.rand(Nx+Nu*PH,N0) - 1;
+    N0 = 5;
+    X0 = 10*np.random.rand(Nx+Nu*PH,N0) - 5;
 
     
     # initialize states
