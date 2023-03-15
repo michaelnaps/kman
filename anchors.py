@@ -22,12 +22,10 @@ aList = np.array( [[10, 10, -10],[10, -10, -10]] );
 def model(x, u):
     A = np.array( [
         [1, 0],
-        [0, 1]
-    ] );
+        [0, 1] ] );
     B = np.array( [
         [dt, 0],
-        [0, dt]
-    ] );
+        [0, dt] ] );
 
     xn = A@x.reshape(Nx,1) + B@u.reshape(Nu,1);
 
@@ -114,27 +112,39 @@ def obsXUH(X=None):
 
 
 # plot results
-def plotcomp(xTest, PsiTest, save=0):
+def plotcomp(Xlist, Ylist, X0, save=0):
     # plot test results
     figRes, axsRes = plt.subplots();
 
-    axsRes.plot(xTest[0], xTest[1], label='Model');
-    axsRes.plot(PsiTest[0], PsiTest[1], linestyle='--', marker='o', label='KCE');
+    axsRes.plot(Xlist[-2], Xlist[-1], color='b', label='Model');
+    axsRes.plot(Ylist[-2], Ylist[-1], color='r', linestyle='--', label='KCE');
 
-    plt.xlabel('$x_1$')
-    plt.ylabel('$x_2$')
-    axsRes.axis('equal');
-    figRes.tight_layout();
-    axsRes.legend();
-    plt.grid();
+    k = 0;
+    for x0 in X0.T[:-2]:
+        axsRes.plot(Xlist[k], Xlist[k+1], color='b');
+        axsRes.plot(Ylist[k], Ylist[k+1], color='r', linestyle='--');
 
+        axsRes.axis( (-10,10,-10,10), aspect='equal' );
+        axsRes.legend();
+        axsRes.grid();
+
+        k += Nx;
+
+    # save results
+    if save:
+        figRes.savefig('/home/michaelnaps/prog/kman/.figures/uDonald.png', dpi=600);
+        figError.savefig('/home/michaelnaps/prog/kman/.figures/uDonaldError.png', dpi=600);
+    else:
+        plt.show();
+
+def ploterr(X, Y, X0, save=0):
     # show error
     Te = tList[0][-1];  Ne = round(Te/dt);
     figError, axsError = plt.subplots();
 
     axsError.plot([tList[0][0], tList[0][Ne]], [0,0], color='r', linestyle='--', label='ref');
-    axsError.plot(tList[0][:Ne], PsiTest[0,:Ne]-xTest[0,:Ne], label='$x_1$');
-    axsError.plot(tList[0][:Ne], PsiTest[1,:Ne]-xTest[1,:Ne], label='$x_2$');
+    axsError.plot(tList[0][:Ne], Y[0,:Ne]-X[0,:Ne], label='$x_1$');
+    axsError.plot(tList[0][:Ne], Y[1,:Ne]-X[1,:Ne], label='$x_2$');
 
     axsError.set_ylim( (-1,1) );
     axsError.grid();
@@ -142,7 +152,6 @@ def plotcomp(xTest, PsiTest, save=0):
 
     # save results
     if save:
-        figRes.savefig('/home/michaelnaps/prog/kman/.figures/uDonald.png', dpi=600);
         figError.savefig('/home/michaelnaps/prog/kman/.figures/uDonaldError.png', dpi=600);
     else:
         plt.show();
@@ -156,7 +165,7 @@ if __name__ == "__main__":
 
 
     # generate training data for Kx
-    N0 = 10;
+    N0 = 1;
     X0 = 10*np.random.rand(Nx,N0) - 5;
 
     randControl = lambda x: 2*np.random.rand(Nu,1)-1;
@@ -181,7 +190,7 @@ if __name__ == "__main__":
     print(Kx);
 
 
-    # training data for Ku
+    # generate data for Ku
     randModel = lambda x,u: 10*np.random.rand(Nx,1)-5;
     xRand, uData = data.generate_data(tList, randModel, X0,
         control=control, Nu=Nu);
@@ -200,7 +209,6 @@ if __name__ == "__main__":
     print('Ku:', Ku.shape, kuvar.err);
     print(Ku);
 
-
     # generate cumulative operator
     m = Nu;
     p = obsX()['Nk'];
@@ -209,8 +217,7 @@ if __name__ == "__main__":
 
     Ktemp = np.vstack( (
         np.hstack( (np.eye(p), np.zeros( (p,b) )) ),
-        np.hstack( (np.zeros( (m,p) ), Ku) )
-    ) );
+        np.hstack( (np.zeros( (m,p) ), Ku) ) ) );
 
     K = Kx@Ktemp;
 
@@ -218,11 +225,17 @@ if __name__ == "__main__":
     print(K);
 
 
-    # test results
-    x0 = 5*np.random.rand(Nx,1) - 2.5;
-    xu0 = np.vstack( (x0, [[0],[0]]) );
-    Psi0 = obsXU(xu0);
+    # test comparison results
+    N0n = 10;
+    NkXU = obsXU()['Nk'];
+    X0n = 10*np.random.rand(Nx,N0n) - 5;
+    XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
+    
+    Psi0 = np.empty( (NkXU,N0n) );
+    for i, xu in enumerate(XU0n.T):
+        Psi0[:,i] = obsXU( xu.reshape(Nx+Nu,1) ).reshape(NkXU,);
 
+    # new operator model equation
     kModel = lambda Psi: K@rmes(Psi);
     def rmes(Psi):
         x = Psi[:Nx].reshape(Nx,1);
@@ -236,18 +249,13 @@ if __name__ == "__main__":
 
         return Psin;
 
-    xTest, uTest = data.generate_data(tList, model, x0,
+    xTest, uTest = data.generate_data(tList, model, X0n,
         control=control, Nu=Nu);
-    PsiTest = data.generate_data(tList, kModel, Psi0)[0];
-
-    print('Psi0\n', Psi0);
-    print('K*Psi0\n', kModel(Psi0));
-    
-    print('model x0\n', model(x0, control(x0)));
-    print('control x0\n', control(x0));
-
+    PsiTest, _ = data.generate_data(tList, kModel, Psi0);
 
     # plot results
-    plotcomp(xTest, PsiTest);
-
+    idPsi = np.hstack( ([[2*i]  for i in range(N0n)], [[2*i+1]  for i in range(N0n)]) );
+    idPsi = idPsi.reshape(2*N0n,);
+    print(idPsi);
+    plotcomp(xTest, PsiTest, X0n);
 
