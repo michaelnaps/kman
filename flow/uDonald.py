@@ -21,7 +21,7 @@ np.set_printoptions(precision=3, suppress=True);
 
 # hyper parameter(s)
 pi = math.pi;
-PH = 10;
+PH = 5;
 kl = 1;
 Nx = 3;
 Nu = 2;
@@ -222,8 +222,8 @@ if __name__ == "__main__":
     print("Initializing Variables");
 
     # initial position list
-    N0 = 500;
-    X0 = 10*np.random.rand(Nx+Nu*PH, N0) - 5;
+    N0 = 10;
+    X0 = 2*np.random.rand(Nx+Nu*PH,N0) - 1;
     xsample = X0[:,0].reshape(Nx+Nu*PH,1);
 
     # initialize mpc state variables
@@ -231,7 +231,7 @@ if __name__ == "__main__":
     x0 = list( X0[:Nx,0].reshape(Nx,) );
 
     # create MPC class variables
-    max_iter = 10;
+    max_iter = 100;
     model_type = 'discrete';
     params = Parameters(x0, xd, buffer_length=25, pause=1e-3);
     mpc_var = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
@@ -240,33 +240,35 @@ if __name__ == "__main__":
     mpc_var.setAlpha(0.01);
 
     # iteration frame
-    Ni = 2;
-    iList = np.array( [[i for i in range(Ni)]] );
+    Ni = max_iter;
+    iList = np.array( [[1 for i in range(Ni)]] );
 
     # training model - used to track gradient flow
     def flowModel(X):
         x = X[:Nx].reshape(Nx,);
         u = X[Nx:].reshape(Nu*PH,);
-        un = np.array( mpc_var.solve(x, u, saveflow=1)[0] );
-        Xn = np.hstack( (x, un) ).reshape(Nx+Nu*PH,1);
+        ug = np.array( mpc_var.solve(x, u, saveflow=1)[-1] );
+        Xn = np.vstack( (np.kron(iList, x.reshape(Nx,1)), ug) );
+        print(Xn);
         return Xn;
 
-    # print( flowModel(xsample) );
+    print( flowModel(xsample) );
 
-    # generate data set using flow as model function
-    print("Generate Data");
-    xTrain, _ = data.generate_data(iList, flowModel, X0);
+    # # generate data set using flow as model function
+    # print("Generate Data");
+    # xTrain, _ = data.generate_data(iList, flowModel, X0);
 
-    X = data.stack_data(xTrain[:,:-1], N0, Nx+Nu*PH, max_iter-1);
-    Y = data.stack_data(xTrain[:,1:], N0, Nx+Nu*PH, max_iter-1);
+    # X = data.stack_data(xTrain[:,:-1], N0, Nx+Nu*PH, max_iter-1);
+    # Y = data.stack_data(xTrain[:,1:], N0, Nx+Nu*PH, max_iter-1);
 
-    # solve for Koopman operator
-    # print( obs1(xsample, mpc_var) );
-    # print( obs2(xsample, mpc_var) );
-    kvar = kman.KoopmanOperator(obs1, obs2, params=mpc_var);
+    # print(X);
+    # print(Y);
 
-    print("Solving for K using EDMD");
-    K = kvar.edmd(X, Y, X0);
+    # # solve for Koopman operator
+    # kvar = kman.KoopmanOperator(obs1, obs2, params=mpc_var);
 
-    print('K:', K.shape, kvar.err);
-    print(K.T);
+    # print("Solving for K using EDMD");
+    # K = kvar.edmd(X, Y, X0);
+
+    # print('K:', K.shape, kvar.err);
+    # print(K.T);
