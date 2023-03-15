@@ -152,31 +152,46 @@ def cost(mpc_var, xlist, ulist):
     return C;
 
 
-# observable functions    
-def obs1(X=None, mvar=None):
-    Ng = Nu*PH;
+# observable functions
+def obsH1(X=None, mvar=None):
+    Ngx = Nx*(PH + 1);
+    Ngu = Nu*PH;
+    Ntr = 2;
     if X is None:
-        meta = {'Nk':2*Ng};
+        meta = {'Nk':Nx+2*Ngu};
         return meta;
 
     x = X[:Nx].reshape(Nx,1);
-    u = X[Nx:].reshape(Nu*PH,1);
-    
-    g = np.array( mvar.gradient(x, u) );
+    uinit = X[Nx:].reshape(Ngu,1);
 
-    Psi = np.vstack( (u, g) );
+    # xList = np.array( mvar.simulate(x, uinit) ).reshape(Nx,PH+1);
+    # uList = uinit.reshape(PH,Nu).T;
+    xGrad = np.array( mvar.gradient(x, uinit) ).reshape(Ngu,1);
+    # xTrig = np.vstack( (
+    #     np.cos(xList[2]).reshape(1,PH+1),
+    #     np.sin(xList[2]).reshape(1,PH+1)
+    # ) );
+
+    # utr = np.empty( (PH, Ntr*Nu) );
+    # for p in range(PH):
+    #     x3 = xTrig[:,p].reshape(Ntr,1);
+    #     up = uList[:,p].reshape(Nu,1);
+    #     utr[p,:] = kman.vec(x3@up.T).reshape(Ntr*Nu,);
+
+    # Psi = np.vstack( (kman.vec(xList), xGrad, kman.vec(utr), uinit) );
+    Psi = np.vstack( (x, uinit, xGrad) );
     return Psi;
-    
-def obs2(X=None, mvar=None):
-    Ng = Nu*PH;
-    if X is None:
-        meta = {'Nk':Ng};
-        return meta;
-    
-    x = X[:Nx].reshape(Nx,1);
-    u = X[Nx:].reshape(Nu*PH,1);
 
-    Psi = u;
+def obsH2(X=None, mvar=None):
+    Ngu = Nu*PH;
+    if X is None:
+        meta = {'Nk':Nx+Ngu};
+        return meta;
+
+    x = X[:Nx].reshape(Nx,1);
+    uinit = X[Nx:].reshape(Ngu,1);
+
+    Psi = np.vstack( (x, uinit) );
 
     return Psi;
 
@@ -219,54 +234,93 @@ def plotcomp(xTest, PsiTest, save=0):
 
 # brain
 if __name__ == "__main__":
+    # observable dimensions variables
     print("Initializing Variables");
 
+    
     # initial position list
-    N0 = 500;
-    X0 = 10*np.random.rand(Nx+Nu*PH, N0) - 5;
-    xsample = X0[:,0].reshape(Nx+Nu*PH,1);
+    N0 = 5;
+    X0 = 10*np.random.rand(Nx+Nu*PH,N0) - 5;
 
-    # initialize mpc state variables
-    xd = [0,0,pi/2];
+    
+    # initialize states
     x0 = list( X0[:Nx,0].reshape(Nx,) );
+    xd = [0,0,pi/2];
+    uinit = [i for i in range(Nu*PH)];
 
-    # create MPC class variables
-    max_iter = 10;
+    
+    # create MPC class variable
+    training_iter = 1;  # max_iter for training purposes
+    max_iter = 20;
     model_type = 'discrete';
-    params = Parameters(x0, xd, buffer_length=25, pause=1e-3);
+    params = Parameters(x0, xd, buffer_length=25);
     mpc_var = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
         num_ssvar=Nx, PH_length=PH, knot_length=kl, time_step=dt,
-        max_iter=max_iter, model_type=model_type);
+        max_iter=training_iter, model_type=model_type);
     mpc_var.setAlpha(0.01);
 
-    # iteration frame
-    Ni = 2;
-    iList = np.array( [[i for i in range(Ni)]] );
 
-    # training model - used to track gradient flow
-    def flowModel(X):
-        x = X[:Nx].reshape(Nx,);
-        u = X[Nx:].reshape(Nu*PH,);
-        un = np.array( mpc_var.solve(x, u, saveflow=1)[0] );
-        Xn = np.hstack( (x, un) ).reshape(Nx+Nu*PH,1);
+    # simulation time frame
+    # T = 10;  Nt = round(T/dt) + 1;
+    iList = np.array( [[i for i in range(max_iter)]] );
+
+
+    # DATA STRUCTURE IDEA
+    #   LENGTH: 10 STEPS (gradient steps)
+    #   X0 = np.random.rand(Nx+Nu*PH, N0)
+    #   MODEL:
+    #       INPUTS: [x0, uinit]
+    #       OUTPUT: [x0, unext] (after 1 step in gradient)
+    #   CONTROL:
+    #       NONE
+    def trainModel(X):
+        x0 = X[:Nx];
+        uinit = X[Nx:];
+        un = np.array( mpc_var.solve(x0, uinit)[0] );
+        Xn = np.hstack( (x0, un) ).reshape(Nx+Nu*PH,1);
         return Xn;
 
-    # print( flowModel(xsample) );
 
-    # generate data set using flow as model function
-    print("Generate Data");
-    xTrain, _ = data.generate_data(iList, flowModel, X0);
+    # generate and stack data
+    print("Generating Training Data");
+    xTrain, _ = data.generate_data(iList, trainModel, X0);
 
-    X = data.stack_data(xTrain[:,:-1], N0, Nx+Nu*PH, max_iter-1);
-    Y = data.stack_data(xTrain[:,1:], N0, Nx+Nu*PH, max_iter-1);
+    xStack = data.stack_data(xTrain[:,:-1], N0, Nx+Nu*PH, max_iter-1);
+    yStack = data.stack_data(xTrain[:,1:], N0, Nx+Nu*PH, max_iter-1);
 
-    # solve for Koopman operator
-    # print( obs1(xsample, mpc_var) );
-    # print( obs2(xsample, mpc_var) );
-    kvar = kman.KoopmanOperator(obs1, obs2, params=mpc_var);
+    X = xStack;  # currently unnecessary (replace x/yStack with X/Y)
+    Y = yStack;
+
+
+    # solve for K
+    kvar = kman.KoopmanOperator(obsH1, obsH2, params=mpc_var);
 
     print("Solving for K using EDMD");
     K = kvar.edmd(X, Y, X0);
 
     print('K:', K.shape, kvar.err);
     print(K.T);
+
+
+    # simulate results and compare
+    print("Generating Comparison Tests");
+    koopFunc = lambda Psi: K@Psi;
+    
+    x0 = np.random.rand(Nx+Nu*PH,1);
+    Psi0 = obsH1(x0, mpc_var);
+
+    x1  = obsH2(trainModel(x0.T[0]), mpc_var);
+    Psi1 = K@Psi0;
+    
+    Nk = obsH2()['Nk'];
+    for i in range(Nk):
+        print('r:', x1[i], ' K:', Psi1[i], ' err:', x1[i]-Psi1[i]);
+
+
+
+    # xTest, uTest = data.generate_data(tList, modelFunc, x0,
+    #     control=trainControl, Nu=Nu*PH);
+
+    # PsiTest = data.generate_data(tList, koopFunc, Psi0)[0];
+
+    # plotcomp(xTest, PsiTest);
