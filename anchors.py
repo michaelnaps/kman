@@ -1,8 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import Helpers.KoopmanFunctions as kman
-from Helpers.KoopmanFunctions import vec
+from Helpers.KoopmanFunctions import *
 import Helpers.DataFunctions as data
 
 
@@ -157,7 +156,7 @@ if __name__ == "__main__":
 
     # train Kx
     metaX = obsXU();
-    kxvar = kman.KoopmanOperator(obsXU);
+    kxvar = KoopmanOperator(obsXU);
     Kx = kxvar.edmd(X, Y, XU0);
 
     print('Kx:', Kx.shape, kxvar.err)
@@ -177,7 +176,7 @@ if __name__ == "__main__":
 
     # train Ku
     metaH = obsH();
-    kuvar = kman.KoopmanOperator(obsH, obsU);
+    kuvar = KoopmanOperator(obsH, obsU);
     Ku = kuvar.edmd(Xu, Yu, XU0);
 
     print('Ku:', Ku.shape, kuvar.err);
@@ -200,7 +199,7 @@ if __name__ == "__main__":
 
 
     # test comparison results
-    N0n = 100;
+    N0n = 10;
     NkXU = obsXU()['Nk'];
     X0n = 20*np.random.rand(Nx,N0n) - 10;
     XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
