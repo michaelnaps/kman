@@ -111,32 +111,6 @@ def obsXUH(X=None):
     return Psi;
 
 
-# plot results
-def plotcomp(Xlist, Ylist, X0, save=0):
-    # plot test results
-    figRes, axsRes = plt.subplots();
-
-    axsRes.plot(Xlist[-2], Xlist[-1], color='b', label='Model');
-    axsRes.plot(Ylist[-2], Ylist[-1], color='r', linestyle='--', label='KCE');
-
-    k = 0;
-    for x0 in X0.T[:-2]:
-        axsRes.plot(Xlist[k], Xlist[k+1], color='b');
-        axsRes.plot(Ylist[k], Ylist[k+1], color='r', linestyle='--');
-
-        axsRes.axis( (-10,10,-10,10), aspect='equal' );
-        axsRes.legend();
-        axsRes.grid();
-
-        k += Nx;
-
-    # save results
-    if save:
-        figRes.savefig('/home/michaelnaps/prog/kman/.figures/uDonald.png', dpi=600);
-        figError.savefig('/home/michaelnaps/prog/kman/.figures/uDonaldError.png', dpi=600);
-    else:
-        plt.show();
-
 def ploterr(X, Y, X0, save=0):
     # show error
     Te = tList[0][-1];  Ne = round(Te/dt);
@@ -226,9 +200,9 @@ if __name__ == "__main__":
 
 
     # test comparison results
-    N0n = 10;
+    N0n = 100;
     NkXU = obsXU()['Nk'];
-    X0n = 10*np.random.rand(Nx,N0n) - 5;
+    X0n = 20*np.random.rand(Nx,N0n) - 10;
     XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
     
     Psi0 = np.empty( (NkXU,N0n) );
@@ -254,8 +228,12 @@ if __name__ == "__main__":
     PsiTest, _ = data.generate_data(tList, kModel, Psi0);
 
     # plot results
-    idPsi = np.hstack( ([[2*i]  for i in range(N0n)], [[2*i+1]  for i in range(N0n)]) );
-    idPsi = idPsi.reshape(2*N0n,);
-    print(idPsi);
-    plotcomp(xTest, PsiTest, X0n);
+    xPsi = np.empty( (N0n*Nx, Nt) );
+    i = 0;  j = 0;
+    for k in range(N0n):
+        xPsi[i:i+Nx,:] = PsiTest[j:j+Nx,:];
+        i += Nx;
+        j += NkXU;
+    figComp, axsComp = data.compare_data(xTest, xPsi, X0n);
+    plt.show();
 
