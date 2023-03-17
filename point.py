@@ -36,8 +36,8 @@ def model(x, u):
 
 def control(x):
     C = np.array( [
-        [10, 0, 2.5, 0],
-        [0, 10, 0, 2.5]
+        [10, 0, 5, 0],
+        [0, 10, 0, 5]
     ] );
     xg = np.zeros( (Nx,1) );
 
@@ -124,7 +124,7 @@ if __name__ == "__main__":
 
 
     # data for testing results
-    N0n = 10;
+    N0n = 25;
     X0n = 20*np.random.rand(Nx,N0n) - 10;
     XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
     
