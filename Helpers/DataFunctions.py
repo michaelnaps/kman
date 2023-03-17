@@ -60,14 +60,17 @@ def compare_data(Xlist, Ylist, X0, fig=None, axs=None):
     if fig is None:
         fig, axs = plt.subplots();
 
+    xColor = 'blue';
+    yColor = 'yellowgreen';
+
     n, m = X0.shape;
-    axs.plot(Xlist[-n], Xlist[-(n+1)], color='b', label='Model');
-    axs.plot(Ylist[-n], Ylist[-(n+1)], color='r', linestyle='--', label='KCE');
+    axs.plot(Xlist[-n], Xlist[-(n+1)], color=xColor, label='Model');
+    axs.plot(Ylist[-n], Ylist[-(n+1)], color=yColor, linestyle='--', label='KCE');
 
     k = 0;
     for x0 in X0.T[:-n]:
-        axs.plot(Xlist[k], Xlist[k+1], color='b');
-        axs.plot(Ylist[k], Ylist[k+1], color='r', linestyle='--');
+        axs.plot(Xlist[k], Xlist[k+1], color=xColor);
+        axs.plot(Ylist[k], Ylist[k+1], color=yColor, linestyle='--');
 
         axs.axis( (-10,10,-10,10), aspect='equal' );
         axs.legend();
