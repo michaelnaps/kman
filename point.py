@@ -173,22 +173,29 @@ if __name__ == "__main__":
     print('K\n', K, '\n')
 
 
-    # test the cumulative operator
-    kModel = lambda Psi: K@Psi;
-
-    x0 = np.array( [[3],[-1.4],[3],[-10],[0],[0]] );
-    Psi0 = obsXU(x0);
-
-    xTest = data.generate_data(tList, model, x0[:Nx].reshape(Nx,1), control=control, Nu=Nu)[0];
-    PsiTest = data.generate_data(tList, kModel, Psi0)[0];
-
+    # test comparison results
+    N0n = 10;
+    NkXU = obsXU()['Nk'];
+    X0n = 20*np.random.rand(Nx,N0n) - 10;
+    XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
     
-    # plot test results
-    plotcomp(xTest, PsiTest);
-    # plotcomp(xTest, PsiTest, './.figures/point.png');
+    Psi0 = np.empty( (NkXU,N0n) );
+    for i, xu in enumerate(XU0n.T):
+        Psi0[:,i] = obsXU( xu.reshape(Nx+Nu,1) ).reshape(NkXU,);
 
-    # sx = [i for i in range(p)];
-    # su = [i for i in range(p,p+q*b)];
-    # S = (sx, su);  # NEXT STEP
-    # # print(kuvar.cd(Xu, Yu, XU0, S));
+    # new operator model equation
+    kModel = lambda Psi: K@Psi;
+    xTest, uTest = data.generate_data(tList, model, X0n,
+        control=control, Nu=Nu);
+    PsiTest, _ = data.generate_data(tList, kModel, Psi0);
+
+    # plot results
+    xPsi = np.empty( (N0n*Nx, Nt) );
+    i = 0;  j = 0;
+    for k in range(N0n):
+        xPsi[i:i+Nx,:] = PsiTest[j:j+Nx,:];
+        i += Nx;
+        j += NkXU;
+    figComp, axsComp = data.compare_data(xTest, xPsi, X0n);
+    plt.show();
     
