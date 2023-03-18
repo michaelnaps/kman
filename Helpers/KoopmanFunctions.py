@@ -4,6 +4,17 @@ def vec(A):
     (n, m) = A.shape;
     return A.reshape(n*m,1);
 
+def nvec(a, n=None, m=None):
+    if m is None:
+        m = n;
+
+    if n is None:
+        N = len( a );
+        n = round( np.sqrt(N) );
+        m = round( n );
+
+    return a.reshape(n,m);
+
 def sind(A, s):
     (n, m) = A.shape;
 
@@ -168,7 +179,7 @@ class KoopmanOperator:
         return (ep - en)/(2*h);
 
     # coordinate descent (CD)
-    def cd(self, X, Y, X0, S, eps=1e-3):
+    def cd(self, X, Y, X0, eps=1e-3):
         # evaluate for observable functions over X and Y
         (N0, Nt, Nx, _) = self.dimnData(X, X0);
         PsiX, NkX = self.liftData(X, X0);
