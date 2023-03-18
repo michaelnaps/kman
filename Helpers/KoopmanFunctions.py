@@ -181,20 +181,20 @@ class KoopmanOperator:
     # block coordinate descent (CD)
     def bcd(self, Ml, X, Y, X0, Kl=None, eps=1e-3):
         # evaluate for observable functions over X and Y
-        (N0, Nt, Nx, Nk) = self.dimnData(X, X0);
+        (N0, Nt, Nx, Nk) = self.dimnData(X, X0, self.obsX);
         PsiX, NkX = self.liftData(X, X0);
         PsiY, NkY = self.liftData(Y, X0, self.obsY);
 
         # initialize operator matrices
         if Kl is None:
-            Kl = [vec( np.eye(Nk) ) for i in len(Ml)];
+            Kl = [vec( np.eye(Nk) ) for i in range(len(Ml))];
 
         # error loop for BCD
         dK = 1;
         while dK > eps:
-            for i, k in enumerate(K):
-                m = Ml[i](K, PsiX);
-                K[i] = np.linalg.lstsq(PsiX, m);
+            for i, k in enumerate(Kl):
+                m = Ml[i](Kl, PsiX);
+                Kl[i] = np.linalg.lstsq(PsiX, m);
                 print(i);
                 
         

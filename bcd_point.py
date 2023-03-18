@@ -51,7 +51,7 @@ def obsX(X=None):
     if X is None:
         meta = {'Nk':Nx};
         return meta;
-    PsiX = X[:Nx,None];
+    PsiX = X[:Nx,];
     return PsiX;
 
 def obsU(X=None):
@@ -74,9 +74,9 @@ def PsiXU(X=None):  # proabably don't need
 
 def obsH(X=None):
     if X is None:
-        meta = {'Nk':Nu};
+        meta = {'Nk':Nx+Nu};
         return meta;
-    PsiH = X[:,None];
+    PsiH = X;
     return PsiH;
 
 def obsXUH(X=None):
@@ -130,8 +130,8 @@ if __name__ == "__main__":
 
     # construct matrices functions
     Kblock = lambda Ku: np.vstack( (
-        np.hstack( (np.eye(p), np.zeros(p, q*b)) ),
-        np.hstack( (np.zeros(p, q*b), np.kron(np.eye(q), Ku)) )
+        np.hstack( (np.eye(p), np.zeros( (p, q*b) )) ),
+        np.hstack( (np.zeros( (p, q*b) ), np.kron(np.eye(q), Ku)) )
     ) );
     Mx = lambda K, PsiX: np.kron( PsiX.T@Kblock( nvec(K[1]) ).T, np.eye(p) );
     Mu = lambda K, PsiX: np.kron( PsiX.T, nvec(K[0]) );
