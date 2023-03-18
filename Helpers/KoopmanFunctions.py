@@ -97,7 +97,7 @@ class KoopmanOperator:
 
             for m in range(Nt-1):
 
-                Psi_new = obs(X[:,i].reshape(Nx,1));
+                Psi_new = obs(X[:,i,None]);
                 Psi[:,j] = Psi_new.reshape(Nk,);
 
                 i += 1;
@@ -179,30 +179,27 @@ class KoopmanOperator:
         return (ep - en)/(2*h);
 
     # block coordinate descent (CD)
-    def bcd(self, Kl, Ml, X, Y, X0, eps=1e-3):
+    def bcd(self, Ml, X, Y, X0, Kl=None, eps=1e-3):
         # evaluate for observable functions over X and Y
-        (N0, Nt, Nx, _) = self.dimnData(X, X0);
+        (N0, Nt, Nx, Nk) = self.dimnData(X, X0);
         PsiX, NkX = self.liftData(X, X0);
         PsiY, NkY = self.liftData(Y, X0, self.obsY);
 
         # initialize operator matrices
-        K = 2*np.random.rand(NkY,NkX) - 1;
+        if Kl is None:
+            Kl = [vec( np.eye(Nk) ) for i in len(Ml)];
 
-        gnorm = 1;
-        glist = [0 for i in range(NkY*NkX)];
-        while gnorm > eps:
-            gnorm = 0;
-            for s in range(NkY*NkX):
-                i, j = sind(K, s)
-                glist[s] = self.fdm(K, s, X, Y, X0);
-                K[i,j] = K[i,j] - 0.001*glist[s];
-            gnorm = np.linalg.norm(glist);
-            print(gnorm);
+        # error loop for BCD
+        dK = 1;
+        while dK > eps:
+            for i, k in enumerate(K):
+                m = Ml[i](K, PsiX);
+                K[i] = np.linalg.lstsq(PsiX, m);
+                print(i);
+                
+        
+        self.K = Kl;
 
-        self.K = K;
-        self.err = self.resError(X, Y, X0, K);
-        self.ind = None;
-
-        return K;
+        return Kl;
 
         
