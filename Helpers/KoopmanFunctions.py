@@ -178,8 +178,8 @@ class KoopmanOperator:
 
         return (ep - en)/(2*h);
 
-    # coordinate descent (CD)
-    def cd(self, X, Y, X0, eps=1e-3):
+    # block coordinate descent (CD)
+    def bcd(self, Kl, Ml, X, Y, X0, eps=1e-3):
         # evaluate for observable functions over X and Y
         (N0, Nt, Nx, _) = self.dimnData(X, X0);
         PsiX, NkX = self.liftData(X, X0);
