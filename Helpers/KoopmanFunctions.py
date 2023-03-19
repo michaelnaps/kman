@@ -62,7 +62,6 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
             
             Klist[i].K = nvec( np.linalg.lstsq(Alist[i], M)[0], NkX, NkY );
 
-
     Kl = None;
     return Kl;
 
