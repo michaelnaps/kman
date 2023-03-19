@@ -61,7 +61,7 @@ def obsU(X=None):
     PsiU = [1];
     return PsiU;
 
-def PsiXU(X=None):  # proabably don't need
+def obsXU(X=None):  # proabably don't need
     if X is None:
         meta = {'Nk':obsX()['Nk']+obsU()['Nk']};
         return meta;
@@ -127,6 +127,8 @@ if __name__ == "__main__":
     q = obsU()['Nk'];
     b = obsH()['Nk'];
 
+    print(m, p, q, b);
+
 
     # construct matrices functions
     def Kblock(Ku):
@@ -142,11 +144,14 @@ if __name__ == "__main__":
         M = np.kron( PsiX.T, Klist[0].K );
         return M;
 
+    def Mtemp(Klist, PsiX):
+        M = Klist[0].K @ PsiX;
+        return M;
 
     # initialize operator class
-    kuvar = KoopmanOperator(obsH);
+    kuvar = KoopmanOperator(obsXUH);
     kxvar = KoopmanOperator(obsXUH);
-    bcd((kxvar, kuvar), (Mx, Mu), X, Y, X0);
+    bcd((kxvar,), (Mtemp,), X, Y, X0);
 
 
     # # new operator model equation

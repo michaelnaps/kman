@@ -41,7 +41,7 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
     # operator dimensions
     N = len(Klist);
     (N0, Nt, _, _) = dimnData(X, X0);
-    
+
     # lift data into the appropriate function spaces
     Glist = [None for i in range(N)];
     Alist = Glist;
@@ -59,11 +59,9 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
             NkY = Klist[i].metaY['Nk'];
 
             M = f(Klist, Glist[i]);
+            
+            Klist[i].K = nvec( np.linalg.lstsq(Alist[i], M)[0], NkX, NkY );
 
-            print(M.shape);
-            print(Alist[i].shape)
-
-            Klist[i].K = nvec( np.linalg.lstsq(M, Alist[i]), NkX, NkY );
 
     Kl = None;
     return Kl;
@@ -85,7 +83,6 @@ class KoopmanOperator:
                 self.obsY = self.obsX;
             else:
                 self.obsY = lambda y=None: obsY(y, params);
-
 
         # Koopman parameters
         self.metaX = self.obsX();
