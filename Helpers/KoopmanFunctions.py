@@ -15,25 +15,55 @@ def nvec(a, n=None, m=None):
 
     return a.reshape(n,m);
 
+# return the dimensions of a data set
+def dimnData(X, X0, obs=None):
+    # default observation is obsX
+    if obs is None:
+        Nk = None;
+    else:
+        Nk = obs()['Nk'];
+
+    # dimension variables
+    Mx = len(X[0]);
+    Nx = len(X0);
+    
+    if len(X0.shape) > 1:
+        N0 = len(X0[0]);
+    else:
+        N0 = 1;
+    
+    Nt = round(Mx/N0);
+
+    return N0, Nt, Nx, Nk;
+
 # block coordinate descent (CD)
-def bcd(Klist, flist, X, Y, X0, eps=1e-3):
+def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
     # operator dimensions
     N = len(Klist);
+    (N0, Nt, _, _) = dimnData(X, X0);
     
     # lift data into the appropriate function spaces
-    PsiXlist = [None for i in range(N)];
-    PsiYlist = PsiXlist;
+    Glist = [None for i in range(N)];
+    Alist = Glist;
     for i, kvar in enumerate(Klist):
-        PsiXlist[i], _ = kvar.liftData(X, X0);
-        PsiYlist[i], _ = kvar.liftData(Y, X0, kvar.obsY);
+        PsiX, _ = kvar.liftData(X, X0);
+        PsiY, _ = kvar.liftData(Y, X0, kvar.obsY);
+        Glist[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiX.T);
+        Alist[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiY.T);
 
     # error loop for BCD
     dK = 1;
-    while dK > eps:
+    while dK > TOL:
         for i, f in enumerate(flist):
-            M = f(Klist, PsiXlist[i]);
-            Klist[i].K = np.linalg.lstsq(PsiYlist[i], M);
-            print(i);
+            NkX = Klist[i].metaX['Nk'];
+            NkY = Klist[i].metaY['Nk'];
+
+            M = f(Klist, Glist[i]);
+
+            print(M.shape);
+            print(Alist[i].shape)
+
+            Klist[i].K = nvec( np.linalg.lstsq(M, Alist[i]), NkX, NkY );
 
     Kl = None;
     return Kl;
@@ -67,33 +97,12 @@ class KoopmanOperator:
         self.err = None;
         self.ind = None;
 
-    # return the dimensions of the data set
-    def dimnData(self, X, X0, obs=None):
-        # default observation is obsX
-        if obs is None:
-            Nk = None;
-        else:
-            Nk = obs()['Nk'];
-
-        # dimension variables
-        Mx = len(X[0]);
-        Nx = len(X0);
-        
-        if len(X0.shape) > 1:
-            N0 = len(X0[0]);
-        else:
-            N0 = 1;
-        
-        Nt = round(Mx/N0);
-
-        return N0, Nt, Nx, Nk;
-
     # lift data from state space to function domain
     def liftData(self, X, X0, obs=None):
         # default observation is obsX
         if obs is None:
             obs = self.obsX;
-        (N0, Nt, Nx, Nk) = self.dimnData(X, X0, obs);
+        (N0, Nt, Nx, Nk) = dimnData(X, X0, obs);
 
         # observation initialization
         Psi = np.empty( (Nk, N0*(Nt-1)) );
@@ -124,7 +133,7 @@ class KoopmanOperator:
             K = self.K;
 
         # get data parameters
-        (N0, Nt, Nx, _) = self.dimnData(X, X0);
+        (N0, Nt, Nx, _) = dimnData(X, X0);
         PsiX, NkX = self.liftData(X, X0);
         PsiY, NkY = self.liftData(Y, X0, self.obsY);
 
@@ -141,7 +150,7 @@ class KoopmanOperator:
         TOL = 1e-12;
 
         # evaluate for observable functions over X and Y
-        (N0, Nt, Nx, _) = self.dimnData(X, X0);
+        (N0, Nt, Nx, _) = dimnData(X, X0);
         PsiX, NkX = self.liftData(X, X0);
         PsiY, NkY = self.liftData(Y, X0, self.obsY);
 

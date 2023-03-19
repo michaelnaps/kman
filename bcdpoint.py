@@ -129,12 +129,18 @@ if __name__ == "__main__":
 
 
     # construct matrices functions
-    Kblock = lambda Ku: np.vstack( (
-        np.hstack( (np.eye(p), np.zeros( (p, q*b) )) ),
-        np.hstack( (np.zeros( (p, q*b) ), np.kron(np.eye(q), Ku)) )
-    ) );
-    Mx = lambda K, PsiX: np.kron( PsiX.T@Kblock( nvec(K[1]) ).T, np.eye(p) );
-    Mu = lambda K, PsiX: np.kron( PsiX.T, nvec(K[0]) );
+    def Kblock(Ku):
+        Kb = np.vstack( (
+            np.hstack( (np.eye(p), np.zeros( (p, q*b) )) ),
+            np.hstack( (np.zeros( (q*b, p) ), np.kron(np.eye(q), Ku)) )
+        ) );
+        return Kb;
+    def Mx(Klist, PsiX):
+        M = np.kron( PsiX.T@Kblock(Klist[1].K).T, np.eye(p+b*q) );
+        return M;
+    def Mu(Klist, PsiX):
+        M = np.kron( PsiX.T, Klist[0].K );
+        return M;
 
 
     # initialize operator class
