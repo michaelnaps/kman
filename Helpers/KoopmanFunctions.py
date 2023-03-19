@@ -46,23 +46,32 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
     Glist = [None for i in range(N)];
     Alist = Glist;
     for i, kvar in enumerate(Klist):
-        PsiX, _ = kvar.liftData(X, X0);
-        PsiY, _ = kvar.liftData(Y, X0, kvar.obsY);
-        Glist[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiX.T);
-        Alist[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiY.T);
+        PsiX, _ = Klist[0].liftData(X, X0);
+        PsiY, _ = Klist[0].liftData(Y, X0, Klist[0].obsY);
+        Glist[i] = 1/(N0*(Nt - 1)) * np.sum(PsiX, axis=1)[:,None];
+        Alist[i] = 1/(N0*(Nt - 1)) * np.sum(PsiY, axis=1)[:,None];
 
     # error loop for BCD
     dK = 1;
-    while dK > TOL:
+    Kcopy = [Klist[i] for i in range(N)];
+    while np.linalg.norm(dK) > TOL:
+        dK = 0;
         for i, f in enumerate(flist):
             NkX = Klist[i].metaX['Nk'];
             NkY = Klist[i].metaY['Nk'];
 
             M = f(Klist, Glist[i]);
-            
-            Klist[i].K = nvec( np.linalg.lstsq(Alist[i], M)[0], NkX, NkY );
 
-    Kl = None;
+            print(M.shape, Alist[i].shape);
+
+            Ksoln = np.linalg.lstsq(M, Alist[i], rcond=None);
+            Klist[i].K = nvec( Ksoln[0], NkX, NkY );
+
+            dK += np.linalg.norm(Klist[i].K - Kcopy[i].K);
+            Kcopy[i] = Klist[i];
+        print(dK);            
+
+    Kl = Klist;
     return Kl;
 
 # Koopman Operator class description
