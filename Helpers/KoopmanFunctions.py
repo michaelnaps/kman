@@ -15,21 +15,30 @@ def nvec(a, n=None, m=None):
 
     return a.reshape(n,m);
 
-def sind(A, s):
-    (n, m) = A.shape;
-
-    if s > n*m-1:
-        print("ERROR: Index to large for matrix.");
-        return None;
+# block coordinate descent (CD)
+def bcd(Klist, flist, X, Y, X0, eps=1e-3):
+    # operator dimensions
+    N = len(Klist);
     
-    i = 0;
-    j = s;
-    while j > m-1:
-        i = i + 1;
-        j = j - m;
+    # lift data into the appropriate function spaces
+    PsiXlist = [None for i in range(N)];
+    PsiYlist = PsiXlist;
+    for i, kvar in enumerate(Klist):
+        PsiXlist[i], _ = kvar.liftData(X, X0);
+        PsiYlist[i], _ = kvar.liftData(Y, X0, kvar.obsY);
 
-    return i, j;
+    # error loop for BCD
+    dK = 1;
+    while dK > eps:
+        for i, f in enumerate(flist):
+            M = f(Klist, PsiXlist[i]);
+            Klist[i].K = np.linalg.lstsq(PsiYlist[i], M);
+            print(i);
 
+    Kl = None;
+    return Kl;
+
+# Koopman Operator class description
 class KoopmanOperator:
     # initialize class
     def __init__(self, obsX, obsY=None, params=None):
@@ -49,9 +58,9 @@ class KoopmanOperator:
 
 
         # Koopman parameters
-        self.K = None;
         self.metaX = self.obsX();
         self.metaY = self.obsY();
+        self.K = np.eye(self.metaX['Nk'], self.metaY['Nk']);
         self.eps = None;
 
         # accuracy variables
@@ -165,41 +174,6 @@ class KoopmanOperator:
 
         return K;
 
-    # finite difference method (FDM)
-    def fdm(self, K, s, X, Y, X0, h=1e-3):
-        ij = sind(K, s);
 
-        Kn = K.copy();  Kp = K.copy();
-        Kn[ij] = Kp[ij] - h;
-        Kp[ij] = Kp[ij] + h;
-
-        ep = self.resError(X, Y, X0, Kp);
-        en = self.resError(X, Y, X0, Kn);
-
-        return (ep - en)/(2*h);
-
-    # block coordinate descent (CD)
-    def bcd(self, Ml, X, Y, X0, Kl=None, eps=1e-3):
-        # evaluate for observable functions over X and Y
-        (N0, Nt, Nx, Nk) = self.dimnData(X, X0, self.obsX);
-        PsiX, NkX = self.liftData(X, X0);
-        PsiY, NkY = self.liftData(Y, X0, self.obsY);
-
-        # initialize operator matrices
-        if Kl is None:
-            Kl = [vec( np.eye(Nk) ) for i in range(len(Ml))];
-
-        # error loop for BCD
-        dK = 1;
-        while dK > eps:
-            for i, k in enumerate(Kl):
-                m = Ml[i](Kl, PsiX);
-                Kl[i] = np.linalg.lstsq(PsiX, m);
-                print(i);
-                
-        
-        self.K = Kl;
-
-        return Kl;
 
         

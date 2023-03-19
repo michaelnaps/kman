@@ -138,8 +138,9 @@ if __name__ == "__main__":
 
 
     # initialize operator class
-    kvar = KoopmanOperator(obsXUH);
-    Kl = kvar.bcd((Mx, Mu), X, Y, XU0);
+    kuvar = KoopmanOperator(obsH);
+    kxvar = KoopmanOperator(obsXUH);
+    bcd((kxvar, kuvar), (Mx, Mu), X, Y, X0);
 
 
     # # new operator model equation
