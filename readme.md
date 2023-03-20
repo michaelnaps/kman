@@ -2,6 +2,7 @@
 
 This repository serves as the testing ground for my research at Boston University (being performed with the intent of being published). This readme currently discusses noteworthy models being evaluated and the results of their tests with the Koopman control equation (KCE). It also serves as a testing ground for my ideas on gradient flow mapping, etc.
 
+<!--
 $$
     \Psi^+ = \mathcal{K}_x \begin{bmatrix}
         \mathbf{I}_p & 0_{p \times qb} \\
@@ -27,6 +28,7 @@ such that
 $$
     \Psi^+ = \mathcal{K} \Psi.
 $$
+-->
 
 
 ___
@@ -148,20 +150,14 @@ $$
 \begin{aligned}
     \Psi = \begin{bmatrix}
         x \\
-        u \\
-        \texttt{vec}(x x^\intercal) \\
-        \texttt{vec}(u u^\intercal) \\
-        \texttt{vec}(x u^\intercal)
+        u
     \end{bmatrix}
     &&
     h = \begin{bmatrix}
         \Psi \\
         d_1(x) \\
         \vdots \\
-        d_{N_a} \\
-        \texttt{vec}(x a_i^\intercal) \\
-        \vdots \\
-        \texttt{vec}(x a_{N_a}^\intercal)
+        d_{N_a}
     \end{bmatrix}
 \end{aligned}
 $$
