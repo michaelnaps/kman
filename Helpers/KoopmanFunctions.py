@@ -104,7 +104,7 @@ class KoopmanOperator:
 
     # when asked to print - return operator
     def __str__(self):
-        return "Error: %.3f\n" % self.err + np.array2string( self.K );
+        return "Error: %.3f\n" % self.err + np.array2string( self.K, precision=2, suppress_small=1 );
 
     # lift data from state space to function domain
     def liftData(self, X, X0, obs=None):
