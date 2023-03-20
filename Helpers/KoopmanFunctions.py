@@ -52,7 +52,7 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
         Alist[i] = 1/(N0*(Nt - 1)) * np.sum(PsiY, axis=1)[:,None];
 
     # error loop for BCD
-    dK = 1;
+    dK = 1;  count = 0;
     Kcopy = [Klist[i] for i in range(N)];
     while np.linalg.norm(dK) > TOL:
         dK = 0;
@@ -66,6 +66,8 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
 
             dK += np.linalg.norm(Klist[i].K - Kcopy[i].K);
             Kcopy[i] = Klist[i]; 
+        count += 1
+        print(count);
 
     # calculate the resulting error for each operator
     for i in range(N):
