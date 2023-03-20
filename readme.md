@@ -148,13 +148,12 @@ Here the observables are listed as
 
 $$
 \begin{aligned}
-    \Psi = \begin{bmatrix}
-        x \\
-        u
-    \end{bmatrix}
+    \Psi_x = x
+    &&
+    \Psi_u = 1
     &&
     h = \begin{bmatrix}
-        \Psi \\
+        u \\
         d_1(x) \\
         \vdots \\
         d_{N_a}
