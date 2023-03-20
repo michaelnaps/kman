@@ -97,6 +97,7 @@ class KoopmanOperator:
         self.metaY = self.obsY();
         self.K = np.eye(self.metaX['Nk'], self.metaY['Nk']);
         self.eps = None;
+        self.params = params;
 
         # accuracy variables
         self.err = -1;
