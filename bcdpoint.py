@@ -138,17 +138,17 @@ if __name__ == "__main__":
         ) );
         return Kb;
     def Mx(Klist, G):
-        M = np.kron( G.T@Klist[1].K.T, np.eye(p+b*q) );
-        # M = np.kron( G.T@Kblock(Klist[1].K).T, np.eye(p+b*q) );
+        # M = np.kron( G.T@Klist[1].K.T, np.eye(p+b*q) );
+        M = np.kron( G.T@Kblock(Klist[1].K).T, np.eye(p+b*q) );
         return M;
     def Mu(Klist, G):
-        M = np.kron( G.T, Klist[0].K );
+        M = np.kron( G.T, np.eye(b) );
         return M;
 
     # initialize operator class
-    kuvar = KoopmanOperator(obsXUH);
+    kuvar = KoopmanOperator(obsH);
     kxvar = KoopmanOperator(obsXUH);
-    print( bcd((kxvar,kuvar), (Mx,Mu), X, Y, X0)[0].K );
+    print( bcd( (kxvar,kuvar), (Mx,Mu), X, Y, X0 )[1] );
 
 
     # # new operator model equation

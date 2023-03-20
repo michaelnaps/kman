@@ -46,8 +46,8 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
     Glist = [None for i in range(N)];
     Alist = Glist;
     for i, kvar in enumerate(Klist):
-        PsiX, _ = Klist[0].liftData(X, X0);
-        PsiY, _ = Klist[0].liftData(Y, X0, Klist[0].obsY);
+        PsiX, _ = kvar.liftData(X, X0);
+        PsiY, _ = kvar.liftData(Y, X0, kvar.obsY);
         Glist[i] = 1/(N0*(Nt - 1)) * np.sum(PsiX, axis=1)[:,None];
         Alist[i] = 1/(N0*(Nt - 1)) * np.sum(PsiY, axis=1)[:,None];
 
@@ -61,15 +61,15 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
             NkY = Klist[i].metaY['Nk'];
 
             M = f(Klist, Glist[i]);
-
-            print(M.shape, Alist[i].shape);
-
             Ksoln = np.linalg.lstsq(M, Alist[i], rcond=None);
             Klist[i].K = nvec( Ksoln[0], NkX, NkY );
 
             dK += np.linalg.norm(Klist[i].K - Kcopy[i].K);
-            Kcopy[i] = Klist[i];
-        print(dK);            
+            Kcopy[i] = Klist[i]; 
+
+    # calculate the resulting error for each operator
+    for i in range(N):
+        Klist[i].err = Klist[i].resError(X, Y, X0);
 
     Kl = Klist;
     return Kl;
@@ -99,8 +99,12 @@ class KoopmanOperator:
         self.eps = None;
 
         # accuracy variables
-        self.err = None;
+        self.err = -1;
         self.ind = None;
+
+    # when asked to print - return operator
+    def __str__(self):
+        return "Error: %.3f\n" % self.err + np.array2string( self.K );
 
     # lift data from state space to function domain
     def liftData(self, X, X0, obs=None):
