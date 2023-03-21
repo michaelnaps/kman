@@ -53,8 +53,7 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
 
     # error loop for BCD
     dK = 1;  count = 0;
-    Kcopy = [Klist[i] for i in range(N)];
-    while np.linalg.norm(dK) > TOL:
+    while dK > TOL:
         dK = 0;
         for i, f in enumerate(flist):
             NkX = Klist[i].metaX['Nk'];
@@ -62,12 +61,12 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
 
             M = f(Klist, Glist[i]);
             Ksoln = np.linalg.lstsq(M, Alist[i], rcond=None);
-            Klist[i].K = nvec( Ksoln[0], NkX, NkY );
-
-            dK += np.linalg.norm(Klist[i].K - Kcopy[i].K);
-            Kcopy[i] = Klist[i]; 
+            Kmatr = nvec( Ksoln[0], NkX, NkY );
+            
+            dK += np.linalg.norm(Klist[i].K - Kmatr);
+            Klist[i].K = Kmatr;
         count += 1
-        print(count);
+        print(count, ':', dK);
 
     # calculate the resulting error for each operator
     for i in range(N):

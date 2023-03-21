@@ -63,7 +63,7 @@ def obsU(X=None):
 
 def obsXU(X=None):  # proabably don't need
     if X is None:
-        meta = {'Nk':obsX()['Nk']+obsU()['Nk']};
+        meta = {'Nk':obsX()['Nk']+obsH()['Nk']};
         return meta;
 
     PsiX = obsX(X);
@@ -127,14 +127,12 @@ if __name__ == "__main__":
     q = obsU()['Nk'];
     b = obsH()['Nk'];
 
-    print(m, p, q, b);
-
 
     # construct matrices functions
     def Kblock(Ku):
         Kb = np.vstack( (
-            np.hstack( (np.eye(p), np.zeros( (p, q*b) )) ),
-            np.hstack( (np.zeros( (q*b, p) ), np.kron(np.eye(q), Ku)) )
+            np.hstack( (np.eye(p), np.zeros( (p, b*q) )) ),
+            np.hstack( (np.zeros( (b*q, p) ), np.kron(np.eye(q), Ku)) )
         ) );
         return Kb;
     def Mx(Klist, G):
@@ -146,9 +144,15 @@ if __name__ == "__main__":
         return M;
 
     # initialize operator class
-    kuvar = KoopmanOperator(obsH);
+    kuvar = KoopmanOperator(obsH);    # initial guesses (identity)
     kxvar = KoopmanOperator(obsXUH);
-    print( bcd( (kxvar,kuvar), (Mx,Mu), X, Y, X0 )[1] );
+    kxvar, kuvar = bcd( (kxvar,kuvar), (Mx,Mu), X, Y, X0 );
+
+    K = kxvar.K@Kblock(kuvar.K);
+
+    print(kxvar);
+    print(kuvar);
+    print(K);
 
 
     # # new operator model equation
