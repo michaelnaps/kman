@@ -143,8 +143,8 @@ if __name__ == "__main__":
         M = np.kron( G.T, np.eye(b) );
         return M;
 
-    # initialize operator class
-    kuvar = KoopmanOperator(obsH);    # initial guesses (identity)
+    # initialize operator class (K0 is identity)
+    kuvar = KoopmanOperator(obsH);
     kxvar = KoopmanOperator(obsXUH);
     kxvar, kuvar = bcd( (kxvar,kuvar), (Mx,Mu), X, Y, X0 );
 
