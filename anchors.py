@@ -177,6 +177,7 @@ if __name__ == "__main__":
     # train Ku
     metaH = obsH();
     kuvar = KoopmanOperator(obsH, obsU);
+    print(kuvar);
     Ku = kuvar.edmd(Xu, Yu, XU0);
 
     print('Ku:', Ku.shape, kuvar.err);

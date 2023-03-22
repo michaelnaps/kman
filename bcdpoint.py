@@ -51,14 +51,14 @@ def obsX(X=None):
     if X is None:
         meta = {'Nk':Nx};
         return meta;
-    PsiX = X[:Nx,];
+    PsiX = X[:Nx].reshape(Nx,1);
     return PsiX;
 
 def obsU(X=None):
     if X is None:
-        meta = {'Nk':1};
+        meta = {'Nk':Nu};
         return meta;
-    PsiU = [1];
+    PsiU = X[Nx:].reshape(Nu,1);
     return PsiU;
 
 def obsXU(X=None):  # proabably don't need
@@ -67,7 +67,7 @@ def obsXU(X=None):  # proabably don't need
         return meta;
 
     PsiX = obsX(X);
-    PsiU = obsU(X);
+    PsiU = [1];
     Psi = np.vstack( (PsiX, PsiU) );
 
     return Psi;
@@ -81,11 +81,11 @@ def obsH(X=None):
 
 def obsXUH(X=None):
     if X is None:
-        meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsH()['Nk']};
+        meta = {'Nk':obsX()['Nk']+1*obsH()['Nk']};
         return meta;
     
     PsiX = obsX(X);
-    PsiU = obsU(X);
+    PsiU = [1];
     PsiH = obsH(X);
     
     Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
@@ -95,7 +95,7 @@ def obsXUH(X=None):
 # main executable section
 if __name__ == "__main__":
     # simulation variables
-    T = 10;  Nt = round(T/dt) + 1;
+    T = dt;  Nt = round(T/dt) + 1;
     tList = np.array( [ [i*dt for i in range(Nt)] ] );
 
 
@@ -117,22 +117,21 @@ if __name__ == "__main__":
     yStack = data.stack_data(xData[:,1:], N0, Nx, Nt-1);
 
     XU0 = np.vstack( (X0, np.zeros( (Nu,N0) )) );
-    X = np.vstack( (xStack, uStack) );
+    X = np.vstack( (xStack, np.zeros( (Nu, Nt-1) )) );
     Y = np.vstack( (yStack, uStack) );
 
 
     # matrices dimensions
     m = Nu;
     p = obsX()['Nk'];
-    q = obsU()['Nk'];
+    q = 1; # obsU()['Nk'];
     b = obsH()['Nk'];
 
-
     # construct matrices functions
-    def Kblock(Ku):
+    def Kblock(K):
         Kb = np.vstack( (
             np.hstack( (np.eye(p), np.zeros( (p, b*q) )) ),
-            np.hstack( (np.zeros( (b*q, p) ), np.kron(np.eye(q), Ku)) )
+            np.hstack( (np.zeros( (b*q, p) ), np.kron(np.eye(q), K)) )
         ) );
         return Kb;
     def Mx(Klist, G):

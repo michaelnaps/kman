@@ -1,9 +1,11 @@
 import numpy as np
 
+# matrix -> vector form
 def vec(A):
     (n, m) = A.shape;
     return A.reshape(n*m,1);
 
+# vector -> matrix form
 def nvec(a, n=None, m=None):
     if m is None:
         m = n;
@@ -32,7 +34,7 @@ def dimnData(X, X0, obs=None):
     else:
         N0 = 1;
     
-    Nt = round(Mx/N0);
+    Nt = round(Mx/N0) + 1;
 
     return N0, Nt, Nx, Nk;
 
@@ -43,15 +45,15 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
     (N0, Nt, _, _) = dimnData(X, X0);
 
     # lift data into the appropriate function spaces
-    Glist = [None for i in range(N)];
-    Alist = Glist;
+    G = [None for i in range(N)];
+    A = G;
     for i, kvar in enumerate(Klist):
         PsiX, _ = kvar.liftData(X, X0);
         PsiY, _ = kvar.liftData(Y, X0, kvar.obsY);
-        Glist[i] = 1/(N0*(Nt - 1)) * np.sum(PsiX, axis=1)[:,None];
-        Alist[i] = 1/(N0*(Nt - 1)) * np.sum(PsiY, axis=1)[:,None];
-        # Glist[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiX.T);
-        # Alist[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiY.T);
+        G[i] = 1/(N0*(Nt - 1)) * np.sum(PsiX, axis=1)[:,None];
+        A[i] = 1/(N0*(Nt - 1)) * np.sum(PsiY, axis=1)[:,None];
+        # G[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiX.T);
+        # A[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiY.T);
 
     # error loop for BCD
     dK = 1;  count = 0;
@@ -61,13 +63,8 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
             NkX = Klist[i].metaX['Nk'];
             NkY = Klist[i].metaY['Nk'];
 
-            M = f(Klist, Glist[i]);
-
-            print(M.shape);
-            print(Glist[i].shape);
-            print(Alist[i].shape);
-
-            Ksoln = np.linalg.lstsq(M, Alist[i], rcond=None);
+            M = f(Klist, G[i]);
+            Ksoln = np.linalg.lstsq(M, A[i], rcond=None);
             Kmatr = nvec( Ksoln[0], NkX, NkY );
             
             dK += np.linalg.norm(Klist[i].K - Kmatr);
@@ -103,7 +100,7 @@ class KoopmanOperator:
         # Koopman parameters
         self.metaX = self.obsX();
         self.metaY = self.obsY();
-        self.K = np.eye(self.metaX['Nk'], self.metaY['Nk']);
+        self.K = np.eye(self.metaY['Nk'], self.metaX['Nk']);
         self.eps = None;
         self.params = params;
 
