@@ -315,11 +315,11 @@ $$
 Meaning that for a small enough time-step, $\Delta t$, the function $\cos(x_3)$ can be propagated using a bilinear combination with the model equation $f_3$.
 
 <p align="center">
-    <img src=./.figures/donald.png width=400 />
-    <img src=./.figures/donaldError.png width=400 />
+    <img src=./.figures/donald.png width=325 />
+    <img src=./.figures/donaldError.png width=325 />
 </p>
 
-To propagate the function $\cos(x_3) u_1$ we can explore similar series of steps.
+To propagate the function $\cos(x_3) u_1$ we can explore a similar series of steps.
 
 $$
 \begin{aligned}
