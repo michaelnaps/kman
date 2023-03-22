@@ -7,9 +7,55 @@ ___
 
 The purpose of the KCE is to present the resolution of a multi-faceted observation space into multiple sub-spaces. In other words, the linear properties of the Koopman operator are exploited to break an observation space over multiple variables into multiple sub-operators which can be solved for independently and factored back into the cumulative operator.
 
-<!-- First let us present the KCE as...
+<!-- First let us present the standard Koopman form such that
 
 $$
+    \Psi^+ = \mathcal{K} \Psi.
+$$
+
+If we first define the minimization of residual error in terms of the cumulative operator we state that...
+
+$$
+    \mathcal{K}^* = \min_\mathcal{K} || \Psi^+ - \mathcal{K} \Psi || = \min_\mathcal{K} || \begin{bmatrix}
+        \Psi_1^+ \\
+        \Psi_2^+
+    \end{bmatrix} - \mathcal{K} \begin{bmatrix}
+        \Psi_1 \\
+        \Psi_2
+    \end{bmatrix} ||
+$$
+
+Where $\mathcal{K}^*$ is the Koopman operator which minimizes the transition $\mathcal{K} : \Psi \rightarrow \Psi^+$. If $\Psi$ can be described as a composition of multiple domains, then we can similarly describe this in terms of the components of $\Psi$.
+
+The argument presented here is that, for systems that are coupled between $\Psi_1$ and $\Psi_2$ we can instead solve two minimization problems.
+
+$$
+\begin{aligned}
+    \mathcal{K}_1^* = \min_{\mathcal{K}_1} || \begin{bmatrix}
+        \Psi_1^+ \\
+        \Psi_2
+    \end{bmatrix} - \mathcal{K}_1 \begin{bmatrix}
+        \Psi_1 \\
+        \Psi_2
+    \end{bmatrix} ||
+    &&
+    \mathcal{K}_2^* = \min_{\mathcal{K}_2} || \begin{bmatrix}
+        \Psi_1 \\
+        \Psi_2^+
+    \end{bmatrix} - \mathcal{K}_2 \begin{bmatrix}
+        \Psi_1 \\
+        \Psi_2
+    \end{bmatrix} ||
+\end{aligned}
+$$
+
+Such that the two operators can be restated together to give the cumulative operator.
+
+$$
+    \mathcal{K}^* = \mathcal{K}_1^* \mathcal{K}_2^*
+$$ -->
+
+<!-- $$
     \Psi^+ = \mathcal{K}_x \begin{bmatrix}
         \mathbf{I}_p & 0_{p \times qb} \\
         0_{qb \times p} & \mathbf{I}_q \otimes \mathcal{K}_u
@@ -27,33 +73,7 @@ $$
         \mathbf{I}_p & 0_{p \times qb} \\
         0_{qb \times p} & \mathbf{I}_q \otimes \mathcal{K}_u
     \end{bmatrix}
-$$
-
-such that
-
-$$
-    \Psi^+ = \mathcal{K} \Psi.
-$$
-
-If we first define the minimization of residual error in terms of the cumulative operator we state that...
-
-$$
-    \mathcal{K} \gets \min_\mathcal{K} || \Psi^+ - \mathcal{K} \Psi ||
-$$
-
-Where $\mathcal{K}^*$ is the Koopman operator which minimizes the transition $\mathcal{K} : \Psi \rightarrow \Psi^+$. If $\Psi$ can be described as a composition of multiple domains, then we can similarly describe this in terms of the components of $\Psi$.
-
-$$
-    \mathcal{K}^* = \min_\mathcal{K} || \begin{bmatrix}
-        \Psi_x^+ \\
-        \Psi_u^+
-    \end{bmatrix} - \mathcal{K} \begin{bmatrix}
-        \Psi_x \\
-        \Psi_u
-    \end{bmatrix} ||
-$$
-
-The argument presented here  -->
+$$ -->
 
 ___
 ### **Notes on Coordinate Descent**
