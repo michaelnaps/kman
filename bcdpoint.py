@@ -150,8 +150,8 @@ if __name__ == "__main__":
 
     K = kxvar.K@Kblock(kuvar.K);
 
-    print(kxvar);
-    print(kuvar);
+    print(kxvar, '\n');
+    print(kuvar, '\n');
     print(K);
 
 

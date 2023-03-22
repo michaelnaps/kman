@@ -50,6 +50,8 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
         PsiY, _ = kvar.liftData(Y, X0, kvar.obsY);
         Glist[i] = 1/(N0*(Nt - 1)) * np.sum(PsiX, axis=1)[:,None];
         Alist[i] = 1/(N0*(Nt - 1)) * np.sum(PsiY, axis=1)[:,None];
+        # Glist[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiX.T);
+        # Alist[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiY.T);
 
     # error loop for BCD
     dK = 1;  count = 0;
@@ -60,6 +62,11 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
             NkY = Klist[i].metaY['Nk'];
 
             M = f(Klist, Glist[i]);
+
+            print(M.shape);
+            print(Glist[i].shape);
+            print(Alist[i].shape);
+
             Ksoln = np.linalg.lstsq(M, Alist[i], rcond=None);
             Kmatr = nvec( Ksoln[0], NkX, NkY );
             
@@ -106,7 +113,10 @@ class KoopmanOperator:
 
     # when asked to print - return operator
     def __str__(self):
-        return "Error: %.3f\n" % self.err + np.array2string( self.K, precision=2, suppress_small=1 );
+        line1 = 'Error: %.3f' % self.err;
+        line2 = ', Shape: (' + str(self.K.shape[0]) + ', ' + str(self.K.shape[1]) + ')\n';
+        line3 = np.array2string( self.K, precision=2, suppress_small=1 );
+        return line1 + line2 + line3;
 
     # lift data from state space to function domain
     def liftData(self, X, X0, obs=None):
