@@ -2,7 +2,13 @@
 
 This repository serves as the testing ground for my research at Boston University (being performed with the intent of being published). This readme currently discusses noteworthy models being evaluated and the results of their tests with the Koopman control equation (KCE). It also serves as a testing ground for my ideas on gradient flow mapping, etc.
 
-<!--
+___
+### **The Koopman Control Equation (KCE)**
+
+The purpose of the KCE is to present the resolution of a multi-faceted observation space into multiple sub-spaces. In other words, the linear properties of the Koopman operator are exploited to break an observation space over multiple variables into multiple sub-operators which can be solved for independently and factored back into the cumulative operator.
+
+<!-- First let us present the KCE as...
+
 $$
     \Psi^+ = \mathcal{K}_x \begin{bmatrix}
         \mathbf{I}_p & 0_{p \times qb} \\
@@ -28,14 +34,33 @@ such that
 $$
     \Psi^+ = \mathcal{K} \Psi.
 $$
--->
 
+If we first define the minimization of residual error in terms of the cumulative operator we state that...
+
+$$
+    \mathcal{K} \gets \min_\mathcal{K} || \Psi^+ - \mathcal{K} \Psi ||
+$$
+
+Where $\mathcal{K}^*$ is the Koopman operator which minimizes the transition $\mathcal{K} : \Psi \rightarrow \Psi^+$. If $\Psi$ can be described as a composition of multiple domains, then we can similarly describe this in terms of the components of $\Psi$.
+
+$$
+    \mathcal{K}^* = \min_\mathcal{K} || \begin{bmatrix}
+        \Psi_x^+ \\
+        \Psi_u^+
+    \end{bmatrix} - \mathcal{K} \begin{bmatrix}
+        \Psi_x \\
+        \Psi_u
+    \end{bmatrix} ||
+$$
+
+The argument presented here  -->
 
 ___
 ### **Notes on Coordinate Descent**
 
-*Coordinate descent* is a method for iteratively minimizing the cost of multiple objective functions with overlapping parameters. Similar to gradient descent, the algorithm is exited when the change in objective function is zero, or falls below some tolerance. We will be working under the assumption that the objective function is continuously differentiable and its gradient can be found through the FDM calculation method (to be developed more in the future).
+*Coordinate descent* is a method for iteratively minimizing the cost of multiple objective functions with overlapping parameters. Similar to gradient descent, the algorithm is exited when the change in objective function is zero, or falls below some tolerance. We will be working under the assumption that the objective function is continuously differentiable and its gradient can be found through the FDM calculation method.
 
+To be developed more in the future.
 
 ___
 ### **Linear System:**
@@ -109,7 +134,6 @@ The Koopman operator for this was formed using the KCE and resulted in good beha
     <img src=./.figures/point.png width=450 />
 </p>
 
-
 ___
 ### **Anchor System:**
 **State/model equations:** linear/holonomic/first-order/discrete
@@ -162,7 +186,6 @@ $$
 $$
 
 In general we work under the assumption that the initial state of the system is known. That said, the $h$ observation list ideally updates this value as time progresses using predictions from the anchor values.
-
 
 ___
 ### **Differential Drive System:**
