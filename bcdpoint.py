@@ -98,15 +98,12 @@ if __name__ == "__main__":
     T = dt;  Nt = round(T/dt) + 1;
     tList = np.array( [ [i*dt for i in range(Nt)] ] );
 
-
     # generate the randomized control policy
     randControl = lambda x: np.random.rand(Nu,1);
-
 
     # generate training data for Kx
     N0 = 1;
     X0 = 20*np.random.rand(Nx,N0) - 10;
-
 
     # construct training data from xData and uData
     xData, uData = data.generate_data(tList, model, X0,
@@ -119,7 +116,6 @@ if __name__ == "__main__":
     XU0 = np.vstack( (X0, np.zeros( (Nu,N0) )) );
     X = np.vstack( (xStack, np.zeros( (Nu, Nt-1) )) );
     Y = np.vstack( (yStack, uStack) );
-
 
     # matrices dimensions
     m = Nu;
