@@ -34,7 +34,7 @@ def dimnData(X, X0, obs=None):
     else:
         N0 = 1;
     
-    Nt = round(Mx/N0) + 1;
+    Nt = round(Mx/N0);
 
     return N0, Nt, Nx, Nk;
 

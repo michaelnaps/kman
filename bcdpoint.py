@@ -95,14 +95,14 @@ def obsXUH(X=None):
 # main executable section
 if __name__ == "__main__":
     # simulation variables
-    T = dt;  Nt = round(T/dt) + 1;
+    T = 10;  Nt = round(T/dt) + 1;
     tList = np.array( [ [i*dt for i in range(Nt)] ] );
 
     # generate the randomized control policy
     randControl = lambda x: np.random.rand(Nu,1);
 
     # generate training data for Kx
-    N0 = 1;
+    N0 = 2;
     X0 = 20*np.random.rand(Nx,N0) - 10;
 
     # construct training data from xData and uData
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     yStack = data.stack_data(xData[:,1:], N0, Nx, Nt-1);
 
     XU0 = np.vstack( (X0, np.zeros( (Nu,N0) )) );
-    X = np.vstack( (xStack, np.zeros( (Nu, Nt-1) )) );
+    X = np.vstack( (xStack, np.zeros( (Nu, N0*(Nt-1)) )) );
     Y = np.vstack( (yStack, uStack) );
 
     # matrices dimensions
