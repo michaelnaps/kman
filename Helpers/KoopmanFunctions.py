@@ -43,17 +43,27 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
     # operator dimensions
     N = len(Klist);
     (N0, Nt, _, _) = dimnData(X, X0);
+    # print( dimnData(X,X0) );
+    Nt = Nt + 1;
 
     # lift data into the appropriate function spaces
     G = [None for i in range(N)];
-    A = G;
+    A = [None for i in range(N)];
     for i, kvar in enumerate(Klist):
         PsiX, _ = kvar.liftData(X, X0);
         PsiY, _ = kvar.liftData(Y, X0, kvar.obsY);
-        G[i] = 1/(N0*(Nt - 1)) * np.sum(PsiX, axis=1)[:,None];
-        A[i] = 1/(N0*(Nt - 1)) * np.sum(PsiY, axis=1)[:,None];
+
+        # print('-----------')
+        # print(PsiX);
+        # print(PsiY);
+
+        G[i] = 1/(N0*(Nt - 1)) * np.sum( PsiX, axis=1 )[:,None];
+        A[i] = 1/(N0*(Nt - 1)) * np.sum( PsiY, axis=1 )[:,None];
         # G[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiX.T);
         # A[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiY.T);
+
+    # print(G);
+    # print(A);
 
     # error loop for BCD
     dK = 1;  count = 0;
@@ -63,14 +73,14 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
             NkX = Klist[i].metaX['Nk'];
             NkY = Klist[i].metaY['Nk'];
 
-            M = f(Klist, G[i]);
-            Ksoln = np.linalg.lstsq(M, A[i], rcond=None);
+            Gm = f( Klist, G[i] );
+            Ksoln = np.linalg.lstsq( Gm, A[i], rcond=None );
             Kmatr = nvec( Ksoln[0], NkX, NkY );
             
-            dK += np.linalg.norm(Klist[i].K - Kmatr);
+            dK += np.linalg.norm( Klist[i].K - Kmatr );
             Klist[i].K = Kmatr;
         count += 1
-        print(count, ':', dK);
+        # print(count, ':', dK);
 
     # calculate the resulting error for each operator
     for i in range(N):
@@ -123,24 +133,11 @@ class KoopmanOperator:
         (N0, Nt, Nx, Nk) = dimnData(X, X0, obs);
 
         # observation initialization
-        Psi = np.empty( (Nk, N0*(Nt-1)) );
+        Psi = np.empty( (Nk, N0*Nt) );
 
-        # loop variables
-        i = 0;
-        j = 0;
-
-        for n in range(N0):
-
-            for m in range(Nt-1):
-
-                Psi_new = obs(X[:,i,None]);
-                Psi[:,j] = Psi_new.reshape(Nk,);
-
-                i += 1;
-                j += 1;
-
-            i += 1;
-            j = n*(Nt - 1);
+        for n in range(N0*Nt):
+            Psi_new = obs(X[:,n,None]);
+            Psi[:,n] = Psi_new.reshape(Nk,);
 
         return Psi, Nk;
 

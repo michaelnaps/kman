@@ -87,8 +87,7 @@ if __name__ == "__main__":
     kxvar = kman.KoopmanOperator(obs);
     Kx = kxvar.edmd(X, Y, XU0);
 
-    print('Kx:', Kx.shape, kxvar.err)
-    print(Kx);
+    print('Kx:', kxvar);
     print('\n');
 
 
@@ -108,8 +107,7 @@ if __name__ == "__main__":
     kuvar = kman.KoopmanOperator(obs);
     Ku = kuvar.edmd(Xu, Yu, XU0)
 
-    print('Ku:', Ku.shape, kuvar.err)
-    print(Ku);
+    print('Ku:', kuvar);
     print('\n');
 
 

@@ -95,27 +95,45 @@ def obsXUH(X=None):
 # main executable section
 if __name__ == "__main__":
     # simulation variables
-    T = 10;  Nt = round(T/dt) + 1;
+    T = 1;  Nt = round(T/dt) + 1;
     tList = np.array( [ [i*dt for i in range(Nt)] ] );
+    # print(tList);
 
     # generate the randomized control policy
     randControl = lambda x: np.random.rand(Nu,1);
 
     # generate training data for Kx
-    N0 = 2;
-    X0 = 20*np.random.rand(Nx,N0) - 10;
+    N0 = 100;
+    X0 = 2*np.random.rand(Nx,N0) - 1;
 
     # construct training data from xData and uData
     xData, uData = data.generate_data(tList, model, X0,
         control=control, Nu=Nu);
 
-    uStack = data.stack_data(uData, N0, Nu, Nt-1);
-    xStack = data.stack_data(xData[:,:-1], N0, Nx, Nt-1);
-    yStack = data.stack_data(xData[:,1:], N0, Nx, Nt-1);
+    # print(xData.shape);
+    # print(xData);
+    # print(uData.shape);
+    # print(uData);
 
     XU0 = np.vstack( (X0, np.zeros( (Nu,N0) )) );
+    xStack = data.stack_data(xData[:,:-1], N0, Nx, Nt-1);
+    yStack = data.stack_data(xData[:,1:], N0, Nx, Nt-1);
+    uStack = data.stack_data(uData, N0, Nu, Nt-1);
+
+    # print( dimnData(xStack, XU0) );
+    # print(xStack);
+    # print( dimnData(yStack, XU0) );
+    # print(yStack);
+    # print( dimnData(uStack, XU0) );
+    # print(uStack);
+
     X = np.vstack( (xStack, np.zeros( (Nu, N0*(Nt-1)) )) );
     Y = np.vstack( (yStack, uStack) );
+
+    # print( dimnData(X, XU0) );
+    # print(X);
+    # print( dimnData(Y, XU0) );
+    # print(Y);
 
     # matrices dimensions
     m = Nu;
@@ -141,7 +159,7 @@ if __name__ == "__main__":
     # initialize operator class (K0 is identity)
     kuvar = KoopmanOperator(obsH);
     kxvar = KoopmanOperator(obsXUH);
-    kxvar, kuvar = bcd( (kxvar,kuvar), (Mx,Mu), X, Y, X0 );
+    kxvar, kuvar = bcd( (kxvar,kuvar), (Mx,Mu), X, Y, XU0 );
 
     K = kxvar.K@Kblock(kuvar.K);
 
