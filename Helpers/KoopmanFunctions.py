@@ -57,37 +57,36 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
         # print(PsiX);
         # print(PsiY);
 
-        G[i] = 1/(N0*(Nt - 1)) * np.sum( PsiX, axis=1 )[:,None];
-        A[i] = 1/(N0*(Nt - 1)) * np.sum( PsiY, axis=1 )[:,None];
-        # G[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiX.T);
-        # A[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiY.T);
-
-    # print(G);
-    # print(A);
+        # G[i] = 1/(N0*(Nt - 1)) * np.sum( PsiX, axis=1 )[:,None];
+        # A[i] = 1/(N0*(Nt - 1)) * np.sum( PsiY, axis=1 )[:,None];
+        G[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiX.T);
+        A[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiY.T);
 
     # error loop for BCD
     dK = 1;  count = 0;
     while dK > TOL:
         dK = 0;
         for i, f in enumerate(flist):
+            Kcopy = Klist[i].K;
             NkX = Klist[i].metaX['Nk'];
             NkY = Klist[i].metaY['Nk'];
 
-            Gm = f( Klist, G[i] );
-            Ksoln = np.linalg.lstsq( Gm, A[i], rcond=None );
-            Kmatr = nvec( Ksoln[0], NkX, NkY );
-            
-            dK += np.linalg.norm( Klist[i].K - Kmatr );
-            Klist[i].K = Kmatr;
+            if f is None:
+                M = G[i];
+            else:
+                M = f(Klist, G[i]);
+
+            Klist[i].edmd(X, Y, X0, A=A[i], G=M);
+
+            # print('-------------');
+            # print(Kcopy);
+            # print(Klist[i].K)
+
+            dK += np.linalg.norm( Klist[i].K - Kcopy );
         count += 1
-        # print(count, ':', dK);
+        print(count, ': %.5f' % dK);
 
-    # calculate the resulting error for each operator
-    for i in range(N):
-        Klist[i].err = Klist[i].resError(X, Y, X0);
-
-    Kl = Klist;
-    return Kl;
+    return Klist;
 
 # Koopman Operator class description
 class KoopmanOperator:
@@ -160,7 +159,7 @@ class KoopmanOperator:
         return err;
 
     # extended dynamical mode decomposition (EDMD)
-    def edmd(self, X, Y, X0, eps=None):
+    def edmd(self, X, Y, X0, A=None, G=None, eps=None):
         # tolerance variable
         TOL = 1e-12;
 
@@ -173,8 +172,10 @@ class KoopmanOperator:
         # create matrices for least squares
         #   K = inv(G)*A
         # (according to abraham, model-based)
-        G = 1/(N0*(Nt - 1)) * (PsiX @ PsiX.T);
-        A = 1/(N0*(Nt - 1)) * (PsiX @ PsiY.T);
+        if G is None:
+            G = 1/(N0*(Nt - 1)) * (PsiX @ PsiX.T);
+        if A is None:
+            A = 1/(N0*(Nt - 1)) * (PsiX @ PsiY.T);
 
         (U, S, V) = np.linalg.svd(G);
 

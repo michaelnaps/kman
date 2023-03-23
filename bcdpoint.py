@@ -110,30 +110,13 @@ if __name__ == "__main__":
     xData, uData = data.generate_data(tList, model, X0,
         control=control, Nu=Nu);
 
-    # print(xData.shape);
-    # print(xData);
-    # print(uData.shape);
-    # print(uData);
-
     XU0 = np.vstack( (X0, np.zeros( (Nu,N0) )) );
     xStack = data.stack_data(xData[:,:-1], N0, Nx, Nt-1);
     yStack = data.stack_data(xData[:,1:], N0, Nx, Nt-1);
     uStack = data.stack_data(uData, N0, Nu, Nt-1);
 
-    # print( dimnData(xStack, XU0) );
-    # print(xStack);
-    # print( dimnData(yStack, XU0) );
-    # print(yStack);
-    # print( dimnData(uStack, XU0) );
-    # print(uStack);
-
     X = np.vstack( (xStack, np.zeros( (Nu, N0*(Nt-1)) )) );
     Y = np.vstack( (yStack, uStack) );
-
-    # print( dimnData(X, XU0) );
-    # print(X);
-    # print( dimnData(Y, XU0) );
-    # print(Y);
 
     # matrices dimensions
     m = Nu;
@@ -148,18 +131,15 @@ if __name__ == "__main__":
             np.hstack( (np.zeros( (b*q, p) ), np.kron(np.eye(q), K)) )
         ) );
         return Kb;
+
     def Mx(Klist, G):
-        # M = np.kron( G.T@Klist[1].K.T, np.eye(p+b*q) );
-        M = np.kron( G.T@Kblock(Klist[1].K).T, np.eye(p+b*q) );
-        return M;
-    def Mu(Klist, G):
-        M = np.kron( G.T, np.eye(b) );
+        M = Kblock( Klist[0].K )@G;
         return M;
 
     # initialize operator class (K0 is identity)
     kuvar = KoopmanOperator(obsH);
     kxvar = KoopmanOperator(obsXUH);
-    kxvar, kuvar = bcd( (kxvar,kuvar), (Mx,Mu), X, Y, XU0 );
+    kuvar, kxvar = bcd( (kuvar,kxvar), (None,Mx), X, Y, XU0 );
 
     K = kxvar.K@Kblock(kuvar.K);
 
