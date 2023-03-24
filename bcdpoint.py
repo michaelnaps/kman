@@ -103,7 +103,7 @@ if __name__ == "__main__":
     randControl = lambda x: np.random.rand(Nu,1);
 
     # generate training data for Kx
-    N0 = 100;
+    N0 = 2;
     X0 = 2*np.random.rand(Nx,N0) - 1;
 
     # construct training data from xData and uData

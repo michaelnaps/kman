@@ -49,18 +49,13 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
     # lift data into the appropriate function spaces
     G = [None for i in range(N)];
     A = [None for i in range(N)];
+    PsiX = [None for i in range(N)];
+    PsiY = [None for i in range(N)];
     for i, kvar in enumerate(Klist):
-        PsiX, _ = kvar.liftData(X, X0);
-        PsiY, _ = kvar.liftData(Y, X0, kvar.obsY);
-
-        # print('-----------')
-        # print(PsiX);
-        # print(PsiY);
-
-        # G[i] = 1/(N0*(Nt - 1)) * np.sum( PsiX, axis=1 )[:,None];
-        # A[i] = 1/(N0*(Nt - 1)) * np.sum( PsiY, axis=1 )[:,None];
-        G[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiX.T);
-        A[i] = 1/(N0*(Nt - 1)) * (PsiX @ PsiY.T);
+        PsiX[i], _ = kvar.liftData(X, X0);
+        PsiY[i], _ = kvar.liftData(Y, X0, kvar.obsY);
+        G[i] = 1/(N0*(Nt - 1)) * (PsiX[i] @ PsiX[i].T);
+        A[i] = 1/(N0*(Nt - 1)) * (PsiX[i] @ PsiY[i].T);
 
     # error loop for BCD
     dK = 1;  count = 0;
@@ -117,7 +112,7 @@ class KoopmanOperator:
 
     # when asked to print - return operator
     def __str__(self):
-        line1 = 'Error: %.3f' % self.err;
+        line1 = 'Error: %.3e' % self.err;
         line2 = ', Shape: (' + str(self.K.shape[0]) + ', ' + str(self.K.shape[1]) + ')\n';
         line3 = np.array2string( self.K, precision=2, suppress_small=1 );
         return line1 + line2 + line3;
