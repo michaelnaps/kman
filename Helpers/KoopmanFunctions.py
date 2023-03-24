@@ -68,8 +68,6 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
         dK = 0;
         for i, f in enumerate(flist):
             Kcopy = Klist[i].K;
-            NkX = Klist[i].metaX['Nk'];
-            NkY = Klist[i].metaY['Nk'];
 
             if f is None:
                 M = G[i];
