@@ -82,7 +82,7 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
 
             dK += np.linalg.norm( Klist[i].K - Kcopy );
         count += 1
-        print(count, ': %.5f' % dK);
+        print(count, ': %.5e' % dK);
 
     return Klist;
 
