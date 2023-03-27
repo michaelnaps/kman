@@ -132,9 +132,19 @@ if __name__ == "__main__":
         ) );
         return Kb;
 
-    def Mx(Klist, G):
-        M = Kblock( Klist[0].K )@G;
-        return M;
+    def Mx(Klist, PsiX, PsiY):
+        N0, Nt, _, _ = dimnData(X, XU0);
+        A = 1/(N0*Nt) * (PsiX @ PsiY.T);
+
+        Kb = Kblock( Klist[0].K );
+
+        Nk = PsiX.shape[0];
+        PsiShift = np.zeros( PsiX.shape );
+        for i in range(Nt):
+            PsiShift[:,i] = (Kb@PsiX[:,i,None]).reshape(Nk,);
+
+        G = 1/(N0*Nt) * (PsiShift @ PsiShift.T);
+        return A, G;
 
     # initialize operator class (K0 is identity)
     kuvar = KoopmanOperator(obsH);

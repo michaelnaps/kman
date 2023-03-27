@@ -44,7 +44,6 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
     N = len(Klist);
     (N0, Nt, _, _) = dimnData(X, X0);
     # print( dimnData(X,X0) );
-    Nt = Nt + 1;
 
     # lift data into the appropriate function spaces
     G = [None for i in range(N)];
@@ -54,8 +53,9 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
     for i, kvar in enumerate(Klist):
         PsiX[i], _ = kvar.liftData(X, X0);
         PsiY[i], _ = kvar.liftData(Y, X0, kvar.obsY);
-        G[i] = 1/(N0*(Nt - 1)) * (PsiX[i] @ PsiX[i].T);
-        A[i] = 1/(N0*(Nt - 1)) * (PsiX[i] @ PsiY[i].T);
+
+        if flist[i] is None:
+            Klist[i].edmd(X, Y, X0);
 
     # error loop for BCD
     dK = 1;  count = 0;
@@ -64,16 +64,14 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
         for i, f in enumerate(flist):
             Kcopy = Klist[i].K;
 
-            if f is None:
-                M = G[i];
-            else:
-                M = f(Klist, G[i]);
+            if f is not None:
+                Am, Gm = f(Klist, PsiX[i], PsiY[i]);
+                Klist[i].edmd(X, Y, X0, A=Am, G=Gm);
 
-            Klist[i].edmd(X, Y, X0, A=A[i], G=M);
+            # print(Am);
+            # print(Gm);
 
-            # print('-------------');
-            # print(Kcopy);
-            # print(Klist[i].K)
+            # print(Klist[i]);
 
             dK += np.linalg.norm( Klist[i].K - Kcopy );
         count += 1
