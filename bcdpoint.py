@@ -149,12 +149,15 @@ if __name__ == "__main__":
     # initialize operator class (K0 is identity)
     kuvar = KoopmanOperator(obsH);
     kxvar = KoopmanOperator(obsXUH);
-    kuvar, kxvar = bcd( (kuvar,kxvar), (None,Mx), X, Y, XU0 );
+    
+    klist = (kuvar, kxvar);
+    mlist = (None, Mx);
+    klist = bcd( klist, mlist, X, Y, XU0 );
 
     K = kxvar.K@Kblock(kuvar.K);
 
-    print(kxvar, '\n');
-    print(kuvar, '\n');
+    for kvar in klist:
+        print(kvar, '\n');
     print(K);
 
 

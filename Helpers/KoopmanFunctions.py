@@ -39,9 +39,9 @@ def dimnData(X, X0, obs=None):
     return N0, Nt, Nx, Nk;
 
 # block coordinate descent (CD)
-def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
+def bcd(klist, mlist, X, Y, X0, TOL=1e-3):
     # operator dimensions
-    N = len(Klist);
+    N = len(klist);
     (N0, Nt, _, _) = dimnData(X, X0);
     # print( dimnData(X,X0) );
 
@@ -50,34 +50,34 @@ def bcd(Klist, flist, X, Y, X0, TOL=1e-3):
     A = [None for i in range(N)];
     PsiX = [None for i in range(N)];
     PsiY = [None for i in range(N)];
-    for i, kvar in enumerate(Klist):
-        PsiX[i], _ = kvar.liftData(X, X0);
-        PsiY[i], _ = kvar.liftData(Y, X0, kvar.obsY);
+    for i, M in enumerate(mlist):
+        PsiX[i], _ = klist[i].liftData(X, X0);
+        PsiY[i], _ = klist[i].liftData(Y, X0, klist[i].obsY);
 
-        if flist[i] is None:
-            Klist[i].edmd(X, Y, X0);
+        if M is None:
+            klist[i].edmd(X, Y, X0);
 
     # error loop for BCD
     dK = 1;  count = 0;
     while dK > TOL:
         dK = 0;
-        for i, f in enumerate(flist):
-            Kcopy = Klist[i].K;
+        for i, M in enumerate(mlist):
+            kcopy = klist[i].K;
 
-            if f is not None:
-                Am, Gm = f(Klist, PsiX[i], PsiY[i]);
-                Klist[i].edmd(X, Y, X0, A=Am, G=Gm);
+            if M is not None:
+                Am, Gm = M(klist, PsiX[i], PsiY[i]);
+                klist[i].edmd(X, Y, X0, A=Am, G=Gm);
 
             # print(Am);
             # print(Gm);
 
             # print(Klist[i]);
 
-            dK += np.linalg.norm( Klist[i].K - Kcopy );
+            dK += np.linalg.norm( klist[i].K - kcopy );
         count += 1
         print(count, ': %.5e' % dK);
 
-    return Klist;
+    return klist;
 
 # Koopman Operator class description
 class KoopmanOperator:
