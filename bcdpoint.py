@@ -6,7 +6,7 @@ import Helpers.DataFunctions as data
 
 
 # set global output setting
-np.set_printoptions(precision=3, suppress=True);
+np.set_printoptions(precision=2, suppress=True);
 
 
 # hyper paramter(s)
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     randControl = lambda x: np.random.rand(Nu,1);
 
     # generate training data for Kx
-    N0 = 2;
+    N0 = 10;
     X0 = 2*np.random.rand(Nx,N0) - 1;
 
     # construct training data from xData and uData
@@ -139,11 +139,17 @@ if __name__ == "__main__":
         Kb = Kblock( Klist[0].K );
 
         Nk = PsiX.shape[0];
-        PsiShift = np.zeros( PsiX.shape );
+        PsiShiftX = np.zeros( PsiX.shape );
         for i in range(Nt):
-            PsiShift[:,i] = (Kb@PsiX[:,i,None]).reshape(Nk,);
+            PsiShiftX[:,i] = (Kb@PsiX[:,i,None]).reshape(Nk,);
 
-        G = 1/(N0*Nt) * (PsiShift @ PsiShift.T);
+            # print('________________');
+            # print(PsiX[:,i]);
+            # print(PsiShiftX[:,i]);
+            # print(PsiY[:,i]);
+
+        G = 1/(N0*Nt) * (PsiShiftX @ PsiShiftX.T);
+
         return A, G;
 
     # initialize operator class (K0 is identity)
@@ -154,11 +160,11 @@ if __name__ == "__main__":
     mlist = (None, Mx);
     klist = bcd( klist, mlist, X, Y, XU0 );
 
-    K = kxvar.K@Kblock(kuvar.K);
+    Kvar = KoopmanOperator(obsXUH, K=kxvar.K@Kblock(kuvar.K));
 
     for kvar in klist:
         print(kvar, '\n');
-    print(K);
+    print(Kvar);
 
 
     # # new operator model equation

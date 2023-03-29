@@ -46,13 +46,17 @@ def bcd(klist, mlist, X, Y, X0, TOL=1e-3):
     # print( dimnData(X,X0) );
 
     # lift data into the appropriate function spaces
-    G = [None for i in range(N)];
-    A = [None for i in range(N)];
     PsiX = [None for i in range(N)];
     PsiY = [None for i in range(N)];
     for i, M in enumerate(mlist):
         PsiX[i], _ = klist[i].liftData(X, X0);
         PsiY[i], _ = klist[i].liftData(Y, X0, klist[i].obsY);
+
+        # print('_____');
+        # print(PsiX[i]);
+        # print(PsiY[i]);
+
+        # if i != 0:  return;
 
         if M is None:
             klist[i].edmd(X, Y, X0);
@@ -82,7 +86,7 @@ def bcd(klist, mlist, X, Y, X0, TOL=1e-3):
 # Koopman Operator class description
 class KoopmanOperator:
     # initialize class
-    def __init__(self, obsX, obsY=None, params=None):
+    def __init__(self, obsX, obsY=None, params=None, K=None):
         # function parameters
         if params is None:
             self.obsX = obsX;
@@ -100,7 +104,12 @@ class KoopmanOperator:
         # Koopman parameters
         self.metaX = self.obsX();
         self.metaY = self.obsY();
-        self.K = np.eye(self.metaY['Nk'], self.metaX['Nk']);
+
+        if K is None:
+            self.K = np.eye(self.metaY['Nk'], self.metaX['Nk']);
+        else:
+            self.K = K;
+        
         self.eps = None;
         self.params = params;
 
@@ -156,17 +165,19 @@ class KoopmanOperator:
 
         # evaluate for observable functions over X and Y
         (N0, Nt, Nx, _) = dimnData(X, X0);
-        PsiX, NkX = self.liftData(X, X0);
-        PsiY, NkY = self.liftData(Y, X0, self.obsY);
+
+        if A is None and G is None:
+            PsiX, NkX = self.liftData(X, X0);
+            PsiY, NkY = self.liftData(Y, X0, self.obsY);
 
         # perform EDMD
         # create matrices for least squares
         #   K = inv(G)*A
         # (according to abraham, model-based)
         if G is None:
-            G = 1/(N0*(Nt - 1)) * (PsiX @ PsiX.T);
+            G = 1/(N0*Nt) * (PsiX @ PsiX.T);
         if A is None:
-            A = 1/(N0*(Nt - 1)) * (PsiX @ PsiY.T);
+            A = 1/(N0*Nt) * (PsiX @ PsiY.T);
 
         (U, S, V) = np.linalg.svd(G);
 
