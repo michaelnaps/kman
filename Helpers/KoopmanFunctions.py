@@ -51,6 +51,7 @@ def bcd(klist, mlist, X, Y, X0, TOL=1e-3):
     for i, M in enumerate(mlist):
         if M is None:
             klist[i].edmd(X, Y, X0);
+            print(klist[i]);
         else:
             PsiX[i], _ = klist[i].liftData(X, X0);
             PsiY[i], _ = klist[i].liftData(Y, X0, klist[i].obsY);
@@ -66,6 +67,8 @@ def bcd(klist, mlist, X, Y, X0, TOL=1e-3):
                 Gm, Am = M(klist, PsiX[i], PsiY[i]);
                 klist[i].edmd(X, Y, X0, G=Gm, A=Am);
 
+            print(kcopy.shape)
+            print(klist[i].K.shape)
             dK += np.linalg.norm( klist[i].K - kcopy );
         count += 1
         print(count, ': %.5e' % dK);
@@ -98,7 +101,7 @@ class KoopmanOperator:
             self.K = np.eye(self.metaY['Nk'], self.metaX['Nk']);
         else:
             self.K = K;
-        
+
         self.eps = None;
         self.params = params;
 
@@ -130,7 +133,7 @@ class KoopmanOperator:
         return Psi, Nk;
 
     # residual error over supplied data set
-    def resError(self, X, Y, X0, K=None):
+    def resError(self, X, Y, X0, K=None, shift=None):
         # set operator
         if K is None:
             K = self.K;
@@ -186,7 +189,6 @@ class KoopmanOperator:
         K = A.T @ (U @ Sinv @ V.T);
 
         self.K = K;
-        
         self.resError(X, Y, X0);
         self.ind = ind;
 

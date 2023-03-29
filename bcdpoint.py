@@ -63,14 +63,10 @@ def obsU(X=None):
 
 def obsXU(X=None):  # proabably don't need
     if X is None:
-        meta = {'Nk':obsX()['Nk']+obsH()['Nk']};
+        meta = {'Nk':Nx+Nu};
         return meta;
-
-    PsiX = obsX(X);
-    PsiU = [1];
-    Psi = np.vstack( (PsiX, PsiU) );
-
-    return Psi;
+    PsiXU = X;
+    return PsiXU;
 
 def obsH(X=None):
     if X is None:
@@ -128,7 +124,7 @@ if __name__ == "__main__":
     def Kblock(K):
         Kb = np.vstack( (
             np.hstack( (np.eye(p), np.zeros( (p, b*q) )) ),
-            np.hstack( (np.zeros( (b*q, p) ), np.kron(np.eye(q), K)) )
+            np.hstack( (np.zeros( (m, p) ), np.kron(np.eye(q), K[-m:,:])) )
         ) );
         return Kb;
 
@@ -137,31 +133,37 @@ if __name__ == "__main__":
 
         Kb = Kblock( Klist[0].K );
 
-        Nk = Klist[1].metaX['Nk'];
+        Nk = Klist[0].metaX['Nk'];
         PsiShiftX = np.zeros( (Nk, N0*Nt) );
         for i in range(Nt):
             PsiShiftX[:,i] = (Kb@PsiX[:,i,None]).reshape(Nk,);
 
-            # print('________________');
-            # print(PsiX[:,i]);
-            # print(PsiShiftX[:,i]);
-            # print(PsiY[:,i]);
+            print('________________');
+            print('      x:', PsiX[:,i]);
+            print('x-shift:', PsiShiftX[:,i]);
+            print('      y:', PsiY[:,i]);
 
         G = 1/(N0*Nt) * (PsiShiftX @ PsiShiftX.T);
         A = 1/(N0*Nt) * (PsiShiftX @ PsiY.T);
+
+        print(G);
+        print(A);
+        print(np.linalg.norm(G - A))
 
         return G, A;
 
     # initialize operator class (K0 is identity)
     kuvar = KoopmanOperator(obsH);
-    kxvar = KoopmanOperator(obsXUH);
+    
+    Kxinit = np.eye( obsXU()['Nk'], obsXU()['Nk'] );
+    kxvar = KoopmanOperator(obsXUH, obsXU, K=Kxinit);
     
     klist = (kuvar, kxvar);
     mlist = (None, Mx);
     klist = bcd( klist, mlist, X, Y, XU0 );
 
     # initialize and check cumulative Koopman operator
-    Kvar = KoopmanOperator(obsXUH, K=kxvar.K@Kblock(kuvar.K));
+    Kvar = KoopmanOperator(obsXUH, obsXU, K=kxvar.K@Kblock(kuvar.K));
     Kvar.resError(X, Y, XU0);
 
     for kvar in klist:
