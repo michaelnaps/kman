@@ -50,7 +50,6 @@ def bcd(klist, flist, X, Y, X0, TOL=1e-3):
     for i, f in enumerate(flist):
         if f is None:
             klist[i].edmd(X, Y, X0);
-            print(klist[i]);
         else:
             PsiX[i], _ = klist[i].liftData(X, X0);
             PsiY[i], _ = klist[i].liftData(Y, X0, klist[i].obsY);
@@ -66,8 +65,6 @@ def bcd(klist, flist, X, Y, X0, TOL=1e-3):
                 M = f(klist);
                 klist[i].setShiftMatrix(M);
                 klist[i].edmd(X, Y, X0);
-
-            print(klist[i].K.shape, kcopy.shape);
 
             dK += np.linalg.norm( klist[i].K - kcopy );
         count += 1
@@ -104,7 +101,6 @@ class KoopmanOperator:
 
         if K is None:
             self.K = np.eye( self.metaY['Nk'], self.M.shape[0] );
-            print("K initial shape:", self.K.shape);
         else:
             self.K = K;
 
@@ -161,7 +157,6 @@ class KoopmanOperator:
         # calculate residual error
         err = 0;
         for n in range(N0*(Nt-1)):
-            print(K.shape, PsiX[:,n,None].shape);
             err += np.linalg.norm(PsiY[:,n,None] - K@PsiX[:,n,None]);
 
         self.err = err;
