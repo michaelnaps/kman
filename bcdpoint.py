@@ -158,7 +158,7 @@ if __name__ == "__main__":
     kModel = lambda Psi: Kvar.K@obsXUH(Psi);
 
     # data for testing results
-    N0n = 50;
+    N0n = 10;
     X0n = 20*np.random.rand(Nx,N0n) - 10;
     XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
     

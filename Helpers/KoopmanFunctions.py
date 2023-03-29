@@ -62,7 +62,7 @@ def bcd(klist, flist, X, Y, X0, TOL=1e-3):
             kcopy = klist[i].K;
 
             if f is not None:
-                M = f(klist);
+                M = f(klist[:i]);
                 klist[i].setShiftMatrix(M);
                 klist[i].edmd(X, Y, X0);
 
