@@ -128,35 +128,13 @@ if __name__ == "__main__":
         ) );
         return Kb;
 
-    def Mx(Klist, PsiX, PsiY):
-        N0, Nt, _, _ = dimnData(X, XU0);
-
-        Kb = Kblock( Klist[0].K );
-
-        Nk = Klist[0].metaX['Nk'];
-        PsiShiftX = np.zeros( (Nk, N0*Nt) );
-        for i in range(Nt):
-            PsiShiftX[:,i] = (Kb@PsiX[:,i,None]).reshape(Nk,);
-
-            print('________________');
-            print('      x:', PsiX[:,i]);
-            print('x-shift:', PsiShiftX[:,i]);
-            print('      y:', PsiY[:,i]);
-
-        G = 1/(N0*Nt) * (PsiShiftX @ PsiShiftX.T);
-        A = 1/(N0*Nt) * (PsiShiftX @ PsiY.T);
-
-        print(G);
-        print(A);
-        print(np.linalg.norm(G - A))
-
-        return G, A;
+    def Mx(Klist):
+        M = Kblock( Klist[0].K );
+        return M;
 
     # initialize operator class (K0 is identity)
     kuvar = KoopmanOperator(obsH);
-    
-    Kxinit = np.eye( obsXU()['Nk'], obsXU()['Nk'] );
-    kxvar = KoopmanOperator(obsXUH, obsXU, K=Kxinit);
+    kxvar = KoopmanOperator(obsXUH, obsXU, M=Mx( (kuvar, None) ));
     
     klist = (kuvar, kxvar);
     mlist = (None, Mx);

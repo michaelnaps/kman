@@ -39,17 +39,16 @@ def dimnData(X, X0, obs=None):
     return N0, Nt, Nx, Nk;
 
 # block coordinate descent (CD)
-def bcd(klist, mlist, X, Y, X0, TOL=1e-3):
+def bcd(klist, flist, X, Y, X0, TOL=1e-3):
     # operator dimensions
     N = len(klist);
     (N0, Nt, _, _) = dimnData(X, X0);
-    # print( dimnData(X,X0) );
 
     # lift data into the appropriate function spaces
     PsiX = [None for i in range(N)];
     PsiY = [None for i in range(N)];
-    for i, M in enumerate(mlist):
-        if M is None:
+    for i, f in enumerate(flist):
+        if f is None:
             klist[i].edmd(X, Y, X0);
             print(klist[i]);
         else:
@@ -60,15 +59,16 @@ def bcd(klist, mlist, X, Y, X0, TOL=1e-3):
     dK = 1;  count = 0;
     while dK > TOL:
         dK = 0;
-        for i, M in enumerate(mlist):
+        for i, f in enumerate(flist):
             kcopy = klist[i].K;
 
-            if M is not None:
-                Gm, Am = M(klist, PsiX[i], PsiY[i]);
-                klist[i].edmd(X, Y, X0, G=Gm, A=Am);
+            if f is not None:
+                M = f(klist);
+                klist[i].setShiftMatrix(M);
+                klist[i].edmd(X, Y, X0);
 
-            print(kcopy.shape)
-            print(klist[i].K.shape)
+            print(klist[i].K.shape, kcopy.shape);
+
             dK += np.linalg.norm( klist[i].K - kcopy );
         count += 1
         print(count, ': %.5e' % dK);
@@ -78,7 +78,7 @@ def bcd(klist, mlist, X, Y, X0, TOL=1e-3):
 # Koopman Operator class description
 class KoopmanOperator:
     # initialize class
-    def __init__(self, obsX, obsY=None, params=None, K=None):
+    def __init__(self, obsX, obsY=None, params=None, M=None, K=None):
         # function parameters
         if params is None:
             self.obsX = obsX;
@@ -97,8 +97,14 @@ class KoopmanOperator:
         self.metaX = self.obsX();
         self.metaY = self.obsY();
 
+        if M is None:
+            self.M = np.eye( self.metaX['Nk'] );
+        else:
+            self.M = M;
+
         if K is None:
-            self.K = np.eye(self.metaY['Nk'], self.metaX['Nk']);
+            self.K = np.eye( self.metaY['Nk'], self.M.shape[0] );
+            print("K initial shape:", self.K.shape);
         else:
             self.K = K;
 
@@ -116,24 +122,33 @@ class KoopmanOperator:
         line3 = np.array2string( self.K, precision=2, suppress_small=1 );
         return line1 + line2 + line3;
 
+    # set the shift matrix after init
+    def setShiftMatrix(self, M):
+        self.M = M;
+        return self;
+
     # lift data from state space to function domain
     def liftData(self, X, X0, obs=None):
         # default observation is obsX
         if obs is None:
+            M = self.M;
             obs = self.obsX;
+        else:
+            M = np.eye( obs()['Nk'] )
         (N0, Nt, Nx, Nk) = dimnData(X, X0, obs);
 
         # observation initialization
-        Psi = np.empty( (Nk, N0*Nt) );
+        NkM = M.shape[0];
+        Psi = np.empty( (NkM, N0*Nt) );
 
         for n in range(N0*Nt):
-            Psi_new = obs(X[:,n,None]);
-            Psi[:,n] = Psi_new.reshape(Nk,);
+            Psi_new = M@obs(X[:,n,None]);
+            Psi[:,n] = Psi_new.reshape(NkM,);
 
-        return Psi, Nk;
+        return Psi, NkM;
 
     # residual error over supplied data set
-    def resError(self, X, Y, X0, K=None, shift=None):
+    def resError(self, X, Y, X0, K=None):
         # set operator
         if K is None:
             K = self.K;
@@ -146,7 +161,8 @@ class KoopmanOperator:
         # calculate residual error
         err = 0;
         for n in range(N0*(Nt-1)):
-            err += np.linalg.norm(PsiY[:,n] - K@PsiX[:,n]);
+            print(K.shape, PsiX[:,n,None].shape);
+            err += np.linalg.norm(PsiY[:,n,None] - K@PsiX[:,n,None]);
 
         self.err = err;
         return err;
