@@ -76,13 +76,16 @@ def obsH(X=None):
     return PsiH;
 
 def obsXUH(X=None):
+    NkX = obsX()['Nk'];
+    NkU = 1;
+    NkH = obsH()['Nk'];
     if X is None:
-        meta = {'Nk':obsX()['Nk']+1*obsH()['Nk']};
+        meta = {'Nk':NkX+NkU*NkH};
         return meta;
     
-    PsiX = obsX(X);
+    PsiX = obsX(X).reshape(NkX,1);
     PsiU = [1];
-    PsiH = obsH(X);
+    PsiH = obsH(X).reshape(NkH,1);
     
     Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
     return Psi;
@@ -91,7 +94,7 @@ def obsXUH(X=None):
 # main executable section
 if __name__ == "__main__":
     # simulation variables
-    T = 1;  Nt = round(T/dt) + 1;
+    T = 10;  Nt = round(T/dt) + 1;
     tList = np.array( [ [i*dt for i in range(Nt)] ] );
     # print(tList);
 
@@ -149,29 +152,31 @@ if __name__ == "__main__":
     print(Kvar);
 
 
-    # # new operator model equation
-    # kModel = lambda Psi: K@Psi;
+    # new operator model equation
+    NkXU = obsXU()['Nk'];
+    NkXUH = obsXUH()['Nk'];
+    kModel = lambda Psi: Kvar.K@obsXUH(Psi);
 
-    # # data for testing results
-    # N0n = 25;
-    # X0n = 20*np.random.rand(Nx,N0n) - 10;
-    # XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
+    # data for testing results
+    N0n = 25;
+    X0n = 20*np.random.rand(Nx,N0n) - 10;
+    XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
     
-    # Psi0 = np.empty( (Nk,N0n) );
-    # for i, xu in enumerate(XU0n.T):
-    #     Psi0[:,i] = obs( xu.reshape(Nx+Nu,1) ).reshape(Nk,);
+    Psi0 = np.empty( (NkXU,N0n) );
+    for i, xu in enumerate(XU0n.T):
+        Psi0[:,i] = obsXU( xu.reshape(Nx+Nu,1) ).reshape(NkXU,);
 
-    # xTest, uTest = data.generate_data(tList, model, X0n,
-    #     control=control, Nu=Nu);
-    # PsiTest, _ = data.generate_data(tList, kModel, Psi0);
+    xTest, uTest = data.generate_data(tList, model, X0n,
+        control=control, Nu=Nu);
+    PsiTest, _ = data.generate_data(tList, kModel, Psi0);
 
-    # # plot results
-    # xPsi = np.empty( (N0n*Nx, Nt) );
-    # i = 0;  j = 0;
-    # for k in range(N0n):
-    #     xPsi[i:i+Nx,:] = PsiTest[j:j+Nx,:];
-    #     i += Nx;
-    #     j += Nk;
-    # figComp, axsComp = data.compare_data(xTest, xPsi, X0n);
-    # plt.show();
+    # plot results
+    xPsi = np.empty( (N0n*Nx, Nt) );
+    i = 0;  j = 0;
+    for k in range(N0n):
+        xPsi[i:i+Nx,:] = PsiTest[j:j+Nx,:];
+        i += Nx;
+        j += NkXU;
+    figComp, axsComp = data.compare_data(xTest, xPsi, X0n);
+    plt.show();
     
