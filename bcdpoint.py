@@ -158,7 +158,7 @@ if __name__ == "__main__":
     kModel = lambda Psi: Kvar.K@obsXUH(Psi);
 
     # data for testing results
-    N0n = 25;
+    N0n = 50;
     X0n = 20*np.random.rand(Nx,N0n) - 10;
     XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
     
@@ -178,5 +178,11 @@ if __name__ == "__main__":
         i += Nx;
         j += NkXU;
     figComp, axsComp = data.compare_data(xTest, xPsi, X0n);
-    plt.show();
+
+    save = 0;
+    if save:
+        plt.savefig('.figures/point.png', dpi=600);
+    else:
+        plt.show();
+
     

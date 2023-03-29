@@ -74,7 +74,7 @@ def compare_data(Xlist, Ylist, X0, fig=None, axs=None):
 
         axs.axis( (-10,10,-10,10), aspect='equal' );
         axs.legend();
-        axs.grid();
+        axs.grid(1);
 
         k += n;
 
