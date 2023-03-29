@@ -137,8 +137,8 @@ if __name__ == "__main__":
 
         Kb = Kblock( Klist[0].K );
 
-        Nk = PsiX.shape[0];
-        PsiShiftX = np.zeros( PsiX.shape );
+        Nk = Klist[1].metaX['Nk'];
+        PsiShiftX = np.zeros( (Nk, N0*Nt) );
         for i in range(Nt):
             PsiShiftX[:,i] = (Kb@PsiX[:,i,None]).reshape(Nk,);
 

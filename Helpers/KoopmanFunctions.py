@@ -49,19 +49,13 @@ def bcd(klist, mlist, X, Y, X0, TOL=1e-3):
     PsiX = [None for i in range(N)];
     PsiY = [None for i in range(N)];
     for i, M in enumerate(mlist):
-        PsiX[i], _ = klist[i].liftData(X, X0);
-        PsiY[i], _ = klist[i].liftData(Y, X0, klist[i].obsY);
-
-        # print('_____');
-        # print(PsiX[i]);
-        # print(PsiY[i]);
-
-        # if i != 0:  return;
-
         if M is None:
             klist[i].edmd(X, Y, X0);
+        else:
+            PsiX[i], _ = klist[i].liftData(X, X0);
+            PsiY[i], _ = klist[i].liftData(Y, X0, klist[i].obsY);
 
-    # error loop for BCD
+    # calculation loop for BCD
     dK = 1;  count = 0;
     while dK > TOL:
         dK = 0;
@@ -71,11 +65,6 @@ def bcd(klist, mlist, X, Y, X0, TOL=1e-3):
             if M is not None:
                 Gm, Am = M(klist, PsiX[i], PsiY[i]);
                 klist[i].edmd(X, Y, X0, G=Gm, A=Am);
-
-            # print(Am);
-            # print(Gm);
-
-            # print(Klist[i]);
 
             dK += np.linalg.norm( klist[i].K - kcopy );
         count += 1
