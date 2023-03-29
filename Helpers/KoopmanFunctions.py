@@ -156,6 +156,7 @@ class KoopmanOperator:
         for n in range(N0*(Nt-1)):
             err += np.linalg.norm(PsiY[:,n] - K@PsiX[:,n]);
 
+        self.err = err;
         return err;
 
     # extended dynamical mode decomposition (EDMD)
@@ -196,7 +197,8 @@ class KoopmanOperator:
         K = A.T @ (U @ Sinv @ V.T);
 
         self.K = K;
-        self.err = self.resError(X, Y, X0, self.K);
+        
+        self.resError(X, Y, X0);
         self.ind = ind;
 
         return K;

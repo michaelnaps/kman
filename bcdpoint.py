@@ -160,7 +160,9 @@ if __name__ == "__main__":
     mlist = (None, Mx);
     klist = bcd( klist, mlist, X, Y, XU0 );
 
+    # initialize and check cumulative Koopman operator
     Kvar = KoopmanOperator(obsXUH, K=kxvar.K@Kblock(kuvar.K));
+    Kvar.resError(X, Y, XU0);
 
     for kvar in klist:
         print(kvar, '\n');
