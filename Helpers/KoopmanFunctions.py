@@ -69,8 +69,8 @@ def bcd(klist, mlist, X, Y, X0, TOL=1e-3):
             kcopy = klist[i].K;
 
             if M is not None:
-                Am, Gm = M(klist, PsiX[i], PsiY[i]);
-                klist[i].edmd(X, Y, X0, A=Am, G=Gm);
+                Gm, Am = M(klist, PsiX[i], PsiY[i]);
+                klist[i].edmd(X, Y, X0, G=Gm, A=Am);
 
             # print(Am);
             # print(Gm);
@@ -160,14 +160,14 @@ class KoopmanOperator:
         return err;
 
     # extended dynamical mode decomposition (EDMD)
-    def edmd(self, X, Y, X0, A=None, G=None, eps=None):
+    def edmd(self, X, Y, X0, G=None, A=None, eps=None):
         # tolerance variable
         TOL = 1e-12;
 
         # evaluate for observable functions over X and Y
         (N0, Nt, Nx, _) = dimnData(X, X0);
 
-        if A is None and G is None:
+        if G is None and A is None:
             PsiX, NkX = self.liftData(X, X0);
             PsiY, NkY = self.liftData(Y, X0, self.obsY);
 

@@ -103,7 +103,7 @@ if __name__ == "__main__":
     randControl = lambda x: np.random.rand(Nu,1);
 
     # generate training data for Kx
-    N0 = 10;
+    N0 = 2;
     X0 = 2*np.random.rand(Nx,N0) - 1;
 
     # construct training data from xData and uData
@@ -134,7 +134,6 @@ if __name__ == "__main__":
 
     def Mx(Klist, PsiX, PsiY):
         N0, Nt, _, _ = dimnData(X, XU0);
-        A = 1/(N0*Nt) * (PsiX @ PsiY.T);
 
         Kb = Kblock( Klist[0].K );
 
@@ -149,8 +148,9 @@ if __name__ == "__main__":
             # print(PsiY[:,i]);
 
         G = 1/(N0*Nt) * (PsiShiftX @ PsiShiftX.T);
+        A = 1/(N0*Nt) * (PsiShiftX @ PsiY.T);
 
-        return A, G;
+        return G, A;
 
     # initialize operator class (K0 is identity)
     kuvar = KoopmanOperator(obsH);
