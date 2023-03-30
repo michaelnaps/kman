@@ -131,26 +131,25 @@ if __name__ == "__main__":
         ) );
         return Kb;
 
-    def Mx(Klist):
+    def Mu(Klist):
         M = Kblock( Klist[0].K );
         return M;
 
     # initialize operator class (K0 is identity)
     kuvar = KoopmanOperator(obsH);
-    kxvar = KoopmanOperator(obsXUH, M=Mx( (kuvar, None) ));
+    kxvar = KoopmanOperator(obsXUH, M=Mu( (kuvar, None) ));
     
     klist = (kuvar, kxvar);
-    mlist = (None, Mx);
+    mlist = (None, Mu);
     klist = bcd( klist, mlist, X, Y, XU0 );
 
     # initialize and check cumulative Koopman operator
-    Kvar = KoopmanOperator(obsXUH, K=kxvar.K@Kblock(kuvar.K));
+    Kvar = KoopmanOperator(obsXUH, K=kxvar.K@Mu(klist));
     Kvar.resError(X, Y, XU0);
 
     for kvar in klist:
         print(kvar, '\n');
     print(Kvar);
-
 
     # new operator model equation
     NkXU = obsXU()['Nk'];
