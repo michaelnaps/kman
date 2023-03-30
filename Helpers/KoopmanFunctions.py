@@ -40,14 +40,12 @@ def dimnData(X, X0, obs=None):
 
 # iteratively reweighted least squares
 def irls(klist, flist, X, Y, X0, TOL=1e-3):
+
+
     return klist;
 
 # cascade extended dynamic mode decomposition
 def cascade_edmd(klist, flist, X, Y, X0, TOL=1e-3):
-    # operator dimensions
-    N = len(klist);
-    (N0, Nt, _, _) = dimnData(X, X0);
-
     # calculation loop for BCD
     dK = 1;  count = 0;
     while dK > TOL:
