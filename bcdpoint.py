@@ -9,7 +9,7 @@ import Helpers.DataFunctions as data
 np.set_printoptions(precision=2, suppress=True);
 
 
-# hyper paramter(s)
+# hyper parameter(s)
 dt = 0.01;
 Nx = 4;
 Nu = 2;
