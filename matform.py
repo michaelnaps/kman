@@ -141,7 +141,7 @@ if __name__ == "__main__":
     
     klist = (kuvar, kxvar);
     mlist = (None, Mx);
-    klist = bcd( klist, mlist, X, Y, XU0 );
+    klist = cascade_edmd( klist, mlist, X, Y, XU0 );
 
     # initialize and check cumulative Koopman operator
     Kvar = KoopmanOperator(obsXUH, K=kxvar.K@Kblock(kuvar.K));

@@ -38,21 +38,15 @@ def dimnData(X, X0, obs=None):
 
     return N0, Nt, Nx, Nk;
 
-# block coordinate descent (CD)
-def bcd(klist, flist, X, Y, X0, TOL=1e-3):
+# iteratively reweighted least squares
+def irls(klist, flist, X, Y, X0, TOL=1e-3):
+    return klist;
+
+# cascade extended dynamic mode decomposition
+def cascade_edmd(klist, flist, X, Y, X0, TOL=1e-3):
     # operator dimensions
     N = len(klist);
     (N0, Nt, _, _) = dimnData(X, X0);
-
-    # lift data into the appropriate function spaces
-    PsiX = [None for i in range(N)];
-    PsiY = [None for i in range(N)];
-    for i, f in enumerate(flist):
-        if f is None:
-            klist[i].edmd(X, Y, X0);
-        else:
-            PsiX[i], _ = klist[i].liftData(X, X0);
-            PsiY[i], _ = klist[i].liftData(Y, X0, klist[i].obsY);
 
     # calculation loop for BCD
     dK = 1;  count = 0;
@@ -61,10 +55,13 @@ def bcd(klist, flist, X, Y, X0, TOL=1e-3):
         for i, f in enumerate(flist):
             kcopy = klist[i].K;
 
-            if f is not None:
+            if f is None:
+                M = klist[i].M;
+            else:
                 M = f(klist[:i]);
-                klist[i].setShiftMatrix(M);
-                klist[i].edmd(X, Y, X0);
+                
+            klist[i].setShiftMatrix(M);
+            klist[i].edmd(X, Y, X0);
 
             dK += np.linalg.norm( klist[i].K - kcopy );
         count += 1
