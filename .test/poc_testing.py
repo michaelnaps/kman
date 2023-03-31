@@ -13,7 +13,7 @@ PsiX=np.random.rand(NkX, Nt)
 Psin=np.random.rand(NkX+NkU*NkH, Nt)
 PsiU=np.random.rand(NkU, Nt)
 
-Ku=np.random.rand(NkH, NkH)
+Ku=np.random.rand(Nu, NkH)
 Kx=np.random.rand(NkX+NkH*NkU, NkX+NkH*NkU)
 
 def vec(A):
@@ -23,7 +23,7 @@ def vec(A):
 def Kblock(K):
     Kb = np.vstack( (
         np.hstack( (np.eye(NkX), np.zeros( (NkX, NkH*NkU) )) ),
-        np.hstack( (np.zeros( (NkH*NkU, NkX) ), np.kron(np.eye(NkU), K)) )
+        np.hstack( (np.zeros( (NkU*Nu, NkX) ), np.kron(np.eye(NkU), K)) )
     ) );
     return Kb;
 
@@ -50,10 +50,10 @@ def cost_vector_form(Ku):
         M_i_data=np.hstack(M_i_data_list)
         C_list.append(M_i_data)
     C=np.vstack(C_list)
-    print(Ku)clear
+    print(Ku)
 
     print(C.shape, vec(Ku).shape, d.shape)
     return np.linalg.norm(C@vec(Ku)-d)
 
-# print( cost_matrix_form(Ku) );
+print( cost_matrix_form(Ku) );
 print( cost_vector_form(Ku) );
