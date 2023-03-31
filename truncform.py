@@ -127,7 +127,7 @@ if __name__ == "__main__":
     def Kblock(K):
         Kb = np.vstack( (
             np.hstack( (np.eye(p), np.zeros( (p, b*q) )) ),
-            np.hstack( (np.zeros( (b*q, p) ), np.kron(np.eye(q), K)) )
+            np.hstack( (np.zeros( (m, p) ), np.kron(np.eye(q), K)) )
         ) );
         return Kb;
 
@@ -136,8 +136,8 @@ if __name__ == "__main__":
         return M;
 
     # initialize operator class (K0 is identity)
-    kuvar = KoopmanOperator(obsH);
-    kxvar = KoopmanOperator(obsXUH, M=Mx( (kuvar, None) ));
+    kuvar = KoopmanOperator(obsH, obsU);
+    kxvar = KoopmanOperator(obsXUH, obsXU, M=Mx( (kuvar, None) ));
 
     klist = (kuvar, kxvar);
     mlist = (None, Mx);
@@ -145,7 +145,7 @@ if __name__ == "__main__":
 
     # initialize and check cumulative Koopman operator
     K = klist[1].K @ Kblock( klist[0].K );
-    Kvar = KoopmanOperator(obsXUH, K=K);
+    Kvar = KoopmanOperator(obsXUH, obsXU, K=K);
     Kvar.resError(X, Y, XU0);
 
     for kvar in klist:
@@ -156,16 +156,16 @@ if __name__ == "__main__":
     # new operator model equation
     NkXU = obsXU()['Nk'];
     NkXUH = obsXUH()['Nk'];
-    kModel = lambda Psi: Kvar.K@Psi;
+    kModel = lambda Psi: Kvar.K@obsXUH(Psi);
 
     # data for testing results
     N0n = 10;
     X0n = 20*np.random.rand(Nx,N0n) - 10;
     XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
 
-    Psi0 = np.empty( (NkXUH,N0n) );
+    Psi0 = np.empty( (NkXU,N0n) );
     for i, xu in enumerate(XU0n.T):
-        Psi0[:,i] = obsXUH( xu.reshape(Nx+Nu,1) ).reshape(NkXUH,);
+        Psi0[:,i] = obsXU( xu.reshape(Nx+Nu,1) ).reshape(NkXU,);
 
     xTest, uTest = data.generate_data(tList, model, X0n,
         control=control, Nu=Nu);
@@ -177,7 +177,7 @@ if __name__ == "__main__":
     for k in range(N0n):
         xPsi[i:i+Nx,:] = PsiTest[j:j+Nx,:];
         i += Nx;
-        j += NkXUH;
+        j += NkXU;
     figComp, axsComp = data.compare_data(xTest, xPsi, X0n);
 
     save = 0;
