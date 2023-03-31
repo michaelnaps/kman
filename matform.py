@@ -82,11 +82,11 @@ def obsXUH(X=None):
     if X is None:
         meta = {'Nk':NkX+NkU*NkH};
         return meta;
-    
+
     PsiX = obsX(X).reshape(NkX,1);
     PsiU = [1];
     PsiH = obsH(X).reshape(NkH,1);
-    
+
     Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
     return Psi;
 
@@ -138,7 +138,7 @@ if __name__ == "__main__":
     # initialize operator class (K0 is identity)
     kuvar = KoopmanOperator(obsH);
     kxvar = KoopmanOperator(obsXUH, M=Mx( (kuvar, None) ));
-    
+
     klist = (kuvar, kxvar);
     mlist = (None, Mx);
     klist = cascade_edmd( klist, mlist, X, Y, XU0 );
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     N0n = 10;
     X0n = 20*np.random.rand(Nx,N0n) - 10;
     XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
-    
+
     Psi0 = np.empty( (NkXUH,N0n) );
     for i, xu in enumerate(XU0n.T):
         Psi0[:,i] = obsXUH( xu.reshape(Nx+Nu,1) ).reshape(NkXUH,);
@@ -184,5 +184,3 @@ if __name__ == "__main__":
         plt.savefig('.figures/point.png', dpi=600);
     else:
         plt.show();
-
-    
