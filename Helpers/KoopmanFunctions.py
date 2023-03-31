@@ -28,23 +28,53 @@ def dimnData(X, X0, obs=None):
     # dimension variables
     Mx = len(X[0]);
     Nx = len(X0);
-    
+
     if len(X0.shape) > 1:
         N0 = len(X0[0]);
     else:
         N0 = 1;
-    
+
     Nt = round(Mx/N0);
 
     return N0, Nt, Nx, Nk;
 
-# iteratively reweighted least squares
-def irls(klist, flist, X, Y, X0, TOL=1e-3):
+# iterative least squares algorithm
+def iterative_lstsq(klist, flist, X, Y, X0, TOL=1e-3):
+    # dimension variables and vectorized klist
+    N = len(klist);
+    (N0, Nt, _, _) = dimnData(X, X0);
+    Nklist = [kvar.K.shape for kvar in klist];
+    kvlist = [vec( kvar.K ) for kvar in klist];
 
+    PsiX = [None for i in range(N)];
+    PsiY = [None for i in range(N)];
+    for i, kvar in enumerate(klist):
+        PsiX[i], _ = kvar.liftData(X, X0);
+        PsiY[i], _ = kvar.liftData(Y, X0, kvar.obsY);
+
+    # primary algorithm loop
+    dK = 1;  count = 0;
+    while dK > TOL:
+        dK = 0;
+        for i, f in enumerate(flist):
+            kcopy = kvlist[i];
+
+            M = f(klist, PsiX[i]);
+
+            G = M@M.T;
+            A = M@PsiY[i].T;
+            print(M.shape, PsiX[i].shape, PsiY[i].shape);
+
+            kvlist[i] = np.linalg.lstsq(M, PsiY[i]);
+            klist[i].K = nvec(kvlist[i], Nklist[i][0], Nklist[i][1]);
+
+            dK += np.linalg.norm( kvlist[i] - kcopy );
+        count += 1
+        print(count, ': %.5e' % dK);
 
     return klist;
 
-# cascade extended dynamic mode decomposition
+# cascade extended dynamic mode decomposition algorithm
 def cascade_edmd(klist, flist, X, Y, X0, TOL=1e-3):
     # calculation loop for BCD
     dK = 1;  count = 0;
@@ -57,7 +87,7 @@ def cascade_edmd(klist, flist, X, Y, X0, TOL=1e-3):
                 M = klist[i].M;
             else:
                 M = f(klist[:i]);
-                
+
             klist[i].setShiftMatrix(M);
             klist[i].edmd(X, Y, X0);
 
@@ -199,7 +229,3 @@ class KoopmanOperator:
         self.ind = ind;
 
         return K;
-
-
-
-        

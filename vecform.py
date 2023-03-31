@@ -82,11 +82,11 @@ def obsXUH(X=None):
     if X is None:
         meta = {'Nk':NkX+NkU*NkH};
         return meta;
-    
+
     PsiX = obsX(X).reshape(NkX,1);
     PsiU = [1];
     PsiH = obsH(X).reshape(NkH,1);
-    
+
     Psi = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
     return Psi;
 
@@ -94,7 +94,7 @@ def obsXUH(X=None):
 # main executable section
 if __name__ == "__main__":
     # simulation variables
-    T = 10;  Nt = round(T/dt) + 1;
+    T = 1;  Nt = round(T/dt) + 1;
     tList = np.array( [ [i*dt for i in range(Nt)] ] );
     # print(tList);
 
@@ -131,17 +131,24 @@ if __name__ == "__main__":
         ) );
         return Kb;
 
-    def Mu(Klist):
-        M = Kblock( Klist[0].K );
-        return M;
+    def Mx(klist, Psilist):
+        Kb = Kblock( klist[1].K );
+
+
+        Mx = np.kron( PsiX.T@Kb.T, np.eye(p) );
+
+        return Mx;
+    def Mu(klist, PsiX):
+        Mu = np.kron( PsiX.T, klist[0].K );
+        return Mu;
 
     # initialize operator class (K0 is identity)
+    kxvar = KoopmanOperator(obsXUH);
     kuvar = KoopmanOperator(obsH);
-    kxvar = KoopmanOperator(obsXUH, M=Mu( (kuvar, None) ));
-    
-    klist = (kuvar, kxvar);
-    mlist = (None, Mu);
-    klist = bcd( klist, mlist, X, Y, XU0 );
+
+    klist = (kxvar, kuvar);
+    mlist = (Mx, Mu);
+    klist = iterative_lstsq( klist, mlist, X, Y, XU0 );
 
     # initialize and check cumulative Koopman operator
     Kvar = KoopmanOperator(obsXUH, K=kxvar.K@Mu(klist));
@@ -151,37 +158,35 @@ if __name__ == "__main__":
         print(kvar, '\n');
     print(Kvar);
 
-    # new operator model equation
-    NkXU = obsXU()['Nk'];
-    NkXUH = obsXUH()['Nk'];
-    kModel = lambda Psi: Kvar.K@Psi;
+    # # new operator model equation
+    # NkXU = obsXU()['Nk'];
+    # NkXUH = obsXUH()['Nk'];
+    # kModel = lambda Psi: Kvar.K@Psi;
 
-    # data for testing results
-    N0n = 10;
-    X0n = 20*np.random.rand(Nx,N0n) - 10;
-    XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
-    
-    Psi0 = np.empty( (NkXUH,N0n) );
-    for i, xu in enumerate(XU0n.T):
-        Psi0[:,i] = obsXUH( xu.reshape(Nx+Nu,1) ).reshape(NkXUH,);
+    # # data for testing results
+    # N0n = 10;
+    # X0n = 20*np.random.rand(Nx,N0n) - 10;
+    # XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
 
-    xTest, uTest = data.generate_data(tList, model, X0n,
-        control=control, Nu=Nu);
-    PsiTest, _ = data.generate_data(tList, kModel, Psi0);
+    # Psi0 = np.empty( (NkXUH,N0n) );
+    # for i, xu in enumerate(XU0n.T):
+    #     Psi0[:,i] = obsXUH( xu.reshape(Nx+Nu,1) ).reshape(NkXUH,);
 
-    # plot results
-    xPsi = np.empty( (N0n*Nx, Nt) );
-    i = 0;  j = 0;
-    for k in range(N0n):
-        xPsi[i:i+Nx,:] = PsiTest[j:j+Nx,:];
-        i += Nx;
-        j += NkXUH;
-    figComp, axsComp = data.compare_data(xTest, xPsi, X0n);
+    # xTest, uTest = data.generate_data(tList, model, X0n,
+    #     control=control, Nu=Nu);
+    # PsiTest, _ = data.generate_data(tList, kModel, Psi0);
 
-    save = 0;
-    if save:
-        plt.savefig('.figures/point.png', dpi=600);
-    else:
-        plt.show();
+    # # plot results
+    # xPsi = np.empty( (N0n*Nx, Nt) );
+    # i = 0;  j = 0;
+    # for k in range(N0n):
+    #     xPsi[i:i+Nx,:] = PsiTest[j:j+Nx,:];
+    #     i += Nx;
+    #     j += NkXUH;
+    # figComp, axsComp = data.compare_data(xTest, xPsi, X0n);
 
-    
+    # save = 0;
+    # if save:
+    #     plt.savefig('.figures/point.png', dpi=600);
+    # else:
+    #     plt.show();
