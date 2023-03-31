@@ -152,14 +152,13 @@ if __name__ == "__main__":
         print(kvar, '\n');
     print(Kvar);
 
-
     # new operator model equation
     NkXU = obsXU()['Nk'];
     NkXUH = obsXUH()['Nk'];
     kModel = lambda Psi: Kvar.K@Psi;
 
     # data for testing results
-    N0n = 10;
+    N0n = 25;
     X0n = 20*np.random.rand(Nx,N0n) - 10;
     XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
 
