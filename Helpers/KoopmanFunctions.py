@@ -59,13 +59,16 @@ def iterative_lstsq(klist, flist, X, Y, X0, TOL=1e-3):
         for i, f in enumerate(flist):
             kcopy = kvlist[i];
 
-            M = f(klist, PsiX[i]);
+            PsiShiftX = f(klist, PsiX[i]);
 
-            G = M@M.T;
-            A = M@PsiY[i].T;
-            print(M.shape, PsiX[i].shape, PsiY[i].shape);
+            print('______');
+            print(PsiX[i].shape, PsiShiftX.shape, PsiY[i].shape);
 
-            kvlist[i] = np.linalg.lstsq(M, PsiY[i]);
+            G = PsiShiftX@PsiShiftX.T;
+            A = PsiShiftX@PsiY[i].T;
+            print(M.shape, G.shape, A.shape);
+
+            kvlist[i] = np.linalg.lstsq(G, A);
             klist[i].K = nvec(kvlist[i], Nklist[i][0], Nklist[i][1]);
 
             dK += np.linalg.norm( kvlist[i] - kcopy );
@@ -83,12 +86,10 @@ def cascade_edmd(klist, flist, X, Y, X0, TOL=1e-3):
         for i, f in enumerate(flist):
             kcopy = klist[i].K;
 
-            if f is None:
-                M = klist[i].M;
-            else:
+            if f is not None:
                 M = f(klist[:i]);
+                klist[i].setShiftMatrix(M);
 
-            klist[i].setShiftMatrix(M);
             klist[i].edmd(X, Y, X0);
 
             dK += np.linalg.norm( klist[i].K - kcopy );
