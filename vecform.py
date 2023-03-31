@@ -145,7 +145,7 @@ if __name__ == "__main__":
 
     klist = (kxvar, kuvar);
     mlist = (Mx, Mu);
-    klist = iterative_lstsq( klist, mlist, X, Y, XU0 );
+    klist = iterative_ls( klist, mlist, X, Y, XU0 );
 
     # initialize and check cumulative Koopman operator
     Kvar = KoopmanOperator(obsXUH, K=kxvar.K@Mu(klist));

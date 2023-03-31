@@ -39,7 +39,7 @@ def dimnData(X, X0, obs=None):
     return N0, Nt, Nx, Nk;
 
 # iterative least squares algorithm
-def iterative_lstsq(klist, flist, X, Y, X0, TOL=1e-3):
+def iterative_ls(klist, flist, X, Y, X0, TOL=1e-3):
     # dimension variables and vectorized klist
     N = len(klist);
     (N0, Nt, _, _) = dimnData(X, X0);
