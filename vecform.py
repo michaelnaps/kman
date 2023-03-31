@@ -133,7 +133,7 @@ if __name__ == "__main__":
 
     def Mx(klist, PsiX):
         Kb = Kblock( klist[1].K );
-        Mx = np.kron( PsiX.T@Kb.T, np.eye(p+b*q) );
+        Mx = np.kron( np.eye(p+b*q), PsiX.T@Kb.T);
         return Mx;
     def Mu(klist, PsiX):
         Mu = np.kron( PsiX.T, klist[0].K );
