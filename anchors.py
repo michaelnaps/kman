@@ -71,6 +71,7 @@ def obsU(X=None):
     if X is None:
         meta = {'Nk':Nu};
         return meta;
+
     PsiU = X[Nx:].reshape(Nu,1);
     return PsiU;
 
@@ -85,20 +86,20 @@ def obsXU(X=None):
 
 def obsH(X=None):
     if X is None:
-        meta = {'Nk':Nu+Na};
+        meta = {'Nk':Na};
         return meta;
 
     x = X[:Nx].reshape(Nx,1);
     u = X[Nx:].reshape(Nu,1);
 
     da = anchorExpand(x, u)[0];
-    PsiH = np.vstack( (u, da) );
+    PsiH = da;
 
     return PsiH;
 
 def obsXUH(X=None):
     if X is None:
-        meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsX()['Nk']}
+        meta = {'Nk':obsX()['Nk']+1*obsH()['Nk']}
         return meta;
 
     PsiX = obsX(X);
@@ -133,17 +134,20 @@ def ploterr(X, Y, X0, save=0):
 # main executable section
 if __name__ == "__main__":
     # simulation variables
-    T = 10;  Nt = round(T/dt) + 1;
+    T = 5;  Nt = round(T/dt) + 1;
     tList = np.array( [ [i*dt for i in range(Nt)] ] );
 
+    # dimensiones reference variables
+    m = Nu;
+    p = obsX()['Nk'];
+    q = 1;
+    b = obsH()['Nk'];
 
     # generate training data for Kx
-    N0 = 1;
+    N0 = 10;
     X0 = 10*np.random.rand(Nx,N0) - 5;
-
-    randControl = lambda x: 2*np.random.rand(Nu,1)-1;
     xData, uRand = data.generate_data(tList, model, X0,
-        control=randControl, Nu=Nu);
+        control=control, Nu=Nu);
 
     # formatting training data from xData and uData
     uStack = data.stack_data(uRand, N0, Nu, Nt-1);
@@ -154,70 +158,55 @@ if __name__ == "__main__":
     X = np.vstack( (xStack, uStack) );
     Y = np.vstack( (yStack, uStack) );
 
-    # train Kx
-    metaX = obsXU();
-    kxvar = KoopmanOperator(obsXU);
-    Kx = kxvar.edmd(X, Y, XU0);
+    # helper functions
+    def Kblock(K):
+        Kb = np.vstack( (
+            np.hstack( (np.eye(p), np.zeros( (p,b*q) )) ),
+            np.hstack( (np.zeros( (m,p) ), np.kron( np.eye(q), K)) )
+        ) );
+        return Kb;
 
-    print('Kx:', Kx.shape, kxvar.err)
-    print(Kx);
+    def Mu(klist):
+        M = Kblock( klist[0].K );
+        return M;
 
-
-    # generate data for Ku
-    randModel = lambda x,u: 10*np.random.rand(Nx,1)-5;
-    xRand, uData = data.generate_data(tList, randModel, X0,
-        control=control, Nu=Nu);
-
-    uStack = data.stack_data(uData, N0, Nu, Nt-1);
-    xStack = data.stack_data(xRand[:,:-1], N0, Nx, Nt-1);
-
-    Xu = np.vstack( (xStack, np.zeros( (Nu,N0*(Nt-1)) )) );
-    Yu = np.vstack( (xStack, uStack) );
-
-    # train Ku
-    metaH = obsH();
+    # initialize operator variables and solve
     kuvar = KoopmanOperator(obsH, obsU);
-    print(kuvar);
-    Ku = kuvar.edmd(Xu, Yu, XU0);
+    kxvar = KoopmanOperator(obsXUH, obsXU, M=Kblock(kuvar.K));
 
-    print('Ku:', Ku.shape, kuvar.err);
-    print(Ku);
+    klist = (kuvar, kxvar);
+    mlist = (None, Mu);
+    klist = cascade_edmd(klist, mlist, X, Y, XU0);
 
-    # generate cumulative operator
-    m = Nu;
-    p = obsX()['Nk'];
-    q = obsU()['Nk'];
-    b = obsH()['Nk'];
+    # form the cumulative operator
+    Kfinal = klist[1].K@Kblock( klist[0].K );
+    kvar = KoopmanOperator(obsXUH, obsXU, K=Kfinal);
+    kvar.resError(X, Y, XU0);
 
-    Ktemp = np.vstack( (
-        np.hstack( (np.eye(p), np.zeros( (p,b) )) ),
-        np.hstack( (np.zeros( (m,p) ), Ku) ) ) );
-
-    K = Kx@Ktemp;
-
-    print('K:');
-    print(K);
+    for k in klist:
+        print(k);
+    print(kvar);
 
 
     # test comparison results
-    N0n = 10;
+    N0n = 25;
     NkXU = obsXU()['Nk'];
     X0n = 20*np.random.rand(Nx,N0n) - 10;
     XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
-    
+
     Psi0 = np.empty( (NkXU,N0n) );
     for i, xu in enumerate(XU0n.T):
         Psi0[:,i] = obsXU( xu.reshape(Nx+Nu,1) ).reshape(NkXU,);
 
     # new operator model equation
-    kModel = lambda Psi: K@rmes(Psi);
+    kModel = lambda Psi: kvar.K@rmes(Psi);
     def rmes(Psi):
         x = Psi[:Nx].reshape(Nx,1);
         u = np.zeros( (Nu,1) );
 
         PsiX = Psi[:p].reshape(p,1);
         PsiU = [1];
-        PsiH = obsH(Psi.reshape(p+q,1));
+        PsiH = obsH(Psi);
 
         Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
 
@@ -236,4 +225,3 @@ if __name__ == "__main__":
         j += NkXU;
     figComp, axsComp = data.compare_data(xTest, xPsi, X0n);
     plt.show();
-
