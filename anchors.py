@@ -111,26 +111,6 @@ def obsXUH(X=None):
     return Psi;
 
 
-def ploterr(X, Y, X0, save=0):
-    # show error
-    Te = tList[0][-1];  Ne = round(Te/dt);
-    figError, axsError = plt.subplots();
-
-    axsError.plot([tList[0][0], tList[0][Ne]], [0,0], color='r', linestyle='--', label='ref');
-    axsError.plot(tList[0][:Ne], Y[0,:Ne]-X[0,:Ne], label='$x_1$');
-    axsError.plot(tList[0][:Ne], Y[1,:Ne]-X[1,:Ne], label='$x_2$');
-
-    axsError.set_ylim( (-1,1) );
-    axsError.grid();
-    axsError.legend();
-
-    # save results
-    if save:
-        figError.savefig('/home/michaelnaps/prog/kman/.figures/uDonaldError.png', dpi=600);
-    else:
-        plt.show();
-
-
 # main executable section
 if __name__ == "__main__":
     # simulation variables
@@ -186,7 +166,6 @@ if __name__ == "__main__":
     for k in klist:
         print(k);
     print(kvar);
-
 
     # test comparison results
     N0n = 25;
