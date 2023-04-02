@@ -30,7 +30,7 @@ Ku = 1/2*(A*rand(b)-a);
 
 %% true error/cost calc.
 Mu = Kblock(Ku, p, q, b);
-true = norm(Psi2 - Kx*Mu*Psi1);
+true = norm( vec( Psi2 - Kx*Mu*Psi1 ) );
 
 
 %% vector form error/cost
