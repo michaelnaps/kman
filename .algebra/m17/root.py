@@ -23,13 +23,15 @@ for i in range(Nt):
 Psi1 = np.vstack( (PsiX, Psi1) );
 Psi2 = np.random.rand( p+q*b,Nt );
 
-Kx = np.eye(p+q*b, p+q*b);
+Kx = np.hstack( (np.random.rand(p+q*b, p), np.zeros( (p+q*b, q*b) )) );
 Ku = np.eye(b,b);
 
 def Kblock(K):
+    Ip = np.eye(p);
+    Zpqb = np.zeros( (p,q*b) );
     M = np.vstack( (
-        np.hstack( (np.eye(p), np.zeros( (p,q*b) )) ),
-        np.hstack( (np.zeros( (q*b,p) ), np.kron(np.eye(q), Ku)) )
+        np.hstack( (Ip, Zpqb) ),
+        np.hstack( (Zpqb.T, np.kron(np.eye(q), Ku)) )
     ) );
     return M;
 
@@ -43,7 +45,7 @@ def trueCost():
 def vectCost():
     Kxl = Kx[:,:p];
     Kxr = Kx[:,p:];
-    print(Kx.shape, Kxl.shape, Kxr.shape);
+
     Psi2Left = vec(Kxl@PsiX);
 
     # print(vec(Psi2) - Psi2Left);
@@ -59,15 +61,17 @@ def vectCost():
             for j in range(b):
                 ej = np.array( [[1*(j==l)] for l in range(b)] );
                 M = np.kron(PsiU[:,k,None], ei@ej.T@PsiH[:,k,None]);
-                # M = np.vstack( (PsiX[:,k,None], M) );
-                M = np.vstack( (np.zeros( (p,1) ), M) );
+                M = np.vstack( (PsiX[:,k,None], M) );
+                # M = np.vstack( (np.zeros( (p,1) ), M) );
                 Mlist[:,s] = M[:,0];
                 s += 1;
         Clist[c:c+skip,:] = Mlist;
         c += skip;
 
-    Psi2Right = Clist@vec(Ku);
 
+    print(Kx.shape, Kxl.shape, Kxr.shape, (Kx@Kblock(Ku)).shape);
+
+    Psi2Right = Clist@vec( Kx@Kblock(Ku) );
     print(vec(Psi2).shape, Psi2Left.shape, Psi2Right.shape);
 
     return np.linalg.norm( vec(Psi2) - Psi2Left - Psi2Right );
