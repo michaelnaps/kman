@@ -21,10 +21,10 @@ Psi1 = np.empty( (q*b,Nt) );
 for i in range(Nt):
     Psi1[:,i] = np.kron(PsiU[:,i], PsiH[:,i]);
 Psi1 = np.vstack( (PsiX, Psi1) );
-Psi2 = np.random.rand(p+q*b,Nt);
+Psi2 = np.random.rand( p+q*b,Nt );
 
-Kx = np.random.rand(p+q*b, p+q*b);
-Ku = np.random.rand(b,b);
+Kx = np.eye(p+q*b, p+q*b);
+Ku = np.eye(b,b);
 
 def Kblock(K):
     M = np.vstack( (
@@ -43,10 +43,13 @@ def trueCost():
 def vectCost():
     Kxl = Kx[:,:p];
     Kxr = Kx[:,p:];
-    Psi2Right = vec(Kxl@PsiX);
+    print(Kx.shape, Kxl.shape, Kxr.shape);
+    Psi2Left = vec(Kxl@PsiX);
+
+    # print(vec(Psi2) - Psi2Left);
 
     c = 0;
-    skip = q*b;
+    skip = p+q*b;
     Clist = np.empty( (Nt*(skip), b*b) );
     for k in range(Nt):
         s = 0;
@@ -56,14 +59,17 @@ def vectCost():
             for j in range(b):
                 ej = np.array( [[1*(j==l)] for l in range(b)] );
                 M = np.kron(PsiU[:,k,None], ei@ej.T@PsiH[:,k,None]);
+                # M = np.vstack( (PsiX[:,k,None], M) );
+                M = np.vstack( (np.zeros( (p,1) ), M) );
                 Mlist[:,s] = M[:,0];
                 s += 1;
         Clist[c:c+skip,:] = Mlist;
         c += skip;
 
-    print(Clist.shape);
+    Psi2Right = Clist@vec(Ku);
 
-    Psi2Left = Clist@vec(Ku);
+    print(vec(Psi2).shape, Psi2Left.shape, Psi2Right.shape);
+
     return np.linalg.norm( vec(Psi2) - Psi2Left - Psi2Right );
 
 # comparison
