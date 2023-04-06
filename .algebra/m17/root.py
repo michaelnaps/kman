@@ -23,7 +23,7 @@ for i in range(Nt):
 Psi1 = np.vstack( (PsiX, Psi1) );
 Psi2 = np.random.rand( p+q*b,Nt );
 
-Kx = np.hstack( (np.random.rand(p+q*b, p), np.zeros( (p+q*b, q*b) )) );
+Kx = np.eye(p+q*b,p+q*b);
 Ku = np.eye(b,b);
 
 def Kblock(K):
@@ -61,17 +61,16 @@ def vectCost():
             for j in range(b):
                 ej = np.array( [[1*(j==l)] for l in range(b)] );
                 M = np.kron(PsiU[:,k,None], ei@ej.T@PsiH[:,k,None]);
-                M = np.vstack( (PsiX[:,k,None], M) );
-                # M = np.vstack( (np.zeros( (p,1) ), M) );
+                # M = np.vstack( (PsiX[:,k,None], M) );
+                M = np.vstack( (np.zeros( (p,1) ), M) );
                 Mlist[:,s] = M[:,0];
                 s += 1;
         Clist[c:c+skip,:] = Mlist;
         c += skip;
 
+    print(Kx.shape, Kxl.shape, Kxr.shape, Kblock(Ku).shape);
 
-    print(Kx.shape, Kxl.shape, Kxr.shape, (Kx@Kblock(Ku)).shape);
-
-    Psi2Right = Clist@vec( Kx@Kblock(Ku) );
+    Psi2Right = Clist@vec( Ku );
     print(vec(Psi2).shape, Psi2Left.shape, Psi2Right.shape);
 
     return np.linalg.norm( vec(Psi2) - Psi2Left - Psi2Right );
