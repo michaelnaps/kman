@@ -60,7 +60,7 @@ def vectCost():
             ei = np.array( [[1*(i==l)] for l in range(b)] );
             for j in range(b):
                 ej = np.array( [[1*(j==l)] for l in range(b)] );
-                M = np.kron(PsiU[:,k,None], ei@ej.T@PsiH[:,k,None]);
+                M = np.kron(PsiU[:,k,None], ej@ei.T@PsiH[:,k,None]);
                 # M = np.vstack( (PsiX[:,k,None], M) );
                 M = np.vstack( (np.zeros( (p,1) ), M) );
                 Mlist[:,s] = M[:,0];
