@@ -24,7 +24,7 @@ Psi1 = np.vstack( (PsiX, Psi1) );
 Psi2 = np.random.rand( p+q*b,Nt );
 
 Kx = np.eye(p+q*b,p+q*b);
-Ku = np.eye(b,b);
+Ku = np.random.rand(b,b);
 
 def Kblock(K):
     Ip = np.eye(p);
@@ -73,6 +73,7 @@ def vectCost():
     Psi2Right = Clist@vec( Ku );
     print(vec(Psi2).shape, Psi2Left.shape, Psi2Right.shape);
 
+    # print( vec(Psi2) - Psi2Right );
     return np.linalg.norm( vec(Psi2) - Psi2Left - Psi2Right );
 
 # comparison
