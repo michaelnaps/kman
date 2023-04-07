@@ -11,8 +11,6 @@ q = 6;
 b = 5;
 Nt = 2;
 
-print(p+q*b);
-
 PsiX = np.random.rand(p,Nt);
 PsiU = np.random.rand(q,Nt);
 PsiH = np.random.rand(b,Nt);
@@ -25,6 +23,10 @@ Psi2 = np.random.rand( p+q*b,Nt );
 
 Kx = np.eye(p+q*b,p+q*b);
 Ku = np.random.rand(b,b);
+
+print(PsiX.shape, PsiU.shape, PsiH.shape);
+print(Psi1.shape, Psi2.shape);
+print(Kx.shape, Ku.shape);
 
 def Kblock(K):
     Ip = np.eye(p);
@@ -68,12 +70,12 @@ def vectCost():
         Clist[c:c+skip,:] = Mlist;
         c += skip;
 
-    print(Kx.shape, Kxl.shape, Kxr.shape, Kblock(Ku).shape);
+
+    print(Kxl.shape, Kxr.shape);
+    print(vec(Ku).shape, vec(Kxl).shape, vec(Kxr).shape);
+    print(Clist.shape);
 
     Psi2Right = Clist@vec( Ku );
-    print(vec(Psi2).shape, Psi2Left.shape, Psi2Right.shape);
-
-    # print( vec(Psi2) - Psi2Right );
     return np.linalg.norm( vec(Psi2) - Psi2Left - Psi2Right );
 
 # comparison
