@@ -39,9 +39,7 @@ def Kblock(K):
 
 # true cost form
 def trueCost():
-    Mu = Kblock(Ku);
-    PsiPlus = Kx@Mu@Psi1;
-    return np.linalg.norm( Psi2 - PsiPlus );
+    return np.linalg.norm( Psi2 - Kx@Kblock(Ku)@Psi1 );
 
 # vectorized cost form
 def vectCost():
