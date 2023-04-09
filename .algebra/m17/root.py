@@ -73,8 +73,8 @@ def vectCost():
     print(vec(Ku).shape, vec(Kxl).shape, vec(Kxr).shape);
     print(Clist.shape);
 
-    Psi2Right = Clist@vec( Ku );
-    return np.linalg.norm( vec(Psi2) - Psi2Left - Psi2Right );
+    Psi2Cont = Clist@vec( Ku );
+    return np.linalg.norm( vec(Psi2) - Psi2Left - Psi2Cont );
 
 # comparison
 print( trueCost() );
