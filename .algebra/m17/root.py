@@ -15,10 +15,10 @@ PsiX = np.random.rand(p,Nt);
 PsiU = np.random.rand(q,Nt);
 PsiH = np.random.rand(b,Nt);
 
-Psi1 = np.empty( (q*b,Nt) );
+PsiUH = np.empty( (q*b,Nt) );
 for i in range(Nt):
-    Psi1[:,i] = np.kron(PsiU[:,i], PsiH[:,i]);
-Psi1 = np.vstack( (PsiX, Psi1) );
+    PsiUH[:,i] = np.kron(PsiU[:,i], PsiH[:,i]);
+Psi1 = np.vstack( (PsiX, PsiUH) );
 Psi2 = np.random.rand( p+q*b,Nt );
 
 Kx = np.eye(p+q*b,p+q*b);
@@ -46,7 +46,8 @@ def vectCost():
     Kxl = Kx[:,:p];
     Kxr = Kx[:,p:];
 
-    Psi2Left = vec(Kxl@PsiX);
+    Psi2Left  = vec( Kxl@PsiX );
+    Psi2Right = 0; #vec( Kxr@PsiUH );
 
     # print(vec(Psi2) - Psi2Left);
 
@@ -74,7 +75,7 @@ def vectCost():
     print(Clist.shape);
 
     Psi2Cont = Clist@vec( Ku );
-    return np.linalg.norm( vec(Psi2) - Psi2Left - Psi2Cont );
+    return np.linalg.norm( vec(Psi2) - Psi2Left - Psi2Right - Psi2Cont );
 
 # comparison
 print( trueCost() );
