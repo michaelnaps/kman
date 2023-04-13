@@ -8,7 +8,7 @@ def vec(A):
 # dimension variables and environment setup
 m = 2;
 p = 2;
-q = 2;
+q = 1;
 b = 2;
 Nt = 2;
 
@@ -49,7 +49,10 @@ def trueCost():
 # vectorized cost form
 def vectCost():
     Kxl = Kx[:,:p];
-    Kxr = Kx[p:,:];
+    Kxr = Kx[:,p:];
+
+    Kxt = Kx[:p,:];
+    Kxb = Kx[p:,:];
 
     # Psi2Top  = vec( Kxl@Kblock(Ku)[:,:p]@PsiX );
     Psi2Top = vec( Kxl@PsiX );
@@ -76,11 +79,13 @@ def vectCost():
         c += skip;
 
 
-    print(Kxl.shape, Kxr.shape, (Kxr@Kblock(Ku)[:,p:]).shape);
+    print(Kxl.shape, Kxr.shape);
+    print((Kxb@Kblock(Ku)[:,p:]).shape);
     print(vec(Ku).shape, vec(Kxl).shape, vec(Kxr).shape);
     print(Clist.shape);
 
     Psi2Bot = Clist@vec( Ku );
+    # Psi2Bot = Clist@vec( Kxb@Kblock(Ku)[:,p:] );
 
     PsiDiff = vec(Psi2) - Psi2Top - Psi2Bot;
     print(PsiDiff[:,0]);
