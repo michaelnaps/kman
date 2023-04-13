@@ -1,15 +1,25 @@
 import numpy as np
+np.set_printoptions(precision=3, suppress=True);
 
 def vec(A):
     (n,m) = A.T.shape;
     return A.T.reshape(n*m,1);
 
 # dimension variables and environment setup
-m = 3;
-p = 2;
-q = 6;
-b = 5;
+m = 2;
+p = 3;
+q = 1;
+b = 2;
 Nt = 2;
+
+def Kblock(K):
+    Ip = np.eye(p);
+    Zpqb = np.zeros( (p,q*b) );
+    M = np.vstack( (
+        np.hstack( (Ip, Zpqb) ),
+        np.hstack( (Zpqb.T, np.kron(np.eye(q), Ku)) )
+    ) );
+    return M;
 
 PsiX = np.random.rand(p,Nt);
 PsiU = np.random.rand(q,Nt);
@@ -21,25 +31,20 @@ for i in range(Nt):
 Psi1 = np.vstack( (PsiX, PsiUH) );
 Psi2 = np.random.rand( p+q*b,Nt );
 
-Kx = np.eye(p+q*b,p+q*b);
+Kx = np.eye(p+b*q,p+b*q)
 Ku = np.random.rand(b,b);
+
+# print(Kx); print(Ku);
 
 print(PsiX.shape, PsiU.shape, PsiH.shape);
 print(Psi1.shape, Psi2.shape);
-print(Kx.shape, Ku.shape);
-
-def Kblock(K):
-    Ip = np.eye(p);
-    Zpqb = np.zeros( (p,q*b) );
-    M = np.vstack( (
-        np.hstack( (Ip, Zpqb) ),
-        np.hstack( (Zpqb.T, np.kron(np.eye(q), Ku)) )
-    ) );
-    return M;
+print(Kx.shape, Ku.shape, Kblock(Ku).shape);
 
 # true cost form
 def trueCost():
-    return np.linalg.norm( Psi2 - Kx@Kblock(Ku)@Psi1 );
+    PsiDiff = vec( Psi2 - Kx@Kblock(Ku)@Psi1 );
+    print(PsiDiff[:,0]);
+    return np.linalg.norm( PsiDiff );
 
 # vectorized cost form
 def vectCost():
@@ -47,7 +52,7 @@ def vectCost():
     Kxr = Kx[:,p:];
 
     Psi2Left  = vec( Kxl@PsiX );
-    Psi2Right = 0; #vec( Kxr@PsiUH );
+    # Psi2Right = vec( Kxr@PsiUH );
 
     # print(vec(Psi2) - Psi2Left);
 
@@ -70,12 +75,16 @@ def vectCost():
         c += skip;
 
 
-    print(Kxl.shape, Kxr.shape);
+    print(Kxl.shape, Kxr.shape, (Kxr@Kblock(Ku)[p:,:]).shape);
     print(vec(Ku).shape, vec(Kxl).shape, vec(Kxr).shape);
     print(Clist.shape);
 
     Psi2Cont = Clist@vec( Ku );
-    return np.linalg.norm( vec(Psi2) - Psi2Left - Psi2Right - Psi2Cont );
+
+    PsiDiff = vec(Psi2) - Psi2Left - Psi2Cont;
+    print(PsiDiff[:,0]);
+
+    return np.linalg.norm( PsiDiff );
 
 # comparison
 print( trueCost() );
