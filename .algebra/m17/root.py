@@ -8,7 +8,7 @@ def vec(A):
 # dimension variables and environment setup
 m = 2;
 p = 2;
-q = 1;
+q = 2;
 b = 2;
 Nt = 2;
 
@@ -31,7 +31,7 @@ for i in range(Nt):
 Psi1 = np.vstack( (PsiX, PsiUH) );
 Psi2 = np.random.rand( p+q*b,Nt );
 
-Kx = np.random.rand(p+b*q,p+b*q)
+Kx = np.eye(p+b*q,p+b*q)
 Ku = np.random.rand(b,b);
 
 # print(Kx); print(Ku);
@@ -48,10 +48,11 @@ def trueCost():
 
 # vectorized cost form
 def vectCost():
-    Kxt = Kx[:,:p];
-    Kxb = Kx[p:,:];
+    Kxl = Kx[:,:p];
+    Kxr = Kx[p:,:];
 
-    Psi2Top  = vec( Kxt@PsiX );
+    # Psi2Top  = vec( Kxl@Kblock(Ku)[:,:p]@PsiX );
+    Psi2Top = vec( Kxl@PsiX );
     # Psi2Right = vec( Kxr@PsiUH );
 
     # print(vec(Psi2) - Psi2Left);
@@ -75,11 +76,11 @@ def vectCost():
         c += skip;
 
 
-    print(Kxt.shape, Kxb.shape, (Kxb@Kblock(Ku)[:,p:]).shape);
-    print(vec(Ku).shape, vec(Kxt).shape, vec(Kxb).shape);
+    print(Kxl.shape, Kxr.shape, (Kxr@Kblock(Ku)[:,p:]).shape);
+    print(vec(Ku).shape, vec(Kxl).shape, vec(Kxr).shape);
     print(Clist.shape);
 
-    Psi2Bot = Clist@vec( Kxb@Kblock(Ku)[:,p:] );
+    Psi2Bot = Clist@vec( Ku );
 
     PsiDiff = vec(Psi2) - Psi2Top - Psi2Bot;
     print(PsiDiff[:,0]);
