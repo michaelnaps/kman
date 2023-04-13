@@ -78,7 +78,6 @@ def vectCost():
         Clist[c:c+skip,:] = Mlist;
         c += skip;
 
-
     print(Kxl.shape, Kxr.shape);
     print((Kxb@Kblock(Ku)[:,p:]).shape);
     print(vec(Ku).shape, vec(Kxl).shape, vec(Kxr).shape);
