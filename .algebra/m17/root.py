@@ -31,7 +31,7 @@ for i in range(Nt):
 Psi1 = np.vstack( (PsiX, PsiUH) );
 Psi2 = np.random.rand( p+q*b,Nt );
 
-Kx = np.random.rand(p+b*q,p+b*q)
+Kx = np.eye(p+b*q,p+b*q)
 Ku = np.random.rand(b,b);
 
 # print(Kx); print(Ku);
@@ -100,10 +100,15 @@ def splitCost():
     PsiR = np.empty( (p+q*b,Nt) );
     for i in range(Nt):
         # PsiR[:,i] = Kxr@( np.kron( PsiU[:,i,None], Ku@PsiH[:,i,None] ) )[:,0];
-        PsiR[:,i] = (np.kron( np.kron( PsiU[:,i,None], PsiH[:,i,None] ).T, Kxr ) @ vec(np.kron(np.eye(q), Ku)))[:,0];
+        PsiR[:,i] = (np.kron( np.kron( PsiU[:,i,None], PsiH[:,i,None] ).T, Kxr ) @ vec( np.kron(np.eye(q), Ku) ))[:,0];
+
+    # PsiR = np.kron( np.kron( PsiU, PsiH ).T, Kxr ) @ vec( np.kron( np.eye(q), Ku ) );
 
     print(Psi2.shape, PsiL.shape, PsiR.shape)
+
     PsiDiff = Psi2 - PsiL - PsiR;
+
+    print(vec( PsiDiff )[:,0]);
 
     return np.linalg.norm( PsiDiff );
 
@@ -117,6 +122,7 @@ vectNorm = vectCost();
 print('-----');
 splitNorm = splitCost();
 
+print('-----');
 print( 'true: ', trueNorm );
 print( 'vect: ', vectNorm );
 print( 'split:', splitNorm );
