@@ -10,6 +10,7 @@ np.set_printoptions(precision=5, suppress=True);
 
 
 # hyper paramter(s)
+eps = 0.1;
 dt = 0.01;
 Nx = 2;
 Nu = 2;
@@ -41,20 +42,32 @@ def control(x):
 
     return u;
 
-def anchorExpand(x, u):
+def noise(eps, shape):
+    return eps*np.random.rand(shape[0], shape[1]) - eps/2;
+
+def measure(x):
+
+    return x + noise(eps, x.shape);
+
+def anchorExpand(x, u=None):
     da = np.empty( (Na,1) );
     xa = np.empty( (Na,Nx*Nx) );
-    ua = np.empty( (Na,Nu*Nx) );
+    if u is not None:
+        ua = np.empty( (Na,Nu*Nx) );
+    else:
+        ua = None;
 
     for i, a in enumerate(aList.T):
         a = a.reshape(Nx,1);
         da[i,:] = vec((x - a).T@(x - a));
         xa[i,:] = vec(x@a.T).reshape(1,Nx*Nx);
-        ua[i,:] = vec(u@a.T).reshape(1,Nu*Nx);
+        if u is not None:
+            ua[i,:] = vec(u@a.T).reshape(1,Nu*Nx);
 
     da = vec(da);
     xa = vec(xa);
-    ua = vec(ua);
+    if u is not None:
+        ua = vec(ua);
 
     return da, xa, ua;
 
