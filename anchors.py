@@ -138,7 +138,7 @@ if __name__ == "__main__":
     b = obsH()['Nk'];
 
     # generate training data for Kx
-    N0 = 10;
+    N0 = 2;
     X0 = 10*np.random.rand(Nx,N0) - 5;
     xData, uRand = data.generate_data(tList, model, X0,
         control=control, Nu=Nu);
@@ -160,20 +160,20 @@ if __name__ == "__main__":
         ) );
         return Kb;
 
-    def Mu(klist):
-        M = Kblock( klist[0].K );
+    def Mu(kvar):
+        M = Kblock( kvar.K );
         return M;
 
     # initialize operator variables and solve
     kuvar = KoopmanOperator(obsH, obsU);
     kxvar = KoopmanOperator(obsXUH, obsXU, M=Kblock(kuvar.K));
 
-    klist = (kuvar, kxvar);
-    mlist = (None, Mu);
+    klist = (kxvar, kuvar);
+    mlist = (Mu, );
     klist = cascade_edmd(klist, mlist, X, Y, XU0);
 
     # form the cumulative operator
-    Kfinal = klist[1].K@Kblock( klist[0].K );
+    Kfinal = klist[0].K@Kblock( klist[1].K );
     kvar = KoopmanOperator(obsXUH, obsXU, K=Kfinal);
     kvar.resError(X, Y, XU0);
 

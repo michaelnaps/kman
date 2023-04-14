@@ -77,24 +77,19 @@ def iterative_ls(klist, flist, X, Y, X0, TOL=1e-3):
 
     return klist;
 
-# cascade extended dynamic mode decomposition algorithm
-def cascade_edmd(klist, flist, X, Y, X0, TOL=1e-3):
-    # calculation loop for BCD
-    dK = 1;  count = 0;
-    while dK > TOL:
-        dK = 0;
-        for i, f in enumerate(flist):
-            kcopy = klist[i].K;
+# cascade extended dynamic mode decomposition algorithm (recursive)
+def cascade_edmd(klist, flist, X, Y, X0):
+    # if number of operators is 1, solve edmd
+    if len(klist) == 1:
+        knvar = klist[0].edmd(X, Y, X0);
+        return knvar;
 
-            if f is not None:
-                M = f(klist[:i]);
-                klist[i].setShiftMatrix(M);
+    # when N(klist) != 1, cut front operator can reenter function
+    K = cascade_edmd(klist[1:], flist[1:], X, Y, X0);
 
-            klist[i].edmd(X, Y, X0);
-
-            dK += np.linalg.norm( klist[i].K - kcopy );
-        count += 1
-        print(count, ': %.5e' % dK);
+    # give the resulting operator list to the shift function and solve
+    klist[0].setShiftMatrix( flist[0](K) );
+    klist[0].edmd(X, Y, X0);
 
     return klist;
 
@@ -229,4 +224,4 @@ class KoopmanOperator:
         self.resError(X, Y, X0);
         self.ind = ind;
 
-        return K;
+        return self;
