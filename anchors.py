@@ -46,8 +46,9 @@ def noise(eps, shape):
     return eps*np.random.rand(shape[0], shape[1]) - eps/2;
 
 def measure(x):
-
-    return x + noise(eps, x.shape);
+    d = anchorExpand(x);
+    d += noise(eps, d.shape);
+    return d;
 
 def anchorExpand(x, u=None):
     da = np.empty( (Na,1) );
