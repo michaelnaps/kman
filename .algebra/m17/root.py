@@ -8,7 +8,7 @@ def vec(A):
 # dimension variables and environment setup
 m = 2;
 p = 2;
-q = 1;
+q = 3;
 b = 2;
 Nt = 2;
 
@@ -108,6 +108,15 @@ def splitCost():
     return np.linalg.norm( PsiDiff );
 
 # comparison
-print( trueCost() );
-print( vectCost() );
-print( splitCost() );
+print('-----')
+trueNorm = trueCost();
+
+print('-----');
+vectNorm = vectCost();
+
+print('-----');
+splitNorm = splitCost();
+
+print( 'true: ', trueNorm );
+print( 'vect: ', vectNorm );
+print( 'split:', splitNorm );
