@@ -31,7 +31,7 @@ for i in range(Nt):
 Psi1 = np.vstack( (PsiX, PsiUH) );
 Psi2 = np.random.rand( p+q*b,Nt );
 
-Kx = np.eye(p+b*q,p+b*q)
+Kx = np.random.rand(p+b*q,p+b*q)
 Ku = np.random.rand(b,b);
 
 # print(Kx); print(Ku);
@@ -125,4 +125,4 @@ splitNorm = splitCost();
 print('-----');
 print( 'true: ', trueNorm );
 print( 'vect: ', vectNorm );
-print( 'split:', splitNorm );
+# print( 'split:', splitNorm );
