@@ -128,7 +128,7 @@ def obsXUH(X=None):
 # main executable section
 if __name__ == "__main__":
     # simulation variables
-    T = 5;  Nt = round(T/dt) + 1;
+    T = 1;  Nt = round(T/dt) + 1;
     tList = np.array( [ [i*dt for i in range(Nt)] ] );
 
     # dimensiones reference variables
@@ -152,28 +152,24 @@ if __name__ == "__main__":
     X = np.vstack( (xStack, uStack) );
     Y = np.vstack( (yStack, uStack) );
 
-    # helper functions
-    def Kblock(K):
-        Kb = np.vstack( (
-            np.hstack( (np.eye(p), np.zeros( (p,b*q) )) ),
-            np.hstack( (np.zeros( (m,p) ), np.kron( np.eye(q), K)) )
-        ) );
-        return Kb;
-
+    # Ku block diagonal matrix function
     def Mu(kvar):
-        M = Kblock( kvar.K );
-        return M;
+        Kblock = np.vstack( (
+            np.hstack( (np.eye(p), np.zeros( (p,b*q) )) ),
+            np.hstack( (np.zeros( (m,p) ), np.kron( np.eye(q), kvar.K)) )
+        ) );
+        return Kblock;
 
     # initialize operator variables and solve
     kuvar = KoopmanOperator(obsH, obsU);
-    kxvar = KoopmanOperator(obsXUH, obsXU, M=Kblock(kuvar.K));
+    kxvar = KoopmanOperator(obsXUH, obsXU, M=Mu(kuvar));
 
     klist = (kxvar, kuvar);
     mlist = (Mu, );
     klist = cascade_edmd(klist, mlist, X, Y, XU0);
 
     # form the cumulative operator
-    Kfinal = klist[0].K@Kblock( klist[1].K );
+    Kfinal = klist[0].K @ Mu( klist[1] );
     kvar = KoopmanOperator(obsXUH, obsXU, K=Kfinal);
     kvar.resError(X, Y, XU0);
 
