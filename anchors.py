@@ -25,7 +25,7 @@ def plotAnchors(fig, axs):
         circEntity = plt.Circle(a, 0.5, facecolor='indianred', edgecolor='k');
         axs.add_artist( circEntity );
     # axs.axis('equal');
-    return;
+    return fig, axs;
 
 
 # model and control functions
@@ -190,7 +190,10 @@ if __name__ == "__main__":
     # test comparison results
     N0n = 25;
     NkXU = obsXU()['Nk'];
-    X0n = 20*np.random.rand(Nx,N0n) - 10;
+
+    # initial positions
+    bounds = 15;
+    X0n = 2*bounds*np.random.rand(Nx,N0n) - bounds;
     XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
 
     Psi0 = np.empty( (NkXU,N0n) );
@@ -223,5 +226,5 @@ if __name__ == "__main__":
         i += Nx;
         j += NkXU;
     figComp, axsComp = data.compare_data(xTest, xPsi, X0n);
-    plotAnchors(figComp, axsComp);
+    fogComp, axsComp = plotAnchors(figComp, axsComp);
     plt.show();
