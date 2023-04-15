@@ -135,20 +135,14 @@ def obsXUH(X=None):
     return Psi;
 
 
-# main executable section
-if __name__ == "__main__":
-    # simulation variables
-    T = 1;  Nt = round(T/dt) + 1;
-    tList = np.array( [ [i*dt for i in range(Nt)] ] );
+# helper functions for creating and simulating koopman operator
+m = Nu;
+p = obsX()['Nk'];
+q = 1;
+b = obsH()['Nk'];
 
-    # dimensiones reference variables
-    m = Nu;
-    p = obsX()['Nk'];
-    q = 1;
-    b = obsH()['Nk'];
-
+def createData(tList, N0, Nt):
     # generate training data for Kx
-    N0 = 2;
     X0 = 10*np.random.rand(Nx,N0) - 5;
     xData, uRand = data.generate_data(tList, model, X0,
         control=control, Nu=Nu);
@@ -162,6 +156,9 @@ if __name__ == "__main__":
     X = np.vstack( (xStack, uStack) );
     Y = np.vstack( (yStack, uStack) );
 
+    return X, Y, XU0;
+
+def learnOperators(X, Y, X0):
     # Ku block diagonal matrix function
     def Mu(kvar):
         Kblock = np.vstack( (
@@ -176,19 +173,16 @@ if __name__ == "__main__":
 
     klist = (kxvar, kuvar);
     mlist = (Mu, );
-    klist = cascade_edmd(klist, mlist, X, Y, XU0);
+    klist = cascade_edmd(klist, mlist, X, Y, X0);
 
     # form the cumulative operator
     Kfinal = klist[0].K @ Mu( klist[1] );
     kvar = KoopmanOperator(obsXUH, obsXU, K=Kfinal);
+    kvar.resError(X, Y, X0);
 
-    kvar.resError(X, Y, XU0);
-    for k in klist:
-        print(k);
-    print(kvar);
+    return kvar, kxvar, kuvar;
 
-    # test comparison results
-    N0n = 25;
+def simulateData(N0n):
     NkXU = obsXU()['Nk'];
 
     # initial positions
@@ -227,4 +221,27 @@ if __name__ == "__main__":
         j += NkXU;
     figComp, axsComp = data.compare_data(xTest, xPsi, X0n);
     fogComp, axsComp = plotAnchors(figComp, axsComp);
+
+    return figComp, axsComp;
+
+
+# main executable section
+if __name__ == "__main__":
+    # simulation variables
+    T = 1;  Nt = round(T/dt) + 1;
+    tList = np.array( [ [i*dt for i in range(Nt)] ] );
+
+    # create data for learning operators
+    N0 = 2;
+    X, Y, XU0 = createData(tList, N0, Nt);
+
+    kvar, kxvar, kuvar = learnOperators(X, Y, XU0);
+    klist = (kxvar, kuvar, kvar);
+
+    for k in klist:
+        print(k);
+
+    # test comparison results
+    N0n = 25;
+    fig, axs = simulateData(N0n);
     plt.show();
