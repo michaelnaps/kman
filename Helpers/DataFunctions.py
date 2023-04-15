@@ -72,7 +72,7 @@ def compare_data(Xlist, Ylist, X0, fig=None, axs=None):
         axs.plot(Xlist[k], Xlist[k+1], color=xColor);
         axs.plot(Ylist[k], Ylist[k+1], color=yColor, linestyle='--');
 
-        axs.axis( (-10,10,-10,10), aspect='equal' );
+        axs.axis('equal');
         axs.legend();
         axs.grid(1);
 

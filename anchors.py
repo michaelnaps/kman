@@ -18,6 +18,16 @@ Na = 3;
 aList = np.array( [[10, 10, -10],[10, -10, -10]] );
 
 
+# plot functions
+def plotAnchors(fig, axs):
+    for a in aList.T:
+        axs.plot(a[0], a[1]);  # to shape axis around anchors
+        circEntity = plt.Circle(a, 0.5, facecolor='indianred', edgecolor='k');
+        axs.add_artist( circEntity );
+    # axs.axis('equal');
+    return;
+
+
 # model and control functions
 def model(x, u):
     A = np.array( [
@@ -171,8 +181,8 @@ if __name__ == "__main__":
     # form the cumulative operator
     Kfinal = klist[0].K @ Mu( klist[1] );
     kvar = KoopmanOperator(obsXUH, obsXU, K=Kfinal);
-    kvar.resError(X, Y, XU0);
 
+    kvar.resError(X, Y, XU0);
     for k in klist:
         print(k);
     print(kvar);
@@ -213,4 +223,5 @@ if __name__ == "__main__":
         i += Nx;
         j += NkXU;
     figComp, axsComp = data.compare_data(xTest, xPsi, X0n);
+    plotAnchors(figComp, axsComp);
     plt.show();
