@@ -15,7 +15,7 @@ dt = 0.01;
 Nx = 2;
 Nu = 2;
 Na = 3;
-aList = np.array( [[10, 10, -10],[10, -10, -10]] );
+aList = np.array( [[10, 12, -9],[10, -11, -15]] );
 
 
 # plot functions
