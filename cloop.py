@@ -3,7 +3,7 @@ from anchors import *
 # closed-loop observation functions
 def obsXU(X=None):
     if X is None:
-        meta = {'Nk': 2*Nx+3*Nu+Na+Nx*Na+Nu*Na};
+        meta = {'Nk': 3*Nx+2*Nu+Na+Nx*Na+Nu*Na};
         return meta;
 
     x = X[:Nx];
@@ -72,5 +72,3 @@ if __name__ == '__main__':
     # initialize operator
     kvar = KoopmanOperator( obsXU, obsX );
     print( kvar.edmd( X, Y, XU0 ) );
-
-    # test results of EDMD
