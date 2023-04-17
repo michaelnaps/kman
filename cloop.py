@@ -5,7 +5,11 @@ def obs(X=None):
     if X is None:
         meta = {'Nk': 1};
         return meta;
-    Psi = X;
+
+    d = np.empty( (Na,1) );
+    xTx = np.empty( (Nx,1) );
+    xTu = np.empty( (Nu,1) );
+
     return Psi;
 
 # main execution block
