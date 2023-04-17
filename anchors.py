@@ -144,11 +144,11 @@ b = obsH()['Nk'];
 def createData(tList, N0, Nt):
     # generate training data for Kx
     X0 = 10*np.random.rand(Nx,N0) - 5;
-    xData, uRand = data.generate_data(tList, model, X0,
+    xData, uData = data.generate_data(tList, model, X0,
         control=control, Nu=Nu);
 
     # formatting training data from xData and uData
-    uStack = data.stack_data(uRand, N0, Nu, Nt-1);
+    uStack = data.stack_data(uData, N0, Nu, Nt-1);
     xStack = data.stack_data(xData[:,:-1], N0, Nx, Nt-1);
     yStack = data.stack_data(xData[:,1:], N0, Nx, Nt-1);
 
