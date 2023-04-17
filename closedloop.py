@@ -22,7 +22,7 @@ def obsXU(X=None):
         xa[:,i] = np.multiply(x,a[:,None])[:,0];
         ua[:,i] = np.multiply(u,a[:,None])[:,0];
 
-    Psi = np.vstack( (x, u, d, xx, uu, xu, vec(xa), vec(ua)) );
+    Psi = np.vstack( (x, d, xx, vec(xa), u, uu, xu, vec(ua)) );
 
     return Psi;
 
@@ -49,13 +49,13 @@ def obsX(X=None):
 # main execution block
 if __name__ == '__main__':
     # simulation data (for training)
-    T = 10;  Nt = round(T/dt)+1;
+    T = 100;  Nt = round(T/dt)+1;
     tList = [[i*dt for i in range(Nt)]];
 
     # generate data
-    N0 = 10;
+    N0 = 1;
     X0 = 10*np.random.rand(Nx,N0) - 5;
-    randControl = lambda x: 5*np.random.rand(Nu,1);
+    randControl = lambda x: 5*np.random.rand(Nu,1)-2.5;
     xData, uRand = data.generate_data(tList, model, X0,
         control=randControl, Nu=Nu);
 
@@ -71,4 +71,36 @@ if __name__ == '__main__':
 
     # initialize operator
     kvar = KoopmanOperator( obsXU, obsX );
-    print( kvar.edmd( X, Y, XU0 ) );
+    kvar.edmd(X, Y, XU0);
+
+    # # demonstrate closed-loop results
+    # x0 = np.random.rand(Nx,1);
+    # xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
+    # Psi0 = obsX(xu0);
+
+    # # oscillation in shape of circle?
+    # NkX = obsX()['Nk'];
+    # def rmes(PsiX):
+    #     PsiX = PsiX.reshape(NkX,1);
+    #     x = PsiX[:Nx];
+
+    #     u = randControl(x);
+    #     print(u);
+
+    #     uu = np.multiply(u,u);
+    #     xu = np.multiply(x,u);
+    #     ua = np.empty( (Nu,Na) );
+
+    #     for i, a in enumerate(aList.T):
+    #         ua[:,i] = np.multiply(u,a[:,None])[:,0];
+
+    #     Psi = np.vstack( (PsiX, u, uu, xu, vec(ua)) );
+
+    #     return kvar.K@Psi;
+
+    # PsiData = data.generate_data(tList, rmes, Psi0)[0];
+    # xData = PsiData[:Nx,:];
+
+    # fig, axs = plt.subplots();
+    # axs.plot(xData[:,0], xData[:,1]);
+    # plt.show();
