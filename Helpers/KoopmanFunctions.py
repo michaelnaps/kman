@@ -178,7 +178,7 @@ class KoopmanOperator:
         # calculate residual error
         err = 0;
         for n in range(N0*(Nt-1)):
-            err += np.linalg.norm(PsiY[:,n,None] - K@PsiX[:,n,None]);
+            err += np.linalg.norm(PsiY[:,n,None] - K@PsiX[:,n,None])**2;
 
         self.err = err;
         return err;
