@@ -292,6 +292,7 @@ def animatedResults(x0):
 
     return xvhc, kvhc;
 
+
 # main executable section
 if __name__ == "__main__":
     # simulation variables
