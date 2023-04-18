@@ -1,5 +1,50 @@
 from anchors import *
 
+class clVehicle:
+    def __init__(self, x0, xd,
+                 fig=None, axs=None,
+                 buffer_length=10, pause=1e-3,
+                 color='k', radius=1,
+                 record=0):
+        if axs is None and fig is None:
+            self.fig, self.axs = plt.subplots();
+        else:
+            self.fig = fig;
+            self.axs = axs;
+
+        # figure scaling
+        self.axs.set_xlim(-12,12);
+        self.axs.set_ylim(-12,12);
+        self.axs.axis('equal');
+        self.axs.grid(1);
+
+        # initialize aesthetic parameters
+        self.color = color;
+        self.body_radius = radius;
+
+        self.body = patch.Circle(x0[:Nx,0], self.body_radius,
+            facecolor=self.color, edgecolor='k', zorder=1);
+        self.axs.add_patch(self.body);
+
+        self.pause = pause;
+        self.xd = xd;
+
+        if record:
+            plt.show(block=0);
+            input("Press enter when ready...");
+
+    def update(self, t, x, zorder=1):
+        self.body.remove();
+
+        self.body = patch.Circle(x[:Nx,0], self.body_radius,
+            facecolor=self.color, edgecolor='k', zorder=zorder);
+        self.axs.add_patch(self.body);
+
+        plt.title('time: %.3f' % t);
+        plt.pause(self.pause);
+
+        return self;
+
 # closed-loop observation functions
 def obsXU(X=None):
     if X is None:
@@ -17,13 +62,13 @@ def obsXU(X=None):
     for i, a in enumerate(aList.T):
         d[i] = (x - a[:,None]).T@(x - a[:,None]);
 
-    Psi = np.vstack( (x, d, xx, u, uu, xu, 1) );
+    Psi = np.vstack( (x, d, xx, 1, u, uu, xu) );
 
     return Psi;
 
 def obsX(X=None):
     if X is None:
-        meta = {'Nk': 2*Nx+Na+Nx*Na};
+        meta = {'Nk': 2*Nx+Na+1};
         return meta;
 
     x = X[:Nx];
@@ -31,20 +76,17 @@ def obsX(X=None):
     xx = np.multiply(x,x);
 
     d = np.empty( (Na,1) );
-    xa = np.empty( (Nx,Na) );
-
     for i, a in enumerate(aList.T):
         d[i] = (x - a[:,None]).T@(x - a[:,None]);
-        xa[:,i] = np.multiply(x,a[:,None])[:,0];
 
-    Psi = np.vstack( (x, d, xx, vec(xa)) );
+    Psi = np.vstack( (x, d, xx, 1) );
 
     return Psi;
 
 # main execution block
 if __name__ == '__main__':
     # simulation data (for training)
-    T = 100;  Nt = round(T/dt)+1;
+    T = 1;  Nt = round(T/dt)+1;
     tList = [[i*dt for i in range(Nt)]];
 
     # generate data
@@ -68,34 +110,34 @@ if __name__ == '__main__':
     kvar = KoopmanOperator( obsXU, obsX );
     print( kvar.edmd(X, Y, XU0) );
 
-    # # demonstrate closed-loop results
-    # x0 = np.random.rand(Nx,1);
-    # xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
-    # Psi0 = obsX(xu0);
+    # propagation function
+    def prop(PsiX, u):
+        x = PsiX[:Nx];
+        uu = np.multiply(u,u);
+        xu = np.multiply(x,u);
 
-    # # oscillation in shape of circle?
-    # NkX = obsX()['Nk'];
-    # def rmes(PsiX):
-    #     PsiX = PsiX.reshape(NkX,1);
-    #     x = PsiX[:Nx];
+        Psi = np.vstack( (PsiX, u, uu, xu) );
+        return kvar.K@Psi;
 
-    #     u = randControl(x);
-    #     print(u);
+    x0 = np.array( [[0],[0]] );
+    xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
+    Psi0 = obsX( xu0 );
 
-    #     uu = np.multiply(u,u);
-    #     xu = np.multiply(x,u);
-    #     ua = np.empty( (Nu,Na) );
+    # print( Psi0 );
+    # print( prop(Psi0, [[1],[1]]) );
 
-    #     for i, a in enumerate(aList.T):
-    #         ua[:,i] = np.multiply(u,a[:,None])[:,0];
+    # simulate results using vehicle class
+    clvhc = Vehicle(x0, None,
+        color='yellowgreen', radius=0.5);
+    plotAnchors(clvhc.fig, clvhc.axs);
 
-    #     Psi = np.vstack( (PsiX, u, uu, xu, vec(ua)) );
+    A = 10;
+    Psi = Psi0;
+    uList = A*np.array( [
+         np.cos( np.linspace(0, 2*np.pi, Nt-1) ),
+        -np.cos( np.linspace(0, 2*np.pi, Nt-1) ) ] );
+    for i, u in enumerate(uList.T):
+        Psi = prop(Psi, u[:,None]);
 
-    #     return kvar.K@Psi;
-
-    # PsiData = data.generate_data(tList, rmes, Psi0)[0];
-    # xData = PsiData[:Nx,:];
-
-    # fig, axs = plt.subplots();
-    # axs.plot(xData[:,0], xData[:,1]);
-    # plt.show();
+        x = Psi[:Nx];
+        clvhc.update(i*dt, x);
