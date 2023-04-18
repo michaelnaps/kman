@@ -38,7 +38,6 @@ class Vehicle:
         self.axs.set_ylim(-12,12);
         self.axs.axis('equal');
         self.axs.grid(1);
-        self.fig.tight_layout();
 
         # initialize buffer (trail)
         self.color = color;
@@ -211,7 +210,7 @@ def learnOperators(X, Y, X0):
 
     return kxvar, kuvar, kvar;
 
-def simulateData(N0n):
+def stationaryResults(N0n):
     NkXU = obsXU()['Nk'];
 
     # initial positions
@@ -252,6 +251,46 @@ def simulateData(N0n):
 
     return figComp, axsComp;
 
+def animatedResults(x0):
+    # simulation variables
+    xd = np.zeros( (Nx,1) );
+    xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
+
+    # vehicle variables
+    xvhc = Vehicle(x0, xd,
+        buffer_length=25);
+    kvhc = Vehicle(x0, xd,
+        fig=xvhc.fig, axs=xvhc.axs,
+        color='r', buffer_length=25);
+    plotAnchors(xvhc.fig, xvhc.axs);
+
+    # propagation function
+    NkX = obsX()['Nk'];
+    def rmes(PsiXU):
+        x = PsiXU[:Nx];
+
+        PsiX = PsiXU[:NkX];
+        PsiU = [1];
+        PsiH = anchorMeasure(x) + noise(eps,(1,1));
+
+        Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
+        return kvar.K@Psin;
+
+    # simulation
+    t = 0;
+    x = x0;
+    Psi = kvar.obsY(xu0) + kvar.obsY( noise(delta,(Nx+Nu,1)) );
+    while t < 1:
+        Psi = rmes(Psi);
+
+        u = Psi[NkX:].reshape(Nu,1);
+        x = model(x,u);
+
+        xvhc.update(t, x);
+        kvhc.update(t, Psi);
+        t += dt;
+
+    return xvhc, kvhc;
 
 # main executable section
 if __name__ == "__main__":
@@ -270,47 +309,13 @@ if __name__ == "__main__":
         print(k);
 
 
-    ans = input("\nStationary or moving sim? [s/m] ");
+    ans = input("\nStationary or animated sim? [s/a] ");
     if ans == 's':
         # test comparison results
         N0n = 25;
-        fig, axs = simulateData(N0n);
+        fig, axs = stationaryResults(N0n);
         plt.show();
-    elif ans == 'm':
+    elif ans == 'a':
         # simulation variables
-        xd = np.zeros( (Nx,1) );
         x0 = 20*np.random.rand(Nx,1)-10;
-        xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
-
-        xvhc = Vehicle(x0, xd,
-            buffer_length=25);
-        kvhc = Vehicle(x0, xd,
-            fig=xvhc.fig, axs=xvhc.axs,
-            color='r', buffer_length=25);
-        plotAnchors(xvhc.fig, xvhc.axs);
-
-        # propagation function
-        NkX = obsX()['Nk'];
-        def rmes(PsiXU):
-            x = PsiXU[:Nx];
-
-            PsiX = PsiXU[:NkX];
-            PsiU = [1];
-            PsiH = anchorMeasure(x) + noise(eps,(1,1));
-
-            Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
-            return kvar.K@Psin;
-
-        # simulation
-        t = 0;
-        x = x0;
-        Psi = kvar.obsY(xu0) + kvar.obsY( noise(delta,(Nx+Nu,1)) );
-        while t < 1:
-            Psi = rmes(Psi);
-
-            u = Psi[NkX:].reshape(Nu,1);
-            x = model(x,u);
-
-            xvhc.update(t, x);
-            kvhc.update(t, Psi);
-            t += dt;
+        xvhc, kvhc = animatedResults(x0);
