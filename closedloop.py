@@ -1,5 +1,6 @@
 from anchors import *
 
+# closed-loop vehicle class
 class clVehicle:
     def __init__(self, Psi0, xd,
                  fig=None, axs=None,
