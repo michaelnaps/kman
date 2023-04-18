@@ -103,6 +103,38 @@ def obsX(X=None):
 
     return Psi;
 
+# animate results
+def animatedResults(kvar):
+    # propagation function
+    def prop(PsiX, u):
+        x = PsiX[:Nx];
+        uu = np.multiply(u,u);
+        xu = np.multiply(x,u);
+
+        Psi = np.vstack( (PsiX, u, uu, xu) );
+        return kvar.K@Psi;
+
+    x0 = np.array( [[0],[0]] );
+    xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
+    Psi0 = obsX( xu0 );
+
+    # simulate results using vehicle class
+    clvhc = clVehicle(Psi0, None,
+        color='yellowgreen', radius=0.5);
+    plotAnchors(clvhc.fig, clvhc.axs);
+
+    A = 5;
+    Psi = Psi0;
+    uList = A*np.array( [
+         np.cos( np.linspace(0, 2*np.pi, Nt-1) ),
+        -np.cos( np.linspace(0, 1.5*np.pi, Nt-1) ) ] );
+
+    for i, u in enumerate(uList.T):
+        Psi = prop(Psi, u[:,None]);
+        clvhc.update(i*dt, Psi, zorder=10);
+
+    return clvhc;
+
 # main execution block
 if __name__ == '__main__':
     # simulation data (for training)
@@ -130,29 +162,5 @@ if __name__ == '__main__':
     kvar = KoopmanOperator( obsXU, obsX );
     print( kvar.edmd(X, Y, XU0) );
 
-    # propagation function
-    def prop(PsiX, u):
-        x = PsiX[:Nx];
-        uu = np.multiply(u,u);
-        xu = np.multiply(x,u);
-
-        Psi = np.vstack( (PsiX, u, uu, xu) );
-        return kvar.K@Psi;
-
-    x0 = np.array( [[0],[0]] );
-    xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
-    Psi0 = obsX( xu0 );
-
-    # simulate results using vehicle class
-    clvhc = clVehicle(Psi0, None,
-        color='yellowgreen', radius=0.5);
-    plotAnchors(clvhc.fig, clvhc.axs);
-
-    A = 5;
-    Psi = Psi0;
-    uList = A*np.array( [
-         np.cos( np.linspace(0, 2*np.pi, Nt-1) ),
-        -np.cos( np.linspace(0, 1.5*np.pi, Nt-1) ) ] );
-    for i, u in enumerate(uList.T):
-        Psi = prop(Psi, u[:,None]);
-        clvhc.update(i*dt, Psi, zorder=10);
+    # animated results
+    animatedResults(kvar);
