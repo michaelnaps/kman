@@ -3,7 +3,7 @@ from anchors import *
 # closed-loop observation functions
 def obsXU(X=None):
     if X is None:
-        meta = {'Nk': 3*Nx+2*Nu+Na+Nx*Na+Nu*Na};
+        meta = {'Nk': 3*Nx+2*Nu+Na+1};
         return meta;
 
     x = X[:Nx];
@@ -14,15 +14,15 @@ def obsXU(X=None):
     xu = np.multiply(x,u);
 
     d = np.empty( (Na,1) );
-    xa = np.empty( (Nx,Na) );
-    ua = np.empty( (Nu,Na) );
+    # xa = np.empty( (Nx,Na) );
+    # ua = np.empty( (Nu,Na) );
 
     for i, a in enumerate(aList.T):
         d[i] = (x - a[:,None]).T@(x - a[:,None]);
-        xa[:,i] = np.multiply(x,a[:,None])[:,0];
-        ua[:,i] = np.multiply(u,a[:,None])[:,0];
+        # xa[:,i] = np.multiply(x,a[:,None])[:,0];
+        # ua[:,i] = np.multiply(u,a[:,None])[:,0];
 
-    Psi = np.vstack( (x, d, xx, vec(xa), u, uu, xu, vec(ua)) );
+    Psi = np.vstack( (x, d, xx, u, uu, xu, 1) );
 
     return Psi;
 
@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
     # initialize operator
     kvar = KoopmanOperator( obsXU, obsX );
-    kvar.edmd(X, Y, XU0);
+    print( kvar.edmd(X, Y, XU0) );
 
     # # demonstrate closed-loop results
     # x0 = np.random.rand(Nx,1);
