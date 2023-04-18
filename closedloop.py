@@ -14,13 +14,8 @@ def obsXU(X=None):
     xu = np.multiply(x,u);
 
     d = np.empty( (Na,1) );
-    # xa = np.empty( (Nx,Na) );
-    # ua = np.empty( (Nu,Na) );
-
     for i, a in enumerate(aList.T):
         d[i] = (x - a[:,None]).T@(x - a[:,None]);
-        # xa[:,i] = np.multiply(x,a[:,None])[:,0];
-        # ua[:,i] = np.multiply(u,a[:,None])[:,0];
 
     Psi = np.vstack( (x, d, xx, u, uu, xu, 1) );
 
