@@ -10,7 +10,8 @@ np.set_printoptions(precision=5, suppress=True);
 
 
 # hyper paramter(s)
-eps = 0.1;
+eps = 1;
+delta = 0.1;
 dt = 0.01;
 Nx = 2;
 Nu = 2;
@@ -53,11 +54,10 @@ def control(x):
     return u;
 
 def noise(eps, shape):
-    return eps*np.random.rand(shape[0], shape[1]) - eps/2;
+    return eps*np.random.rand(shape[0], shape[1]) - 2*eps;
 
 def measure(x):
     d = anchorExpand(x)[0];
-    d += noise(eps, d.shape);
     return d;
 
 def anchorExpand(x, u=None):

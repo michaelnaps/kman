@@ -6,7 +6,7 @@ import matplotlib.path as path
 
 
 # parameters for simulation
-class Parameters:
+class Vehicle:
     def __init__(self, x0, xd,
                  fig=None, axs=None,
                  buffer_length=10, pause=1e-3,
@@ -21,7 +21,7 @@ class Parameters:
         self.axs.set_xlim(-12,12);
         self.axs.set_ylim(-12,12);
         self.axs.axis('equal');
-        self.axs.grid();
+        self.axs.grid(1);
         self.fig.tight_layout();
 
         # initialize buffer (trail)
@@ -76,8 +76,13 @@ if __name__ == "__main__":
     xd = np.zeros( (Nx,1) );
     x0 = 20*np.random.rand(Nx,1)-10;
     xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
-    params = Parameters(x0, xd, buffer_length=25);
-    plotAnchors(params.fig, params.axs);
+
+    xvhc = Vehicle(x0, xd,
+        buffer_length=25);
+    kvhc = Vehicle(x0, xd,
+        fig=xvhc.fig, axs=xvhc.axs,
+        color='r', buffer_length=25);
+    plotAnchors(xvhc.fig, xvhc.axs);
 
     # propagation function
     def rmes(PsiXU):
@@ -85,15 +90,21 @@ if __name__ == "__main__":
 
         PsiX = PsiXU[:p];
         PsiU = [1];
-        PsiH = measure(x);
+        PsiH = measure(x) + noise(eps,(1,1));
 
         Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
         return kvar.K@Psin;
 
     # simulation
     t = 0;
-    Psi = kvar.obsY(xu0);
-    while t < 5:
+    x = x0;
+    Psi = kvar.obsY(xu0) + kvar.obsY( noise(delta,(Nx+Nu,1)) );
+    while t < 1:
         Psi = rmes(Psi);
-        params.update(t, Psi);
+
+        u = Psi[p:].reshape(Nu,1);
+        x = model(x,u);
+
+        xvhc.update(t, x);
+        kvhc.update(t, Psi);
         t += dt;
