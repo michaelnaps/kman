@@ -1,7 +1,7 @@
 from anchors import *
 
 class clVehicle:
-    def __init__(self, x0, xd,
+    def __init__(self, Psi0, xd,
                  fig=None, axs=None,
                  buffer_length=10, pause=1e-3,
                  color='k', radius=1,
@@ -22,9 +22,18 @@ class clVehicle:
         self.color = color;
         self.body_radius = radius;
 
-        self.body = patch.Circle(x0[:Nx,0], self.body_radius,
+        self.body = patch.Circle(Psi0[:Nx,0], self.body_radius,
             facecolor=self.color, edgecolor='k', zorder=1);
         self.axs.add_patch(self.body);
+
+        d = Psi0[Nx:Nx+Na];
+        self.aList = (
+            patch.Circle(Psi0[:Nx], np.sqrt(d[0]), facecolor="None", edgecolor='k'),
+            patch.Circle(Psi0[:Nx], np.sqrt(d[1]), facecolor="None", edgecolor='k'),
+            patch.Circle(Psi0[:Nx], np.sqrt(d[2]), facecolor="None", edgecolor='k')
+        );
+        for a in self.aList:
+            self.axs.add_patch(a);
 
         self.pause = pause;
         self.xd = xd;
@@ -33,12 +42,22 @@ class clVehicle:
             plt.show(block=0);
             input("Press enter when ready...");
 
-    def update(self, t, x, zorder=1):
+    def update(self, t, Psi, zorder=1):
         self.body.remove();
+        for a in self.aList:
+            a.remove();
 
-        self.body = patch.Circle(x[:Nx,0], self.body_radius,
+        d = Psi[Nx:Nx+Na];
+        self.body = patch.Circle(Psi[:Nx,0], self.body_radius,
             facecolor=self.color, edgecolor='k', zorder=zorder);
+        self.aList = (
+            patch.Circle(Psi[:Nx], np.sqrt(d[0]), facecolor="None", edgecolor='k'),
+            patch.Circle(Psi[:Nx], np.sqrt(d[1]), facecolor="None", edgecolor='k'),
+            patch.Circle(Psi[:Nx], np.sqrt(d[2]), facecolor="None", edgecolor='k') );
+
         self.axs.add_patch(self.body);
+        for a in self.aList:
+            self.axs.add_patch(a);
 
         plt.title('time: %.3f' % t);
         plt.pause(self.pause);
@@ -86,7 +105,7 @@ def obsX(X=None):
 # main execution block
 if __name__ == '__main__':
     # simulation data (for training)
-    T = 1;  Nt = round(T/dt)+1;
+    T = 5;  Nt = round(T/dt)+1;
     tList = [[i*dt for i in range(Nt)]];
 
     # generate data
@@ -123,21 +142,16 @@ if __name__ == '__main__':
     xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
     Psi0 = obsX( xu0 );
 
-    # print( Psi0 );
-    # print( prop(Psi0, [[1],[1]]) );
-
     # simulate results using vehicle class
-    clvhc = Vehicle(x0, None,
+    clvhc = clVehicle(Psi0, None,
         color='yellowgreen', radius=0.5);
     plotAnchors(clvhc.fig, clvhc.axs);
 
-    A = 10;
+    A = 5;
     Psi = Psi0;
     uList = A*np.array( [
          np.cos( np.linspace(0, 2*np.pi, Nt-1) ),
-        -np.cos( np.linspace(0, 2*np.pi, Nt-1) ) ] );
+        -np.cos( np.linspace(0, 1.5*np.pi, Nt-1) ) ] );
     for i, u in enumerate(uList.T):
         Psi = prop(Psi, u[:,None]);
-
-        x = Psi[:Nx];
-        clvhc.update(i*dt, x);
+        clvhc.update(i*dt, Psi, zorder=10);
