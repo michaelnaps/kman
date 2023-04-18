@@ -15,7 +15,7 @@ dt = 0.01;
 Nx = 2;
 Nu = 2;
 Na = 3;
-aList = np.array( [[10, 12, -9],[10, -11, -15]] );
+aList = np.array( [[10, 10, -10],[10, -10, -10]] );
 
 
 # plot functions
@@ -56,7 +56,7 @@ def noise(eps, shape):
     return eps*np.random.rand(shape[0], shape[1]) - eps/2;
 
 def measure(x):
-    d = anchorExpand(x);
+    d = anchorExpand(x)[0];
     d += noise(eps, d.shape);
     return d;
 
@@ -176,11 +176,11 @@ def learnOperators(X, Y, X0):
     klist = cascade_edmd(klist, mlist, X, Y, X0);
 
     # form the cumulative operator
-    Kfinal = klist[0].K @ Mu( klist[1] );
-    kvar = KoopmanOperator(obsXUH, obsXU, K=Kfinal);
+    Kf = klist[0].K @ Mu( klist[1] );
+    kvar = KoopmanOperator(obsXUH, obsXU, K=Kf);
     kvar.resError(X, Y, X0);
 
-    return kvar, kxvar, kuvar;
+    return kxvar, kuvar, kvar;
 
 def simulateData(N0n):
     NkXU = obsXU()['Nk'];
@@ -235,7 +235,7 @@ if __name__ == "__main__":
     N0 = 2;
     X, Y, XU0 = createData(tList, N0, Nt);
 
-    kvar, kxvar, kuvar = learnOperators(X, Y, XU0);
+    kxvar, kuvar, kvar = learnOperators(X, Y, XU0);
     klist = (kxvar, kuvar, kvar);
 
     for k in klist:
