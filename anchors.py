@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 from Helpers.KoopmanFunctions import *
 import Helpers.DataFunctions as data
 
+import matplotlib.pyplot as plt
+import matplotlib.patches as patch
+import matplotlib.path as path
 
 # set global output setting
 np.set_printoptions(precision=5, suppress=True);
@@ -17,6 +20,56 @@ Nx = 2;
 Nu = 2;
 Na = 3;
 aList = np.array( [[10, 10, -10],[10, -10, -10]] );
+
+# vehicle entity for simulation
+class Vehicle:
+    def __init__(self, x0, xd,
+                 fig=None, axs=None,
+                 buffer_length=10, pause=1e-3,
+                 color='k', record=0):
+        if axs is None and fig is None:
+            self.fig, self.axs = plt.subplots();
+        else:
+            self.fig = fig;
+            self.axs = axs;
+
+        # figure scaling
+        self.axs.set_xlim(-12,12);
+        self.axs.set_ylim(-12,12);
+        self.axs.axis('equal');
+        self.axs.grid(1);
+        self.fig.tight_layout();
+
+        # initialize buffer (trail)
+        self.color = color;
+
+        self.buffer = np.array( [x0[:Nx,0] for i in range(buffer_length)] );
+        self.trail_patch = patch.PathPatch(path.Path(self.buffer),
+            color=self.color);
+        self.axs.add_patch(self.trail_patch);
+
+        self.pause = pause;
+        self.xd = xd;
+
+        if record:
+            plt.show(block=0);
+            input("Press enter when ready...");
+
+    def update(self, t, x):
+        self.trail_patch.remove();
+
+        self.buffer[:-1] = self.buffer[1:];
+        self.buffer[-1] = x[:2,0];
+
+        self.trail_patch = patch.PathPatch(path.Path(self.buffer),
+            color=self.color, fill=0);
+        self.axs.add_patch(self.trail_patch);
+
+        plt.title('time: %.3f' % t);
+        plt.show(block=0);
+        plt.pause(self.pause);
+
+        return self;
 
 
 # plot functions
@@ -56,31 +109,11 @@ def control(x):
 def noise(eps, shape):
     return eps*np.random.rand(shape[0], shape[1]) - 2*eps;
 
-def measure(x):
-    d = anchorExpand(x)[0];
-    return d;
-
-def anchorExpand(x, u=None):
+def anchorMeasure(x):
     da = np.empty( (Na,1) );
-    xa = np.empty( (Na,Nx*Nx) );
-    if u is not None:
-        ua = np.empty( (Na,Nu*Nx) );
-    else:
-        ua = None;
-
     for i, a in enumerate(aList.T):
-        a = a.reshape(Nx,1);
-        da[i,:] = vec((x - a).T@(x - a));
-        xa[i,:] = vec(x@a.T).reshape(1,Nx*Nx);
-        if u is not None:
-            ua[i,:] = vec(u@a.T).reshape(1,Nu*Nx);
-
-    da = vec(da);
-    xa = vec(xa);
-    if u is not None:
-        ua = vec(ua);
-
-    return da, xa, ua;
+        da[i] = (x - a[:,None]).T@(x - a[:,None]);
+    return da;
 
 
 # observable functions PsiX, PsiU, PsiH
@@ -114,10 +147,7 @@ def obsH(X=None):
         return meta;
 
     x = X[:Nx].reshape(Nx,1);
-    u = X[Nx:].reshape(Nu,1);
-
-    da = anchorExpand(x, u)[0];
-    PsiH = da;
+    PsiH = anchorMeasure(x);
 
     return PsiH;
 
@@ -194,17 +224,16 @@ def simulateData(N0n):
         Psi0[:,i] = obsXU( xu.reshape(Nx+Nu,1) ).reshape(NkXU,);
 
     # new operator model equation
+    NkX = obsX()['Nk'];
     kModel = lambda Psi: kvar.K@rmes(Psi);
-    def rmes(Psi):
-        x = Psi[:Nx].reshape(Nx,1);
-        u = np.zeros( (Nu,1) );
+    def rmes(PsiXU):
+        x = PsiXU[:Nx].reshape(Nx,1);
 
-        PsiX = Psi[:p].reshape(p,1);
+        PsiX = PsiXU[:NkX].reshape(NkX,1);
         PsiU = [1];
-        PsiH = obsH(Psi);
+        PsiH = anchorMeasure(x) + noise(eps,(1,1));
 
         Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
-
         return Psin;
 
     xTest, uTest = data.generate_data(tList, model, X0n,
@@ -240,7 +269,48 @@ if __name__ == "__main__":
     for k in klist:
         print(k);
 
-    # test comparison results
-    N0n = 25;
-    fig, axs = simulateData(N0n);
-    plt.show();
+
+    ans = input("\nStationary or moving sim? [s/m] ");
+    if ans == 's':
+        # test comparison results
+        N0n = 25;
+        fig, axs = simulateData(N0n);
+        plt.show();
+    elif ans == 'm':
+        # simulation variables
+        xd = np.zeros( (Nx,1) );
+        x0 = 20*np.random.rand(Nx,1)-10;
+        xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
+
+        xvhc = Vehicle(x0, xd,
+            buffer_length=25);
+        kvhc = Vehicle(x0, xd,
+            fig=xvhc.fig, axs=xvhc.axs,
+            color='r', buffer_length=25);
+        plotAnchors(xvhc.fig, xvhc.axs);
+
+        # propagation function
+        NkX = obsX()['Nk'];
+        def rmes(PsiXU):
+            x = PsiXU[:Nx];
+
+            PsiX = PsiXU[:NkX];
+            PsiU = [1];
+            PsiH = anchorMeasure(x) + noise(eps,(1,1));
+
+            Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
+            return kvar.K@Psin;
+
+        # simulation
+        t = 0;
+        x = x0;
+        Psi = kvar.obsY(xu0) + kvar.obsY( noise(delta,(Nx+Nu,1)) );
+        while t < 1:
+            Psi = rmes(Psi);
+
+            u = Psi[NkX:].reshape(Nu,1);
+            x = model(x,u);
+
+            xvhc.update(t, x);
+            kvhc.update(t, Psi);
+            t += dt;
