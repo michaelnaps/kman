@@ -85,10 +85,11 @@ if __name__ == "__main__":
     plotAnchors(xvhc.fig, xvhc.axs);
 
     # propagation function
+    NkX = obsX()['Nk'];
     def rmes(PsiXU):
         x = PsiXU[:Nx];
 
-        PsiX = PsiXU[:p];
+        PsiX = PsiXU[:NkX];
         PsiU = [1];
         PsiH = measure(x) + noise(eps,(1,1));
 
@@ -102,7 +103,7 @@ if __name__ == "__main__":
     while t < 1:
         Psi = rmes(Psi);
 
-        u = Psi[p:].reshape(Nu,1);
+        u = Psi[NkX:].reshape(Nu,1);
         x = model(x,u);
 
         xvhc.update(t, x);

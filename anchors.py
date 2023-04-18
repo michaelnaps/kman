@@ -135,12 +135,7 @@ def obsXUH(X=None):
     return Psi;
 
 
-# helper functions for creating and simulating koopman operator
-m = Nu;
-p = obsX()['Nk'];
-q = 1;
-b = obsH()['Nk'];
-
+# helper functions for creating and learning from data
 def createData(tList, N0, Nt):
     # generate training data for Kx
     X0 = 10*np.random.rand(Nx,N0) - 5;
@@ -161,6 +156,10 @@ def createData(tList, N0, Nt):
 def learnOperators(X, Y, X0):
     # Ku block diagonal matrix function
     def Mu(kvar):
+        m = Nu;
+        p = obsX()['Nk'];
+        q = 1;
+        b = obsH()['Nk'];
         Kblock = np.vstack( (
             np.hstack( (np.eye(p), np.zeros( (p,b*q) )) ),
             np.hstack( (np.zeros( (m,p) ), np.kron( np.eye(q), kvar.K)) )
