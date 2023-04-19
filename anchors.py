@@ -24,6 +24,7 @@ aList = np.array( [[10, 10, -10],[10, -10, -10]] );
 # Na = 5;
 # aList = np.array( [[10, 10, -10, -10, -5],[10, -10, -10, 10, -5]] );
 
+
 # vehicle entity for simulation
 class Vehicle:
     def __init__(self, x0, xd,
@@ -224,8 +225,10 @@ def learnOperators(X, Y, X0):
 
     return kxvar, kuvar, kvar;
 
-def stationaryResults(N0n):
+def stationaryResults(kvar, tList, N0n):
+    # dimension variables
     NkXU = obsXU()['Nk'];
+    Nt = len(tList[0])
 
     # initial positions
     bounds = 15;
@@ -265,7 +268,7 @@ def stationaryResults(N0n):
 
     return figComp, axsComp;
 
-def animatedResults(x0):
+def animatedResults(kvar, x0):
     # simulation variables
     xd = np.zeros( (Nx,1) );
     xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
@@ -329,9 +332,9 @@ if __name__ == "__main__":
     if ans == 's':
         # test comparison results
         N0n = 25;
-        fig, axs = stationaryResults(N0n);
+        fig, axs = stationaryResults(tList, N0n);
         plt.show();
     elif ans == 'a':
         # simulation variables
         x0 = 20*np.random.rand(Nx,1)-10;
-        xvhc, kvhc = animatedResults(x0);
+        xvhc, kvhc = animatedResults(kvar, x0);
