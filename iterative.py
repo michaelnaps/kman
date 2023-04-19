@@ -33,7 +33,7 @@ if __name__ == "__main__":
     for k in klist:
         print(k);
 
-
+    # check results in static/animated sims
     ans = input("\nStationary or animated sim? [s/a] ");
     if ans == 's':
         # test comparison results
