@@ -23,16 +23,13 @@ class clVehicle:
         self.color = color;
         self.body_radius = radius;
 
+        dList = Psi0[Nx:Nx+Na];
         self.body = patch.Circle(Psi0[:Nx,0], self.body_radius,
             facecolor=self.color, edgecolor='k', zorder=1);
-        self.axs.add_patch(self.body);
+        self.aList = [patch.Circle(Psi0[:Nx], np.sqrt(d),
+            facecolor="None", edgecolor='k') for d in dList];
 
-        d = Psi0[Nx:Nx+Na];
-        self.aList = (
-            patch.Circle(Psi0[:Nx], np.sqrt(d[0]), facecolor="None", edgecolor='k'),
-            patch.Circle(Psi0[:Nx], np.sqrt(d[1]), facecolor="None", edgecolor='k'),
-            patch.Circle(Psi0[:Nx], np.sqrt(d[2]), facecolor="None", edgecolor='k')
-        );
+        self.axs.add_patch(self.body);
         for a in self.aList:
             self.axs.add_patch(a);
 
@@ -48,13 +45,11 @@ class clVehicle:
         for a in self.aList:
             a.remove();
 
-        d = Psi[Nx:Nx+Na];
+        dList = Psi[Nx:Nx+Na];
         self.body = patch.Circle(Psi[:Nx,0], self.body_radius,
             facecolor=self.color, edgecolor='k', zorder=zorder);
-        self.aList = (
-            patch.Circle(Psi[:Nx], np.sqrt(d[0]), facecolor="None", edgecolor='k'),
-            patch.Circle(Psi[:Nx], np.sqrt(d[1]), facecolor="None", edgecolor='k'),
-            patch.Circle(Psi[:Nx], np.sqrt(d[2]), facecolor="None", edgecolor='k') );
+        self.aList = [patch.Circle(Psi[:Nx], np.sqrt(d),
+            facecolor="None", edgecolor='k') for d in dList];
 
         self.axs.add_patch(self.body);
         for a in self.aList:

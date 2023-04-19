@@ -18,8 +18,11 @@ delta = 0.1;
 dt = 0.01;
 Nx = 2;
 Nu = 2;
-Na = 3;
+
 aList = np.array( [[10, 10, -10],[10, -10, -10]] );
+
+# Na = 5;
+# aList = np.array( [[10, 10, -10, -10, -5],[10, -10, -10, 10, -5]] );
 
 # vehicle entity for simulation
 class Vehicle:
