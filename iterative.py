@@ -19,37 +19,41 @@ aList = np.array( [[10, 10, -10],[10, -10, -10]] );
 # iterative learning procedure
 def coordinateTesting(X, Y, X0):
     # Ku block diagonal matrix function
-    def Mu(kvar):
+    def Mu(K):
         m = Nu;
         p = obsX()['Nk'];
         q = 1;
         b = obsH()['Nk'];
         Kblock = np.vstack( (
             np.hstack( (np.eye(p), np.zeros( (p,b*q) )) ),
-            np.hstack( (np.zeros( (m,p) ), np.kron( np.eye(q), kvar.K)) )
+            np.hstack( (np.zeros( (m,p) ), np.kron( np.eye(q), K)) )
         ) );
         return Kblock;
 
     # initialize operator variables and solve
     NkX = obsXU()['Nk'];
     kuvar = KoopmanOperator(obsH, obsU);
-    kxvar = KoopmanOperator(obsXUH, obsXU, M=Mu(kuvar));
+    kxvar = KoopmanOperator(obsXUH, obsXU, M=Mu(kuvar.K));
 
     Psi1 = kxvar.liftData(X, X0, kxvar.obsX)[0];
     Psi2 = kxvar.liftData(Y, X0, kxvar.obsY)[0];
 
-    print(kxvar.K.shape, Mu(kuvar).shape);
+    print(kxvar.K.shape, Mu(kuvar.K).shape);
     print(Psi1.shape, Psi2.shape);
 
     dK = 1;
     while dK > 1e-3:
+        # Ku section
+        shapeU = kuvar.K.shape;
+        Ku = cp.Variable( shapeU );
+        objU = cp.Minimize( cp.sum_squares(Psi2 - kxvar.K@Mu(Ku)@Psi1) );
+        prbU = cp.Problem(objU);
+
         # Kx section
         shapeX = kxvar.K.shape;
-        vKx = cp.Variable( shapeX[0]*shapeX[1] );
-        objX = cp.Minimize( cp.sum_squares(vec(Psi2)[:,0] - np.kron(Psi1.T@Mu(kuvar).T, np.eye(NkX))@vKx) );
+        Kx = cp.Variable( shapeX );
+        objX = cp.Minimize( cp.sum_squares(Psi2 - Kx@Mu(kuvar.K)@Psi1) );
         prbX = cp.Problem(objX)
-
-        # Ku section
 
         # compute overall change
         pass;
