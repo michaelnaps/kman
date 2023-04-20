@@ -31,6 +31,7 @@ def coordinateTesting(X, Y, X0):
         return Kblock;
 
     # initialize operator variables and solve
+    NkX = obsXU()['Nk'];
     kuvar = KoopmanOperator(obsH, obsU);
     kxvar = KoopmanOperator(obsXUH, obsXU, M=Mu(kuvar));
 
@@ -43,8 +44,9 @@ def coordinateTesting(X, Y, X0):
     dK = 1;
     while dK > 1e-3:
         # Kx section
-        Kx = cp.Variable( kxvar.K.shape );
-        objX = cp.Minimize( cp.sum_squares(Kx@Mu(kuvar)@Psi1 - Psi2) );
+        shapeX = kxvar.K.shape;
+        vKx = cp.Variable( shapeX[0]*shapeX[1] );
+        objX = cp.Minimize( cp.sum_squares(vec(Psi2)[:,0] - np.kron(Psi1.T@Mu(kuvar).T, np.eye(NkX))@vKx) );
         prbX = cp.Problem(objX)
 
         # Ku section
