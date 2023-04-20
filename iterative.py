@@ -16,6 +16,43 @@ aList = np.array( [[10, 10, -10],[10, -10, -10]] );
 # Na = 5;
 # aList = np.array( [[10, 10, -10, -10, -5],[10, -10, -10, 10, -5]] );
 
+# iterative learning procedure
+def coordinateTesting(X, Y, X0):
+    # Ku block diagonal matrix function
+    def Mu(kvar):
+        m = Nu;
+        p = obsX()['Nk'];
+        q = 1;
+        b = obsH()['Nk'];
+        Kblock = np.vstack( (
+            np.hstack( (np.eye(p), np.zeros( (p,b*q) )) ),
+            np.hstack( (np.zeros( (m,p) ), np.kron( np.eye(q), kvar.K)) )
+        ) );
+        return Kblock;
+
+    # initialize operator variables and solve
+    kuvar = KoopmanOperator(obsH, obsU);
+    kxvar = KoopmanOperator(obsXUH, obsXU, M=Mu(kuvar));
+
+    Psi1 = kxvar.liftData(X, X0, kxvar.obsX)[0];
+    Psi2 = kxvar.liftData(Y, X0, kxvar.obsY)[0];
+
+    print(kxvar.K.shape, Mu(kuvar).shape);
+    print(Psi1.shape, Psi2.shape);
+
+    dK = 1;
+    while dK > 1e-3:
+        # Kx section
+        Kx = cp.Variable( kxvar.K.shape );
+        objX = cp.Minimize( cp.sum_squares(Kx@Mu(kuvar)@Psi1 - Psi2) );
+        prbX = cp.Problem(objX)
+
+        # Ku section
+
+        # compute overall change
+        pass;
+
+    return kxvar, kuvar, kvar;
 
 # main executable section
 if __name__ == "__main__":
@@ -24,10 +61,10 @@ if __name__ == "__main__":
     tList = np.array( [ [i*dt for i in range(Nt)] ] );
 
     # create data for learning operators
-    N0 = 2;
+    N0 = 1;
     X, Y, XU0 = createData(tList, N0, Nt);
 
-    kxvar, kuvar, kvar = learnOperators(X, Y, XU0);
+    kxvar, kuvar, kvar = coordinateTesting(X, Y, XU0);
     klist = (kxvar, kuvar, kvar);
 
     for k in klist:
