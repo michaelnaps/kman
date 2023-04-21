@@ -159,6 +159,6 @@ if __name__ == '__main__':
     print( kvar.edmd(X, Y, XU0) );
 
     # animated results
-    ans = input("See results? [a/s] ");
+    ans = input("See results? [a] ");
     if ans == 'a':
         animatedResults(kvar);
