@@ -126,6 +126,7 @@ def animatedResults(kvar):
 
     for i, u in enumerate(uList.T):
         Psi = prop(Psi, u[:,None]);
+        # Psi = kvar.K@Psi;
         clvhc.update(i*dt, Psi, zorder=10);
 
     return clvhc;
@@ -158,4 +159,6 @@ if __name__ == '__main__':
     print( kvar.edmd(X, Y, XU0) );
 
     # animated results
-    animatedResults(kvar);
+    ans = input("See results? [a/s] ");
+    if ans == 'a':
+        animatedResults(kvar);
