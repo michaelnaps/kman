@@ -36,7 +36,7 @@ def learnOperators(X, Y, X0):
     print(Psi2.shape, Psi1.shape);
 
     dK = 1;
-    while dK > 1e-3:
+    while dK > 1e-6:
         # copy kvar
         kxcopy = kxvar.K;
         kucopy = kuvar.K;
@@ -64,7 +64,7 @@ def learnOperators(X, Y, X0):
         print(kuvar);
 
         # calculate dK
-        dK = np.linalg.norm( kxvar.K - kxcopy ) + np.linalg.norm( kuvar.K - kucopy );
+        dK = np.linalg.norm( kxvar.K - kxcopy ) + np.linalg.norm( kuvar.K - kucopy )**2;
         print('dK:', dK);
 
     # calculate cumulative operator
