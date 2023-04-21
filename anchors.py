@@ -13,7 +13,7 @@ np.set_printoptions(precision=5, suppress=True);
 
 
 # hyper paramter(s)
-eps = 1;
+eps = 100;
 delta = 0.1;
 dt = 0.01;
 Nx = 2;
@@ -24,6 +24,7 @@ aList = np.array( [[10, 10, -10],[10, -10, -10]] );
 # Na = 5;
 # aList = np.array( [[10, 10, -10, -10, -5],[10, -10, -10, 10, -5]] );
 
+# C = 10*np.random.rand(2,2) - 5;
 
 # vehicle entity for simulation
 class Vehicle:
@@ -112,7 +113,7 @@ def model(x, u):
 def control(x):
     C = np.array( [
         [1, 0],
-        [0, 1]
+        [0, 2]
     ] );
     xg = np.zeros( (Nx,1) );
 
@@ -203,7 +204,7 @@ def stationaryResults(kvar, tList, N0n):
     Nt = len(tList[0])
 
     # initial positions
-    bounds = 15;
+    bounds = 40;
     X0n = 2*bounds*np.random.rand(Nx,N0n) - bounds;
     XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
 
