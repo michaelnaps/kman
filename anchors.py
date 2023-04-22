@@ -14,7 +14,7 @@ np.set_printoptions(precision=5, suppress=True);
 
 # hyper paramter(s)
 eps = 100;
-delta = 0.1;
+delta = 5;
 dt = 0.01;
 Nx = 2;
 Nu = 2;
@@ -24,7 +24,12 @@ aList = np.array( [[10, 10, -10],[10, -10, -10]] );
 # Na = 5;
 # aList = np.array( [[10, 10, -10, -10, -5],[10, -10, -10, 10, -5]] );
 
-# C = 10*np.random.rand(2,2) - 5;
+# for plotting
+mColor = 'royalblue';
+kColor = 'yellowgreen';
+x1Color = 'royalblue';
+x2Color = 'yellowgreen';
+
 
 # vehicle entity for simulation
 class Vehicle:
@@ -179,6 +184,16 @@ def obsXUH(X=None):
 
     return Psi;
 
+def rmes(x, Psi):
+    NkX = obsX()['Nk'];
+
+    PsiX = Psi[:NkX].reshape(NkX,1);
+    PsiU = [1];
+    PsiH = anchorMeasure(x) + noise(eps,(1,1));
+
+    Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
+    return Psin;
+
 
 # helper functions for creating and learning from data
 def createData(tList, N0, Nt):
@@ -215,15 +230,6 @@ def stationaryResults(kvar, tList, N0n):
     # new operator model equation
     NkX = obsX()['Nk'];
     kModel = lambda Psi: kvar.K@rmes(Psi);
-    def rmes(PsiXU):
-        x = PsiXU[:Nx].reshape(Nx,1);
-
-        PsiX = PsiXU[:NkX].reshape(NkX,1);
-        PsiU = [1];
-        PsiH = anchorMeasure(x) + noise(eps,(1,1));
-
-        Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
-        return Psin;
 
     xTest, uTest = data.generate_data(tList, model, X0n,
         control=control, Nu=Nu);
@@ -241,7 +247,7 @@ def stationaryResults(kvar, tList, N0n):
 
     return figComp, axsComp;
 
-def animatedResults(kvar, x0):
+def animatedResults(kvar, T, x0):
     # simulation variables
     xd = np.zeros( (Nx,1) );
     xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
@@ -256,29 +262,112 @@ def animatedResults(kvar, x0):
 
     # propagation function
     NkX = obsX()['Nk'];
-    def rmes(PsiXU):
-        x = PsiXU[:Nx];
-
-        PsiX = PsiXU[:NkX];
-        PsiU = [1];
-        PsiH = anchorMeasure(x) + noise(eps,(1,1));
-
-        Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
-        return kvar.K@Psin;
 
     # simulation
     x = x0;
     Psi = kvar.obsY(xu0) + kvar.obsY( noise(delta,(Nx+Nu,1)) );
 
     t = 0;
-    while t < 1+dt:
-        Psi = rmes(Psi);
+    while t < T:
+        Psi = kvar.K@rmes(x, Psi);
 
         u = Psi[NkX:].reshape(Nu,1);
         x = model(x,u);
 
         xvhc.update(t, x, zorder=1);
         kvhc.update(t, Psi, zorder=2);
+        plt.pause(0.5);
         t += dt;
 
     return xvhc, kvhc;
+
+
+# plot position, input and error trajectories for isolated path
+def trajSimulation(kvar, tList, x0):
+    # dimension variables
+    Nt = len( tList[0] );
+    NkX = obsX()['Nk'];
+    NkXU = kvar.obsY()['Nk'];
+
+    # initialize Psi0
+    xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
+    Psi0 = kvar.obsY(xu0) + kvar.obsY( noise(delta,(Nx+Nu,1)) );
+
+    # data list variables
+    xList = np.empty( (Nx, Nt) );
+    PsiList = np.empty( (NkXU, Nt) );
+    uList = np.empty( (Nu, Nt-1) );
+    uTrueList = np.empty( (Nu, Nt-1) );
+
+    # initial states for lists
+    xList[:,0] = x0[:,0];
+    PsiList[:,0] = Psi0[:,0];
+
+    # initialize sim variables and loop
+    x = x0;
+    u = np.zeros( (Nu,1) );
+    Psi = Psi0;
+    for i in range(Nt-1):
+        Psi = kvar.K@rmes(x, Psi);
+        u = Psi[NkX:];
+        x = model(x,u);
+
+        PsiList[:,i+1] = Psi[:,0];
+        xList[:,i+1] = x[:,0];
+
+        uList[:,i] = u[:,0];
+        uTrueList[:,i] = control(x)[:,0];
+
+    return xList, PsiList, uList, uTrueList;
+
+def trajPlotting(tList, xList, PsiList, uList, uTrueList,
+    fig=None, axs=None):
+    if fig is None:
+        fig, axs = plt.subplots(2,3)
+
+    # time-steps
+    Nt = len( tList[0] );
+
+    # position comparisons
+    axs[0,0].plot(tList[0], xList[0],
+        color=mColor, label='Model');
+    axs[0,0].plot(tList[0], PsiList[0],
+        color=kColor, linestyle='--', label='KCE');
+    axs[0,0].set_title('$x_1$')
+
+    axs[0,1].plot(tList[0], xList[1],
+        color=mColor, label='Model');
+    axs[0,1].plot(tList[0], PsiList[1],
+        color=kColor, linestyle='--', label='KCE');
+    axs[0,1].set_title('$x_2$')
+    axs[0,1].legend();
+
+    axs[0,2].plot(tList[0], xList[0]-PsiList[0],
+        color=x1Color, label='$x_1$');
+    axs[0,2].plot(tList[0], xList[1]-PsiList[1],
+        color=x2Color, label='$x_2$');
+    axs[0,2].set_title('Error');
+    axs[0,2].legend();
+
+    # input comaprison
+    axs[1,0].plot(tList[0][:Nt-1], uTrueList[0],
+        color=mColor, label='Model');
+    axs[1,0].plot(tList[0][:Nt-1], uList[0],
+        color=kColor, linestyle='--', label='KCE');
+    axs[1,0].set_title('$u_1$')
+
+    axs[1,1].plot(tList[0][:Nt-1], uTrueList[1],
+        color=mColor, label='Model');
+    axs[1,1].plot(tList[0][:Nt-1], uList[1],
+        color=kColor, linestyle='--', label='KCE');
+    axs[1,1].set_title('$u_2$')
+    axs[1,1].legend();
+
+    axs[1,2].plot(tList[0][:Nt-1], uTrueList[0]-uList[0],
+        color=x1Color, label='$u_1$');
+    axs[1,2].plot(tList[0][:Nt-1], uTrueList[1]-uList[1],
+        color=x2Color, label='$u_2$');
+    axs[1,2].set_title('Error');
+    axs[1,2].legend();
+
+    return fig, axs;

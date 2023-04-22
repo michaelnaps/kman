@@ -32,11 +32,11 @@ def learnOperators(X, Y, X0):
 # main executable section
 if __name__ == "__main__":
     # simulation variables
-    T = 5;  Nt = round(T/dt) + 1;
+    T = 1;  Nt = round(T/dt) + 1;
     tList = [ [i*dt for i in range(Nt)] ];
 
     # create data for learning operators
-    N0 = 1;
+    N0 = 1
     X, Y, XU0 = createData(tList, N0, Nt);
     klist = learnOperators(X, Y, XU0);
 
@@ -45,7 +45,8 @@ if __name__ == "__main__":
         print(k);
 
     # simulation options
-    ans = input("\nStationary or animated sim? [s/a] ");
+    sim_time = 5;
+    ans = input("\nStationary, animated or trajectory simulation? [s/a/t] ");
     if ans == 's':
         # test comparison results
         N0n = 25;
@@ -53,5 +54,11 @@ if __name__ == "__main__":
         plt.show();
     elif ans == 'a':
         # simulation variables
-        x0 = 20*np.random.rand(Nx,1)-10;
-        xvhc, kvhc = animatedResults(klist[-1], x0);
+        x0 = np.array( [[-12], [17]] )
+        xvhc, kvhc = animatedResults(klist[-1], sim_time, x0);
+    elif ans == 't':
+        x0 = np.array( [[-12], [17]] )
+        tList = [ [i*dt for i in range( round(sim_time/dt+1) )] ];
+        xList, PsiList, uList, uTrueList = trajSimulation(klist[-1], tList, x0);
+        fig, axs = trajPlotting(tList, xList, PsiList, uList, uTrueList);
+        plt.show();
