@@ -229,7 +229,7 @@ def stationaryResults(kvar, tList, N0n):
 
     # new operator model equation
     NkX = obsX()['Nk'];
-    kModel = lambda Psi: kvar.K@rmes(Psi);
+    kModel = lambda Psi: kvar.K@rmes(Psi[:Nx,None], Psi);
 
     xTest, uTest = data.generate_data(tList, model, X0n,
         control=control, Nu=Nu);
@@ -320,10 +320,12 @@ def trajSimulation(kvar, tList, x0):
 
     return xList, PsiList, uList, uTrueList;
 
-def trajPlotting(tList, xList, PsiList, uList, uTrueList,
+def trajPlotting(kvar, tList, x0,
     fig=None, axs=None):
     if fig is None:
         fig, axs = plt.subplots(2,3)
+
+    xList, PsiList, uList, uTrueList = trajSimulation(kvar, tList, x0);
 
     # time-steps
     Nt = len( tList[0] );
@@ -369,5 +371,9 @@ def trajPlotting(tList, xList, PsiList, uList, uTrueList,
         color=x2Color, label='$u_2$');
     axs[1,2].set_title('Error');
     axs[1,2].legend();
+
+    fig2, axs2 = plt.subplots();
+    axs2.plot(uList[0], uList[1]);
+    axs2.plot(uTrueList[0], uTrueList[1]);
 
     return fig, axs;

@@ -18,12 +18,12 @@ def learnOperators(X, Y, X0):
     kuvar = KoopmanOperator(obsH, obsU);
     kxvar = KoopmanOperator(obsXUH, obsXU, M=Mu(kuvar));
 
-    klist = (kxvar, kuvar);
+    kList = (kxvar, kuvar);
     mlist = (Mu, );
-    klist = cascade_edmd(klist, mlist, X, Y, X0);
+    kList = cascade_edmd(kList, mlist, X, Y, X0);
 
     # form the cumulative operator
-    Kf = klist[0].K @ Mu( klist[1] );
+    Kf = kList[0].K @ Mu( kList[1] );
     kvar = KoopmanOperator(obsXUH, obsXU, K=Kf);
     kvar.resError(X, Y, X0);
 
@@ -38,10 +38,10 @@ if __name__ == "__main__":
     # create data for learning operators
     N0 = 1
     X, Y, XU0 = createData(tList, N0, Nt);
-    klist = learnOperators(X, Y, XU0);
+    kList = learnOperators(X, Y, XU0);
 
     # print results
-    for k in klist:
+    for k in kList:
         print(k);
 
     # simulation options
@@ -50,15 +50,14 @@ if __name__ == "__main__":
     if ans == 's':
         # test comparison results
         N0n = 25;
-        fig, axs = stationaryResults(klist[-1], tList, N0n);
+        fig, axs = stationaryResults(kList[-1], tList, N0n);
         plt.show();
     elif ans == 'a':
         # simulation variables
         x0 = np.array( [[-12], [17]] )
-        xvhc, kvhc = animatedResults(klist[-1], sim_time, x0);
+        xvhc, kvhc = animatedResults(kList[-1], sim_time, x0);
     elif ans == 't':
         x0 = np.array( [[-12], [17]] )
         tList = [ [i*dt for i in range( round(sim_time/dt+1) )] ];
-        xList, PsiList, uList, uTrueList = trajSimulation(klist[-1], tList, x0);
-        fig, axs = trajPlotting(tList, xList, PsiList, uList, uTrueList);
+        fig, axs = trajPlotting(kList[-1], tList, x0);
         plt.show();
