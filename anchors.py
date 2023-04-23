@@ -19,7 +19,8 @@ dt = 0.01;
 Nx = 2;
 Nu = 2;
 Na = 3;
-aList = np.array( [[10, 10, -10],[10, -10, -10]] );
+# aList = np.array( [[10, 12, -15],[10, -7, -13]] );
+aList = np.array( [[10, 10, -10],[10, -10, -10]] )
 
 # Na = 5;
 # aList = np.array( [[10, 10, -10, -10, -5],[10, -10, -10, 10, -5]] );
@@ -276,7 +277,6 @@ def animatedResults(kvar, T, x0):
 
         xvhc.update(t, x, zorder=1);
         kvhc.update(t, Psi, zorder=2);
-        plt.pause(0.5);
         t += dt;
 
     return xvhc, kvhc;
