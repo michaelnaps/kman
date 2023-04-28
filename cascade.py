@@ -33,11 +33,11 @@ def learnOperators(X, Y, X0):
 # main executable section
 if __name__ == "__main__":
     # simulation variables
-    T = 1;  Nt = round(T/dt) + 1;
+    T = 10;  Nt = round(T/dt) + 1;
     tList = [ [i*dt for i in range(Nt)] ];
 
     # create data for learning operators
-    N0 = 1
+    N0 = 5;
     X, Y, XU0 = createData(tList, N0, Nt);
     kList = learnOperators(X, Y, XU0);
 
@@ -47,18 +47,19 @@ if __name__ == "__main__":
 
     # simulation options
     sim_time = 5;
-    ans = input("\nStationary, animated or trajectory simulation? [s/a/t] ");
-    if ans == 's':
-        # test comparison results
-        N0n = 25;
-        fig, axs = stationaryResults(kList[-1], sim_time, N0n);
-        plt.show();
-    elif ans == 'a':
-        # simulation variables
-        x0 = np.array( [[-12], [17]] )
-        xvhc, kvhc = animatedResults(kList[-1], sim_time, x0);
-    elif ans == 't':
-        x0 = np.array( [[-12], [17]] )
-        tList = [ [i*dt for i in range( round(sim_time/dt+1) )] ];
-        fig, axs = trajPlotting(kList[-1], sim_time, x0);
-        plt.show();
+    ans = input("\nStationary, animated or trajectory simulation? [s/a/t/n] ");
+    while ans != 'n':
+        if ans == 's':
+            # test comparison results
+            N0n = 25;
+            fig, axs = stationaryResults(kList[-1], sim_time, N0n);
+            plt.show();
+        elif ans == 'a':
+            # simulation variables
+            x0 = np.array( [[-12], [17]] )
+            xvhc, kvhc = animatedResults(kList[-1], sim_time, x0);
+        elif ans == 't':
+            x0 = np.array( [[-12], [17]] )
+            fig, axs = trajPlotting(kList[-1], sim_time, x0);
+            plt.show();
+        ans = input("\nStationary, animated or trajectory simulation? [s/a/t/n] ");

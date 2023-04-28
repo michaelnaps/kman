@@ -135,9 +135,9 @@ class KoopmanOperator:
 
     # when asked to print - return operator
     def __str__(self):
-        line1 = 'Error: %.3e' % self.err;
+        line1 = 'Error: %.3f' % self.err;
         line2 = ', Shape: (' + str(self.K.shape[0]) + ', ' + str(self.K.shape[1]) + ')\n';
-        line3 = np.array2string( self.K, precision=2, suppress_small=1 );
+        line3 = np.array2string( self.K, precision=5, suppress_small=1 );
         return line1 + line2 + line3;
 
     # set the shift matrix after init

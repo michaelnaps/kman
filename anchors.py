@@ -9,7 +9,7 @@ import matplotlib.patches as patch
 import matplotlib.path as path
 
 # set global output setting
-np.set_printoptions(precision=5, suppress=True);
+np.set_printoptions(precision=3, suppress=True);
 
 
 # hyper paramter(s)
@@ -20,7 +20,7 @@ Nx = 2;
 Nu = 2;
 Na = 3;
 # aList = np.array( [[10, 12, -15],[10, -7, -13]] );
-aList = np.array( [[10, 10, -10],[10, -10, -10]] )
+aList = np.array( [[10, -10, 10],[10, 10, -10]] )
 
 # Na = 5;
 # aList = np.array( [[10, 10, -10, -10, -5],[10, -10, -10, 10, -5]] );
@@ -119,7 +119,7 @@ def model(x, u):
 def control(x):
     C = np.array( [
         [1, 0],
-        [0, 2]
+        [0, 1]
     ] );
     xg = np.zeros( (Nx,1) );
 
@@ -336,20 +336,20 @@ def trajPlotting(kvar, sim_time, x0,
         color=mColor, label='Model');
     axs[0,0].plot(tList[0], PsiList[0],
         color=kColor, linestyle='--', label='KCE');
-    axs[0,0].set_title('$x_1$')
+    axs[0,0].set_ylabel('$x_1$')
 
     axs[0,1].plot(tList[0], xList[1],
         color=mColor, label='Model');
     axs[0,1].plot(tList[0], PsiList[1],
         color=kColor, linestyle='--', label='KCE');
-    axs[0,1].set_title('$x_2$')
+    axs[0,1].set_ylabel('$x_2$')
     axs[0,1].legend();
 
     axs[0,2].plot(tList[0], xList[0]-PsiList[0],
         color=x1Color, label='$x_1$');
     axs[0,2].plot(tList[0], xList[1]-PsiList[1],
         color=x2Color, linestyle='--', label='$x_2$');
-    axs[0,2].set_title('Error');
+    axs[0,2].set_ylabel('Error');
     axs[0,2].legend();
 
     # input comaprison
@@ -357,19 +357,19 @@ def trajPlotting(kvar, sim_time, x0,
         color=mColor, label='Model');
     axs[1,0].plot(tList[0][:Nt-1], uList[0],
         color=kColor, linestyle='--', label='KCE');
-    axs[1,0].set_title('$u_1$')
+    axs[1,0].set_ylabel('$u_1$')
 
     axs[1,1].plot(tList[0][:Nt-1], uTrueList[1],
         color=mColor, label='Model');
     axs[1,1].plot(tList[0][:Nt-1], uList[1],
         color=kColor, linestyle='--', label='KCE');
-    axs[1,1].set_title('$u_2$')
+    axs[1,1].set_ylabel('$u_2$')
 
     axs[1,2].plot(tList[0][:Nt-1], uTrueList[0]-uList[0],
         color=x1Color, label='$u_1$');
     axs[1,2].plot(tList[0][:Nt-1], uTrueList[1]-uList[1],
         color=x2Color, linestyle='--', label='$u_2$');
-    axs[1,2].set_title('Error');
+    axs[1,2].set_ylabel('Error');
     axs[1,2].legend();
 
     fig.tight_layout();

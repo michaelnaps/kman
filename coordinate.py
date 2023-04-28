@@ -36,7 +36,7 @@ def learnOperators(X, Y, X0):
     # print(Psi2.shape, Psi1.shape);
 
     dK = 1;
-    while dK > 1e-6:
+    while dK > 1e-3:
         # copy kvar
         kxcopy = kxvar.K;
         kucopy = kuvar.K;
@@ -50,7 +50,7 @@ def learnOperators(X, Y, X0):
         # solve for Kx
         kxvar.err = prbX.solve();
         kxvar.K = np.array( Kx.value );
-        # print(kxvar);
+        print(kxvar);
 
         # Ku problem setup
         shapeU = kuvar.K.shape;
@@ -61,17 +61,17 @@ def learnOperators(X, Y, X0):
         # solve for Ku
         kuvar.err = prbU.solve();
         kuvar.K = np.array( Ku.value );
-        # print(kuvar);
+        print(kuvar);
 
         # calculate dK
         dK = np.linalg.norm( kxvar.K - kxcopy ) + np.linalg.norm( kuvar.K - kucopy )**2;
-        # print('dK:', dK);
-        # print('------------');
+        print('dK:', dK);
+        print('------------');
 
     # calculate cumulative operator
     Kf = np.array( kxvar.K )@np.array( npMu(kuvar.K) );
     kvar = KoopmanOperator(obsXUH, obsXU, K=Kf);
-    # print('Coordinate EDMD Complete.');
+    print('Coordinate EDMD Complete.');
 
     klist = (kxvar, kuvar, kvar);
     return klist;
@@ -79,7 +79,7 @@ def learnOperators(X, Y, X0):
 # main executable section
 if __name__ == "__main__":
     # simulation variables
-    T = 1;  Nt = round(T/dt) + 1;
+    T = 10;  Nt = round(T/dt) + 1;
     tList = np.array( [ [i*dt for i in range(Nt)] ] );
 
     # create data for learning operators
@@ -93,18 +93,19 @@ if __name__ == "__main__":
 
     # simulation options
     sim_time = 5;
-    ans = input("\nStationary, animated or trajectory simulation? [s/a/t] ");
-    if ans == 's':
-        # test comparison results
-        N0n = 25;
-        fig, axs = stationaryResults(kList[-1], sim_time, N0n);
-        plt.show();
-    elif ans == 'a':
-        # simulation variables
-        x0 = np.array( [[-12], [17]] )
-        xvhc, kvhc = animatedResults(kList[-1], sim_time, x0);
-    elif ans == 't':
-        x0 = np.array( [[-12], [17]] )
-        tList = [ [i*dt for i in range( round(sim_time/dt+1) )] ];
-        fig, axs = trajPlotting(kList[-1], sim_time, x0);
-        plt.show();
+    ans = input("\nStationary, animated or trajectory simulation? [s/a/t/n] ");
+    while ans != 'n':
+        if ans == 's':
+            # test comparison results
+            N0n = 25;
+            fig, axs = stationaryResults(kList[-1], sim_time, N0n);
+            plt.show();
+        elif ans == 'a':
+            # simulation variables
+            x0 = np.array( [[-12], [17]] )
+            xvhc, kvhc = animatedResults(kList[-1], sim_time, x0);
+        elif ans == 't':
+            x0 = np.array( [[-12], [17]] )
+            fig, axs = trajPlotting(kList[-1], sim_time, x0);
+            plt.show();
+        ans = input("\nStationary, animated or trajectory simulation? [s/a/t/n] ");
