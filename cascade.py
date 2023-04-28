@@ -60,4 +60,5 @@ if __name__ == "__main__":
         x0 = np.array( [[-12], [17]] )
         tList = [ [i*dt for i in range( round(sim_time/dt+1) )] ];
         fig, axs = trajPlotting(kList[-1], tList, x0);
+        fig.tight_layout();
         plt.show();

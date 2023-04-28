@@ -13,8 +13,8 @@ np.set_printoptions(precision=5, suppress=True);
 
 
 # hyper paramter(s)
-eps = 100;
-delta = 5;
+eps = 0.1;
+delta = 1;
 dt = 0.01;
 Nx = 2;
 Nu = 2;
@@ -28,8 +28,8 @@ aList = np.array( [[10, 10, -10],[10, -10, -10]] )
 # for plotting
 mColor = 'royalblue';
 kColor = 'yellowgreen';
-x1Color = 'royalblue';
-x2Color = 'yellowgreen';
+x1Color = 'indianred';
+x2Color = 'orange';
 
 
 # vehicle entity for simulation
@@ -133,7 +133,7 @@ def noise(eps, shape):
 def anchorMeasure(x):
     da = np.empty( (Na,1) );
     for i, a in enumerate(aList.T):
-        da[i] = (x - a[:,None]).T@(x - a[:,None]);
+        da[i] = np.linalg.norm(x - a[:,None]);
     return da;
 
 
@@ -168,7 +168,7 @@ def obsH(X=None):
         return meta;
 
     x = X[:Nx].reshape(Nx,1);
-    PsiH = anchorMeasure(x);
+    PsiH = anchorMeasure(x)**2;
 
     return PsiH;
 
@@ -190,7 +190,7 @@ def rmes(x, Psi):
 
     PsiX = Psi[:NkX].reshape(NkX,1);
     PsiU = [1];
-    PsiH = anchorMeasure(x) + noise(eps,(1,1));
+    PsiH = ( anchorMeasure(x) + noise(eps,(Na,1)) )**2;
 
     Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
     return Psin;
@@ -255,10 +255,10 @@ def animatedResults(kvar, T, x0):
 
     # vehicle variables
     xvhc = Vehicle(x0, xd,
-        radius=0.5, color='blue', buffer_length=25);
+        radius=0.6, color=mColor, buffer_length=25);
     kvhc = Vehicle(x0, xd,
         fig=xvhc.fig, axs=xvhc.axs,
-        radius=0.5, color='yellowgreen', buffer_length=25);
+        radius=0.5, color=kColor, buffer_length=25);
     plotAnchors(xvhc.fig, xvhc.axs);
 
     # propagation function
@@ -347,7 +347,7 @@ def trajPlotting(kvar, tList, x0,
     axs[0,2].plot(tList[0], xList[0]-PsiList[0],
         color=x1Color, label='$x_1$');
     axs[0,2].plot(tList[0], xList[1]-PsiList[1],
-        color=x2Color, label='$x_2$');
+        color=x2Color, linestyle='--', label='$x_2$');
     axs[0,2].set_title('Error');
     axs[0,2].legend();
 
@@ -363,17 +363,13 @@ def trajPlotting(kvar, tList, x0,
     axs[1,1].plot(tList[0][:Nt-1], uList[1],
         color=kColor, linestyle='--', label='KCE');
     axs[1,1].set_title('$u_2$')
-    axs[1,1].legend();
 
     axs[1,2].plot(tList[0][:Nt-1], uTrueList[0]-uList[0],
         color=x1Color, label='$u_1$');
     axs[1,2].plot(tList[0][:Nt-1], uTrueList[1]-uList[1],
-        color=x2Color, label='$u_2$');
+        color=x2Color, linestyle='--', label='$u_2$');
     axs[1,2].set_title('Error');
     axs[1,2].legend();
 
-    fig2, axs2 = plt.subplots();
-    axs2.plot(uList[0], uList[1]);
-    axs2.plot(uTrueList[0], uTrueList[1]);
-
+    fig.tight_layout();
     return fig, axs;
