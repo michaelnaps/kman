@@ -255,10 +255,10 @@ def animatedResults(kvar, T, x0):
 
     # vehicle variables
     xvhc = Vehicle(x0, xd,
-        radius=0.6, color=mColor, buffer_length=25);
+        radius=0.70, color=mColor);
     kvhc = Vehicle(x0, xd,
         fig=xvhc.fig, axs=xvhc.axs,
-        radius=0.5, color=kColor, buffer_length=25);
+        radius=0.50, color=kColor);
     plotAnchors(xvhc.fig, xvhc.axs);
 
     # propagation function
