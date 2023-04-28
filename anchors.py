@@ -35,7 +35,7 @@ x2Color = 'orange';
 # vehicle entity for simulation
 class Vehicle:
     def __init__(self, x0, xd,
-                 fig=None, axs=None,
+                 fig=None, axs=None, zorder=1,
                  buffer_length=10, pause=1e-3,
                  color='k', radius=1,
                  record=0):
@@ -54,15 +54,16 @@ class Vehicle:
         # initialize buffer (trail)
         self.color = color;
         self.body_radius = radius;
+        self.zorder = zorder;
 
         self.body = patch.Circle(x0[:Nx,0], self.body_radius,
-            facecolor=self.color, edgecolor='k', zorder=1);
+            facecolor=self.color, edgecolor='k', zorder=self.zorder);
         self.axs.add_patch(self.body);
 
-        # self.buffer = np.array( [x0[:Nx,0] for i in range(buffer_length)] );
-        # self.trail_patch = patch.PathPatch(path.Path(self.buffer),
-        #     color=self.color);
-        # self.axs.add_patch(self.trail_patch);
+        self.buffer = np.array( [x0[:Nx,0] for i in range(buffer_length)] );
+        self.trail_patch = patch.PathPatch(path.Path(self.buffer),
+            color=self.color, zorder=self.zorder);
+        self.axs.add_patch(self.trail_patch);
 
         self.pause = pause;
         self.xd = xd;
@@ -71,20 +72,20 @@ class Vehicle:
             plt.show(block=0);
             input("Press enter when ready...");
 
-    def update(self, t, x, zorder=1):
+    def update(self, t, x):
         self.body.remove();
-        # self.trail_patch.remove();
+        self.trail_patch.remove();
 
-        # self.buffer[:-1] = self.buffer[1:];
-        # self.buffer[-1] = x[:2,0];
+        self.buffer[:-1] = self.buffer[1:];
+        self.buffer[-1] = x[:2,0];
 
         self.body = patch.Circle(x[:Nx,0], self.body_radius,
-            facecolor=self.color, edgecolor='k', zorder=zorder);
+            facecolor=self.color, edgecolor='k', zorder=self.zorder);
         self.axs.add_patch(self.body);
 
-        # self.trail_patch = patch.PathPatch(path.Path(self.buffer),
-        #     color=self.color, fill=0);
-        # self.axs.add_patch(self.trail_patch);
+        self.trail_patch = patch.PathPatch(path.Path(self.buffer),
+            color=self.color, fill=0, zorder=self.zorder);
+        self.axs.add_patch(self.trail_patch);
 
         plt.title('time: %.3f' % t);
         # plt.show(block=0);
@@ -256,10 +257,14 @@ def animatedResults(kvar, T, x0):
 
     # vehicle variables
     xvhc = Vehicle(x0, xd,
-        radius=0.70, color=mColor);
+        zorder=10,
+        radius=0.70, color=mColor,
+        buffer_length=50);
     kvhc = Vehicle(x0, xd,
         fig=xvhc.fig, axs=xvhc.axs,
-        radius=0.50, color=kColor);
+        zorder=20,
+        radius=0.50, color=kColor,
+        buffer_length=50);
     plotAnchors(xvhc.fig, xvhc.axs);
 
     # propagation function
@@ -276,8 +281,8 @@ def animatedResults(kvar, T, x0):
         u = Psi[NkX:].reshape(Nu,1);
         x = model(x,u);
 
-        xvhc.update(t, x, zorder=1);
-        kvhc.update(t, Psi, zorder=2);
+        xvhc.update(t, x);
+        kvhc.update(t, Psi);
         t += dt;
 
     return xvhc, kvhc;

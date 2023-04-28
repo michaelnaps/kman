@@ -33,11 +33,11 @@ def learnOperators(X, Y, X0):
 # main executable section
 if __name__ == "__main__":
     # simulation variables
-    T = 10;  Nt = round(T/dt) + 1;
+    T = 1;  Nt = round(T/dt) + 1;
     tList = [ [i*dt for i in range(Nt)] ];
 
     # create data for learning operators
-    N0 = 5;
+    N0 = 2;
     X, Y, XU0 = createData(tList, N0, Nt);
     kList = learnOperators(X, Y, XU0);
 
