@@ -13,7 +13,7 @@ np.set_printoptions(precision=3, suppress=True);
 
 
 # hyper paramter(s)
-eps = 0.1;
+eps = 0.5;
 delta = 1;
 dt = 0.01;
 Nx = 2;
@@ -38,6 +38,7 @@ class Vehicle:
                  fig=None, axs=None, zorder=1,
                  buffer_length=10, pause=1e-3,
                  color='k', radius=1,
+                 linestyle=None, linewidth=2,
                  record=0):
         if axs is None and fig is None:
             self.fig, self.axs = plt.subplots();
@@ -53,6 +54,8 @@ class Vehicle:
 
         # initialize buffer (trail)
         self.color = color;
+        self.linewidth = linewidth;
+        self.linestyle = linestyle;
         self.body_radius = radius;
         self.zorder = zorder;
 
@@ -60,9 +63,10 @@ class Vehicle:
             facecolor=self.color, edgecolor='k', zorder=self.zorder);
         self.axs.add_patch(self.body);
 
-        self.buffer = np.array( [x0[:Nx,0] for i in range(buffer_length)] );
+        self.buffer = [x0[:Nx,0] for i in range(buffer_length)];
         self.trail_patch = patch.PathPatch(path.Path(self.buffer),
-            color=self.color, zorder=self.zorder);
+            color=self.color, linewidth=self.linewidth, linestyle=self.linestyle,
+            zorder=self.zorder);
         self.axs.add_patch(self.trail_patch);
 
         self.pause = pause;
@@ -79,18 +83,22 @@ class Vehicle:
         self.buffer[:-1] = self.buffer[1:];
         self.buffer[-1] = x[:2,0];
 
-        self.body = patch.Circle(x[:Nx,0], self.body_radius,
+        self.body = patch.Circle(x, self.body_radius,
             facecolor=self.color, edgecolor='k', zorder=self.zorder);
         self.axs.add_patch(self.body);
 
         self.trail_patch = patch.PathPatch(path.Path(self.buffer),
-            color=self.color, fill=0, zorder=self.zorder);
+            color=self.color, linewidth=self.linewidth, linestyle=self.linestyle,
+            fill=0, zorder=self.zorder);
         self.axs.add_patch(self.trail_patch);
 
-        plt.title('time: %.3f' % t);
         # plt.show(block=0);
         plt.pause(self.pause);
 
+        return self;
+
+    def update_title(self, string):
+        plt.title(string);
         return self;
 
 
@@ -255,35 +263,37 @@ def animatedResults(kvar, T, x0):
     xd = np.zeros( (Nx,1) );
     xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
 
+    # simulation variables
+    x = x0;
+    Psi = kvar.obsY(xu0) + kvar.obsY( noise(delta,(Nx+Nu,1)) );
+
     # vehicle variables
-    xvhc = Vehicle(x0, xd,
+    xvhc = Vehicle(x, xd,
         zorder=10,
         radius=0.70, color=mColor,
-        buffer_length=50);
-    kvhc = Vehicle(x0, xd,
+        linewidth=2,
+        buffer_length=100);
+    kvhc = Vehicle(Psi, xd,
         fig=xvhc.fig, axs=xvhc.axs,
         zorder=20,
         radius=0.50, color=kColor,
-        buffer_length=50);
+        linewidth=2, linestyle='--',
+        buffer_length=100);
     plotAnchors(xvhc.fig, xvhc.axs);
 
     # propagation function
     NkX = obsX()['Nk'];
+    Nt = round(T/dt) + 1;
 
-    # simulation
-    x = x0;
-    Psi = kvar.obsY(xu0) + kvar.obsY( noise(delta,(Nx+Nu,1)) );
-
-    t = 0;
-    while t < T:
+    for i in range(Nt):
         Psi = kvar.K@rmes(x, Psi);
 
         u = Psi[NkX:].reshape(Nu,1);
         x = model(x,u);
 
-        xvhc.update(t, x);
-        kvhc.update(t, Psi);
-        t += dt;
+        xvhc.update(i*dt, x);
+        kvhc.update(i*dt, Psi);
+        # kvhc.update_title('time: %.3f' % float(i*dt));
 
     return xvhc, kvhc;
 

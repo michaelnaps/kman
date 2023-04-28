@@ -46,7 +46,7 @@ if __name__ == "__main__":
         print(k);
 
     # simulation options
-    sim_time = 5;
+    sim_time = 10;
     ans = input("\nStationary, animated or trajectory simulation? [s/a/t/n] ");
     while ans != 'n':
         if ans == 's':
