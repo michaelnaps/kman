@@ -21,6 +21,7 @@ def learnOperators(X, Y, X0):
     kList = (kxvar, kuvar);
     mlist = (Mu, );
     kList = cascade_edmd(kList, mlist, X, Y, X0);
+    print('Cascade EDMD Complete.');
 
     # form the cumulative operator
     Kf = kList[0].K @ Mu( kList[1] );
