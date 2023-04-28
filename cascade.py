@@ -50,7 +50,7 @@ if __name__ == "__main__":
     if ans == 's':
         # test comparison results
         N0n = 25;
-        fig, axs = stationaryResults(kList[-1], tList, N0n);
+        fig, axs = stationaryResults(kList[-1], sim_time, N0n);
         plt.show();
     elif ans == 'a':
         # simulation variables
@@ -59,6 +59,5 @@ if __name__ == "__main__":
     elif ans == 't':
         x0 = np.array( [[-12], [17]] )
         tList = [ [i*dt for i in range( round(sim_time/dt+1) )] ];
-        fig, axs = trajPlotting(kList[-1], tList, x0);
-        fig.tight_layout();
+        fig, axs = trajPlotting(kList[-1], sim_time, x0);
         plt.show();

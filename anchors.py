@@ -214,10 +214,11 @@ def createData(tList, N0, Nt):
 
     return X, Y, XU0;
 
-def stationaryResults(kvar, tList, N0n):
+def stationaryResults(kvar, sim_time, N0n):
     # dimension variables
     NkXU = obsXU()['Nk'];
-    Nt = len(tList[0])
+    Nt = round(sim_time/dt) + 1;
+    tList = [ [i*dt for i in range(Nt)] ];
 
     # initial positions
     bounds = 40;
@@ -320,15 +321,15 @@ def trajSimulation(kvar, tList, x0):
 
     return xList, PsiList, uList, uTrueList;
 
-def trajPlotting(kvar, tList, x0,
+def trajPlotting(kvar, sim_time, x0,
     fig=None, axs=None):
     if fig is None:
         fig, axs = plt.subplots(2,3)
 
+    # trajectory simulation
+    Nt = round(sim_time/dt) + 1;
+    tList = [ [i*dt for i in range(Nt)] ];
     xList, PsiList, uList, uTrueList = trajSimulation(kvar, tList, x0);
-
-    # time-steps
-    Nt = len( tList[0] );
 
     # position comparisons
     axs[0,0].plot(tList[0], xList[0],
