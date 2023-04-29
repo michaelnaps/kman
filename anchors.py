@@ -306,8 +306,10 @@ def trajSimulation(kvar, tList, x0):
     NkXU = kvar.obsY()['Nk'];
 
     # initialize Psi0
-    xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
-    Psi0 = kvar.obsY(xu0) + kvar.obsY( noise(delta,(Nx+Nu,1)) );
+    u0 = np.zeros( (Nu,1) );
+    xu0 = np.vstack( (x0, u0) );
+    xu0noise = np.vstack( (noise(delta, (Nx,1)), u0) );
+    Psi0 = kvar.obsY( xu0+xu0noise );
 
     # data list variables
     xList = np.empty( (Nx, Nt) );
