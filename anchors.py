@@ -13,14 +13,14 @@ np.set_printoptions(precision=3, suppress=True);
 
 
 # hyper paramter(s)
-eps = 0.5;
+eps = 0.1;
 delta = 1;
 dt = 0.01;
 Nx = 2;
 Nu = 2;
 Na = 3;
 # aList = np.array( [[10, 12, -15],[10, -7, -13]] );
-aList = np.array( [[10, -10, 10],[10, 10, -10]] )
+aList = np.array( [[10, -10, 10], [10, 10, -10]] );
 
 # Na = 5;
 # aList = np.array( [[10, 10, -10, -10, -5],[10, -10, -10, 10, -5]] );
@@ -76,14 +76,11 @@ class Vehicle:
             plt.show(block=0);
             input("Press enter when ready...");
 
-    def update(self, t, x):
+    def update(self):
         self.body.remove();
         self.trail_patch.remove();
 
-        self.buffer[:-1] = self.buffer[1:];
-        self.buffer[-1] = x[:2,0];
-
-        self.body = patch.Circle(x, self.body_radius,
+        self.body = patch.Circle(self.buffer[-1], self.body_radius,
             facecolor=self.color, edgecolor='k', zorder=self.zorder);
         self.axs.add_patch(self.body);
 
@@ -95,6 +92,11 @@ class Vehicle:
         # plt.show(block=0);
         plt.pause(self.pause);
 
+        return self;
+
+    def update_buffer(self, x):
+        self.buffer[:-1] = self.buffer[1:];
+        self.buffer[-1] = x[:2,0];
         return self;
 
     def update_title(self, string):
@@ -136,8 +138,8 @@ def control(x):
 
     return u;
 
-def noise(eps, shape):
-    return eps*np.random.rand(shape[0], shape[1]) - 2*eps;
+def noise(alpha, shape):
+    return 2*alpha*np.random.rand(shape[0], shape[1]) - alpha;
 
 def anchorMeasure(x):
     da = np.empty( (Na,1) );
@@ -258,7 +260,7 @@ def stationaryResults(kvar, sim_time, N0n):
 
     return figComp, axsComp;
 
-def animatedResults(kvar, T, x0):
+def animatedResults(kvar, T, x0, rush=0):
     # simulation variables
     xd = np.zeros( (Nx,1) );
     xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
@@ -272,13 +274,13 @@ def animatedResults(kvar, T, x0):
         zorder=10,
         radius=0.70, color=mColor,
         linewidth=2,
-        buffer_length=100);
+        buffer_length=10000);
     kvhc = Vehicle(Psi, xd,
         fig=xvhc.fig, axs=xvhc.axs,
         zorder=20,
         radius=0.50, color=kColor,
         linewidth=2, linestyle='--',
-        buffer_length=100);
+        buffer_length=10000);
     plotAnchors(xvhc.fig, xvhc.axs);
 
     # propagation function
@@ -291,10 +293,19 @@ def animatedResults(kvar, T, x0):
         u = Psi[NkX:].reshape(Nu,1);
         x = model(x,u);
 
-        xvhc.update(i*dt, x);
-        kvhc.update(i*dt, Psi);
-        # kvhc.update_title('time: %.3f' % float(i*dt));
+        xvhc.update_buffer(x);
+        kvhc.update_buffer(Psi);
 
+        if not rush:
+            xvhc.update();
+            kvhc.update();
+            # kvhc.update_title('time: %.3f' % float(i*dt));
+
+    if rush:
+        xvhc.update();
+        kvhc.update();
+
+    xvhc.fig.tight_layout();
     return xvhc, kvhc;
 
 
@@ -345,48 +356,51 @@ def trajPlotting(kvar, sim_time, x0,
 
     # trajectory simulation
     Nt = round(sim_time/dt) + 1;
-    tList = [ [i*dt for i in range(Nt)] ];
-    xList, PsiList, uList, uTrueList = trajSimulation(kvar, tList, x0);
+    nList = [ [i for i in range(Nt)] ];
+    xList, PsiList, uList, uTrueList = trajSimulation(kvar, nList, x0);
 
     # position comparisons
-    axs[0,0].plot(tList[0], xList[0],
+    axs[0,0].plot(nList[0], xList[0],
         color=mColor, label='Model');
-    axs[0,0].plot(tList[0], PsiList[0],
+    axs[0,0].plot(nList[0], PsiList[0],
         color=kColor, linestyle='--', label='KCE');
     axs[0,0].set_ylabel('$x_1$')
 
-    axs[0,1].plot(tList[0], xList[1],
+    axs[0,1].plot(nList[0], xList[1],
         color=mColor, label='Model');
-    axs[0,1].plot(tList[0], PsiList[1],
+    axs[0,1].plot(nList[0], PsiList[1],
         color=kColor, linestyle='--', label='KCE');
     axs[0,1].set_ylabel('$x_2$')
     axs[0,1].legend();
 
-    axs[0,2].plot(tList[0], xList[0]-PsiList[0],
+    axs[0,2].plot(nList[0], xList[0]-PsiList[0],
         color=x1Color, label='$x_1$');
-    axs[0,2].plot(tList[0], xList[1]-PsiList[1],
+    axs[0,2].plot(nList[0], xList[1]-PsiList[1],
         color=x2Color, linestyle='--', label='$x_2$');
     axs[0,2].set_ylabel('Error');
     axs[0,2].legend();
 
     # input comaprison
-    axs[1,0].plot(tList[0][:Nt-1], uTrueList[0],
+    axs[1,0].plot(nList[0][:Nt-1], uTrueList[0],
         color=mColor, label='Model');
-    axs[1,0].plot(tList[0][:Nt-1], uList[0],
+    axs[1,0].plot(nList[0][:Nt-1], uList[0],
         color=kColor, linestyle='--', label='KCE');
     axs[1,0].set_ylabel('$u_1$')
+    # axs[1,0].set_xlabel('Iteration')
 
-    axs[1,1].plot(tList[0][:Nt-1], uTrueList[1],
+    axs[1,1].plot(nList[0][:Nt-1], uTrueList[1],
         color=mColor, label='Model');
-    axs[1,1].plot(tList[0][:Nt-1], uList[1],
+    axs[1,1].plot(nList[0][:Nt-1], uList[1],
         color=kColor, linestyle='--', label='KCE');
     axs[1,1].set_ylabel('$u_2$')
+    axs[1,1].set_xlabel('Iteration #')
 
-    axs[1,2].plot(tList[0][:Nt-1], uTrueList[0]-uList[0],
+    axs[1,2].plot(nList[0][:Nt-1], uTrueList[0]-uList[0],
         color=x1Color, label='$u_1$');
-    axs[1,2].plot(tList[0][:Nt-1], uTrueList[1]-uList[1],
+    axs[1,2].plot(nList[0][:Nt-1], uTrueList[1]-uList[1],
         color=x2Color, linestyle='--', label='$u_2$');
     axs[1,2].set_ylabel('Error');
+    # axs[1,2].set_xlabel('Iteration')
     axs[1,2].legend();
 
     fig.tight_layout();
