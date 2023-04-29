@@ -46,21 +46,20 @@ if __name__ == "__main__":
         print(k);
 
     # simulation variables
+    N0n = 40;
     sim_time = 10;
-    N0n = 25;
 
     x0 = np.array( [[-12], [-17]] );
     u0 = np.zeros( (Nu,1) );
     xu0 = np.vstack( (x0+noise(delta,(Nx,1)), u0) );
     Psi0 = kList[-1].obsY(xu0);
-
     tList, xList, PsiList, uList, uTrueList = generateTrajectoryData(kList[-1], sim_time, x0, Psi0);
 
     # simulation options
-    ans = input("\nStationary, animated, animated complete or trajectory results? [s/a/t/n] ");
+    ans = input("\nStationary, animated, animated complete or trajectory results? [s/a/t/all/n] ");
     if ans == 'all':
         xvhc, kvhc = animatedResults(tList, xList, PsiList, rush=1);
-        xvhc.axs.set_title('$\delta=%.2f, ' % delta + '\\varepsilon=%.2f$' % eps);
+        xvhc.axs.set_title('$\delta=%.1f$, ' % delta + '$\\varepsilon=%.2f$' % eps);
 
         figAnim = xvhc.fig;  axsAnim = xvhc.axs;
         figTraj, axsTraj = trajPlotting(tList, xList, PsiList, uList, uTrueList);

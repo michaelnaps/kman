@@ -14,7 +14,7 @@ np.set_printoptions(precision=3, suppress=True);
 
 # hyper paramter(s)
 eps = 0.1;
-delta = 1;
+delta = 2;
 dt = 0.01;
 Nx = 2;
 Nu = 2;
@@ -26,6 +26,7 @@ aList = np.array( [[10, -10, 10], [10, 10, -10]] );
 # aList = np.array( [[10, 10, -10, -10, -5],[10, -10, -10, 10, -5]] );
 
 # for plotting
+aColor = 'indianred';
 mColor = 'royalblue';
 kColor = 'yellowgreen';
 x1Color = 'indianred';
@@ -59,6 +60,7 @@ class Vehicle:
         self.body_radius = radius;
         self.zorder = zorder;
 
+        self.axs.plot(x0[0], x0[1], marker='o', color=self.color);
         self.body = patch.Circle(x0[:Nx,0], self.body_radius,
             facecolor=self.color, edgecolor='k', zorder=self.zorder);
         self.axs.add_patch(self.body);
@@ -105,10 +107,10 @@ class Vehicle:
 
 
 # plot functions
-def plotAnchors(fig, axs):
+def plotAnchors(fig, axs, radius=0.5):
     for a in aList.T:
         axs.plot(a[0], a[1]);  # to shape axis around anchors
-        circEntity = plt.Circle(a, 0.5, facecolor='indianred', edgecolor='k');
+        circEntity = plt.Circle(a, radius, facecolor=aColor, edgecolor='k');
         axs.add_artist( circEntity );
     # axs.axis('equal');
     return fig, axs;
@@ -156,7 +158,7 @@ def obsX(X=None):
     PsiX = X[:Nx].reshape(Nx,1);
     return PsiX;
 
-def obsU(X=None):
+def obsU(X=None):  # for training purposes only
     if X is None:
         meta = {'Nk':Nu};
         return meta;
@@ -236,7 +238,8 @@ def stationaryResults(kvar, sim_time, N0n):
     # initial positions
     bounds = 40;
     X0n = 2*bounds*np.random.rand(Nx,N0n) - bounds;
-    XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
+    U0n = np.zeros( (Nu,N0n) );
+    XU0n = np.vstack( (X0n + noise(delta,(Nx,N0n)), U0n) );
 
     Psi0 = np.empty( (NkXU,N0n) );
     for i, xu in enumerate(XU0n.T):
@@ -258,8 +261,10 @@ def stationaryResults(kvar, sim_time, N0n):
         i += Nx;
         j += NkXU;
     figComp, axsComp = data.compare_data(xTest, xPsi, X0n);
-    fogComp, axsComp = plotAnchors(figComp, axsComp);
+    figComp, axsComp = plotAnchors(figComp, axsComp, radius=1.25);
+    axsComp.legend();
 
+    axsComp.set_title('$\delta=%.1f, ' % delta + '\\varepsilon=%.2f$' % eps);
     return figComp, axsComp;
 
 def generateTrajectoryData(kvar, sim_time, x0, Psi0):
