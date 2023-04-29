@@ -305,7 +305,7 @@ def animatedResults(kvar, T, x0, rush=0):
         xvhc.update();
         kvhc.update();
 
-    xvhc.fig.tight_layout();
+    # xvhc.fig.tight_layout();
     return xvhc, kvhc;
 
 
