@@ -1,5 +1,7 @@
 from anchors import *
 
+filepath = '/home/michaelnaps/bu_research/final_paper/figures';
+
 # perform Cascade EDMD
 def learnOperators(X, Y, X0):
     # Ku block diagonal matrix function
@@ -51,20 +53,32 @@ if __name__ == "__main__":
 
     x0 = np.array( [[-12], [-17]] );
     u0 = np.zeros( (Nu,1) );
-    xu0 = np.vstack( (x0+noise(delta,(Nx,1)), u0) );
+    xu0 = np.vstack( (x0+[[-1],[2]], u0) );
     Psi0 = kList[-1].obsY(xu0);
     tList, xList, PsiList, uList, uTrueList = generateTrajectoryData(kList[-1], sim_time, x0, Psi0);
 
     # simulation options
     ans = input("\nStationary, animated, animated complete or trajectory results? [s/a/t/all/n] ");
-    if ans == 'all':
+    if ans == 'all' or ans == 'save':
         xvhc, kvhc = animatedResults(tList, xList, PsiList, rush=1);
         xvhc.axs.set_title('$\delta=%.1f$, ' % delta + '$\\varepsilon=%.2f$' % eps);
 
         figAnim = xvhc.fig;  axsAnim = xvhc.axs;
         figTraj, axsTraj = trajPlotting(tList, xList, PsiList, uList, uTrueList);
         figStat, axsStat = stationaryResults(kList[-1], sim_time, N0n);
-        plt.show();
+
+        figAnim.set_figwidth(4);
+
+        figAnim.set_figheight(5);
+        figTraj.set_figheight(5);
+        figStat.set_figheight(5);
+
+        if ans == 'save':
+            figAnim.savefig(filepath+'/singlePathEnvironment', dpi=800);
+            figTraj.savefig(filepath+'/singlePathTrajectories', dpi=800);
+            figStat.savefig(filepath+'/multplePathTrajectories', dpi=800);
+        else:
+            plt.show();
 
     else:
         while ans != 'n':

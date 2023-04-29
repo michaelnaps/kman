@@ -38,7 +38,7 @@ class Vehicle:
     def __init__(self, x0, xd,
                  fig=None, axs=None, zorder=1,
                  buffer_length=10, pause=1e-3,
-                 color='k', radius=1,
+                 color='k', radius=1, label=None,
                  linestyle=None, linewidth=2,
                  record=0):
         if axs is None and fig is None:
@@ -60,7 +60,6 @@ class Vehicle:
         self.body_radius = radius;
         self.zorder = zorder;
 
-        self.axs.plot(x0[0], x0[1], marker='o', color=self.color);
         self.body = patch.Circle(x0[:Nx,0], self.body_radius,
             facecolor=self.color, edgecolor='k', zorder=self.zorder);
         self.axs.add_patch(self.body);
@@ -105,14 +104,30 @@ class Vehicle:
         plt.title(string);
         return self;
 
+    def add_legend(self, label):
+        self.axs.plot(self.buffer[0][0], self.buffer[0][1],
+            color=self.color, marker='x',
+            linestyle=self.linestyle, label=label);
+        return self;
+
+    def hard_plot(self):
+        self.trail_patch.remove();
+        trail = np.array( self.buffer );
+        self.axs.plot(trail[:,0], trail[:,1],
+            color=self.color,
+            linestyle=self.linestyle, linewidth=self.linewidth);
+
 
 # plot functions
 def plotAnchors(fig, axs, radius=0.5):
+    axs.scatter(aList[0][0], aList[0][1],
+        color=aColor,
+        marker='o', label='Anchor(s)');
     for a in aList.T:
         axs.plot(a[0], a[1]);  # to shape axis around anchors
-        circEntity = plt.Circle(a, radius, facecolor=aColor, edgecolor='k');
+        circEntity = plt.Circle(a, radius,
+            facecolor=aColor, edgecolor='k', zorder=100);
         axs.add_artist( circEntity );
-    # axs.axis('equal');
     return fig, axs;
 
 
@@ -305,13 +320,13 @@ def animatedResults(tList, xList, PsiList, rush=0):
     # vehicle variables
     xd = np.zeros( (Nx,1) );
     xvhc = Vehicle(xList[:,0,None], xd,
-        zorder=10,
+        zorder=10, label='Model',
         radius=0.70, color=mColor,
         linewidth=2,
         buffer_length=10000);
     kvhc = Vehicle(PsiList[:,0,None], xd,
         fig=xvhc.fig, axs=xvhc.axs,
-        zorder=20,
+        zorder=20, label='KFO',
         radius=0.50, color=kColor,
         linewidth=2, linestyle='--',
         buffer_length=10000);
@@ -331,8 +346,13 @@ def animatedResults(tList, xList, PsiList, rush=0):
             # kvhc.update_title('time: %.3f' % float(i*dt));
 
     if rush:
+        xvhc.add_legend('$x_0$ (True)');
+        kvhc.add_legend('$\hat \Psi_0$ (Koopman)');
         xvhc.update();
         kvhc.update();
+        xvhc.hard_plot();
+        kvhc.hard_plot();
+        xvhc.axs.legend(loc='lower right');
 
     # xvhc.fig.tight_layout();
     return xvhc, kvhc;
@@ -350,45 +370,49 @@ def trajPlotting(tList, xList, PsiList, uList, uTrueList,
     axs[0,0].plot(nList[0], xList[0],
         color=mColor, label='Model');
     axs[0,0].plot(nList[0], PsiList[0],
-        color=kColor, linestyle='--', label='KCE');
-    axs[0,0].set_ylabel('$x_1$')
+        color=kColor, linestyle='--', label='KFO');
+    axs[0,0].set_title('$x$-axis');
+    axs[0,0].set_ylabel('$x_1$');
 
     axs[0,1].plot(nList[0], xList[1],
         color=mColor, label='Model');
     axs[0,1].plot(nList[0], PsiList[1],
-        color=kColor, linestyle='--', label='KCE');
-    axs[0,1].set_ylabel('$x_2$')
-    axs[0,1].legend();
+        color=kColor, linestyle='--', label='KFO');
+    axs[0,1].set_title('$y$-axis');
+    axs[0,1].set_ylabel('$x_2$');
+    axs[0,1].legend(loc='lower right');
 
     axs[0,2].plot(nList[0], xList[0]-PsiList[0],
         color=x1Color, label='$x_1$');
     axs[0,2].plot(nList[0], xList[1]-PsiList[1],
         color=x2Color, linestyle='--', label='$x_2$');
+    axs[0,2].set_title('State Est.');
     axs[0,2].set_ylabel('Error');
-    axs[0,2].legend();
+    axs[0,2].legend(loc='lower right');
 
     # input comaprison
     axs[1,0].plot(nList[0][:Nt-1], uTrueList[0],
         color=mColor, label='Model');
     axs[1,0].plot(nList[0][:Nt-1], uList[0],
-        color=kColor, linestyle='--', label='KCE');
-    axs[1,0].set_ylabel('$u_1$')
-    # axs[1,0].set_xlabel('Iteration')
+        color=kColor, linestyle='--', label='KFO');
+    axs[1,0].set_ylabel('$u_1$');
+    # axs[1,0].set_xlabel('Iteration');
 
     axs[1,1].plot(nList[0][:Nt-1], uTrueList[1],
         color=mColor, label='Model');
     axs[1,1].plot(nList[0][:Nt-1], uList[1],
-        color=kColor, linestyle='--', label='KCE');
-    axs[1,1].set_ylabel('$u_2$')
-    axs[1,1].set_xlabel('Iteration #')
+        color=kColor, linestyle='--', label='KFO');
+    axs[1,1].set_ylabel('$u_2$');
+    axs[1,1].set_xlabel('Iteration # (all bottom axes)');
 
     axs[1,2].plot(nList[0][:Nt-1], uTrueList[0]-uList[0],
         color=x1Color, label='$u_1$');
     axs[1,2].plot(nList[0][:Nt-1], uTrueList[1]-uList[1],
         color=x2Color, linestyle='--', label='$u_2$');
+    axs[1,2].set_title('Control Est.')
     axs[1,2].set_ylabel('Error');
-    # axs[1,2].set_xlabel('Iteration')
-    axs[1,2].legend();
+    # axs[1,2].set_xlabel('Iteration');
+    axs[1,2].legend(loc='lower right');
 
     fig.tight_layout();
     return fig, axs;
