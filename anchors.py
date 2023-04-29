@@ -225,6 +225,8 @@ def createData(tList, N0, Nt):
 
     return X, Y, XU0;
 
+
+# plotting results helper functions
 def stationaryResults(kvar, sim_time, N0n):
     # dimension variables
     NkXU = obsXU()['Nk'];
@@ -260,67 +262,11 @@ def stationaryResults(kvar, sim_time, N0n):
 
     return figComp, axsComp;
 
-def animatedResults(kvar, T, x0, rush=0):
-    # simulation variables
-    xd = np.zeros( (Nx,1) );
-    xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
-
-    # simulation variables
-    x = x0;
-    Psi = kvar.obsY(xu0) + kvar.obsY( noise(delta,(Nx+Nu,1)) );
-
-    # vehicle variables
-    xvhc = Vehicle(x, xd,
-        zorder=10,
-        radius=0.70, color=mColor,
-        linewidth=2,
-        buffer_length=10000);
-    kvhc = Vehicle(Psi, xd,
-        fig=xvhc.fig, axs=xvhc.axs,
-        zorder=20,
-        radius=0.50, color=kColor,
-        linewidth=2, linestyle='--',
-        buffer_length=10000);
-    plotAnchors(xvhc.fig, xvhc.axs);
-
-    # propagation function
-    NkX = obsX()['Nk'];
-    Nt = round(T/dt) + 1;
-
-    for i in range(Nt):
-        Psi = kvar.K@rmes(x, Psi);
-
-        u = Psi[NkX:].reshape(Nu,1);
-        x = model(x,u);
-
-        xvhc.update_buffer(x);
-        kvhc.update_buffer(Psi);
-
-        if not rush:
-            xvhc.update();
-            kvhc.update();
-            # kvhc.update_title('time: %.3f' % float(i*dt));
-
-    if rush:
-        xvhc.update();
-        kvhc.update();
-
-    # xvhc.fig.tight_layout();
-    return xvhc, kvhc;
-
-
-# plot position, input and error trajectories for isolated path
-def trajSimulation(kvar, tList, x0):
+def generateTrajectoryData(kvar, sim_time, x0, Psi0):
     # dimension variables
-    Nt = len( tList[0] );
+    Nt = round(sim_time/dt) + 1;
     NkX = obsX()['Nk'];
-    NkXU = kvar.obsY()['Nk'];
-
-    # initialize Psi0
-    u0 = np.zeros( (Nu,1) );
-    xu0 = np.vstack( (x0, u0) );
-    xu0noise = np.vstack( (noise(delta, (Nx,1)), u0) );
-    Psi0 = kvar.obsY( xu0+xu0noise );
+    NkXU = obsXU()['Nk'];
 
     # data list variables
     xList = np.empty( (Nx, Nt) );
@@ -347,17 +293,53 @@ def trajSimulation(kvar, tList, x0):
         uList[:,i] = u[:,0];
         uTrueList[:,i] = control(x)[:,0];
 
-    return xList, PsiList, uList, uTrueList;
+    tList = [ [i*dt for i in range(Nt)] ];
+    return tList, xList, PsiList, uList, uTrueList;
 
-def trajPlotting(kvar, sim_time, x0,
+def animatedResults(tList, xList, PsiList, rush=0):
+    # vehicle variables
+    xd = np.zeros( (Nx,1) );
+    xvhc = Vehicle(xList[:,0,None], xd,
+        zorder=10,
+        radius=0.70, color=mColor,
+        linewidth=2,
+        buffer_length=10000);
+    kvhc = Vehicle(PsiList[:,0,None], xd,
+        fig=xvhc.fig, axs=xvhc.axs,
+        zorder=20,
+        radius=0.50, color=kColor,
+        linewidth=2, linestyle='--',
+        buffer_length=10000);
+    plotAnchors(xvhc.fig, xvhc.axs);
+
+    # propagation function
+    NkX = obsX()['Nk'];
+    Nt = len(tList[0]);
+
+    for i in range(Nt):
+        xvhc.update_buffer(xList[:,i,None]);
+        kvhc.update_buffer(PsiList[:,i,None]);
+
+        if not rush:
+            xvhc.update();
+            kvhc.update();
+            # kvhc.update_title('time: %.3f' % float(i*dt));
+
+    if rush:
+        xvhc.update();
+        kvhc.update();
+
+    # xvhc.fig.tight_layout();
+    return xvhc, kvhc;
+
+def trajPlotting(tList, xList, PsiList, uList, uTrueList,
     fig=None, axs=None):
     if fig is None:
         fig, axs = plt.subplots(2,3)
 
-    # trajectory simulation
-    Nt = round(sim_time/dt) + 1;
+    # iteration list
+    Nt = len(tList[0]);
     nList = [ [i for i in range(Nt)] ];
-    xList, PsiList, uList, uTrueList = trajSimulation(kvar, nList, x0);
 
     # position comparisons
     axs[0,0].plot(nList[0], xList[0],

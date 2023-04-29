@@ -48,14 +48,23 @@ if __name__ == "__main__":
     # simulation variables
     sim_time = 10;
     N0n = 25;
-    x0 = np.array( [[-12], [-17]] )
+
+    x0 = np.array( [[-12], [-17]] );
+    u0 = np.zeros( (Nu,1) );
+    xu0 = np.vstack( (x0+noise(delta,(Nx,1)), u0) );
+    Psi0 = kList[-1].obsY(xu0);
+
+    tList, xList, PsiList, uList, uTrueList = generateTrajectoryData(kList[-1], sim_time, x0, Psi0);
 
     # simulation options
     ans = input("\nStationary, animated, animated complete or trajectory results? [s/a/t/n] ");
     if ans == 'all':
-        xvhc, kvhc = animatedResults(kList[-1], sim_time, x0, rush=1);
-        figTraj, axsTraj = trajPlotting(kList[-1], sim_time, x0);
+        xvhc, kvhc = animatedResults(tList, xList, PsiList, rush=1);
         xvhc.axs.set_title('$\delta=%.2f, ' % delta + '\\varepsilon=%.2f$' % eps);
+
+        figAnim = xvhc.fig;  axsAnim = xvhc.axs;
+        figTraj, axsTraj = trajPlotting(tList, xList, PsiList, uList, uTrueList);
+        figStat, axsStat = stationaryResults(kList[-1], sim_time, N0n);
         plt.show();
 
     else:
@@ -66,8 +75,8 @@ if __name__ == "__main__":
                 plt.show();
             elif ans == 'a':
                 # simulation variables
-                xvhc, kvhc = animatedResults(kList[-1], sim_time, x0);
+                xvhc, kvhc = animatedResults(tList, xList, PsiList);
             elif ans == 't':
-                fig, axs = trajPlotting(kList[-1], sim_time, x0);
+                fig, axs = trajPlotting(tList, xList, PsiList, uList, uTrueList);
                 plt.show();
             ans = input("\nStationary, animated or trajectory simulation? [s/a/t/n] ");
