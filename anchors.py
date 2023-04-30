@@ -51,6 +51,8 @@ class Vehicle:
         self.axs.set_xlim(-12,12);
         self.axs.set_ylim(-12,12);
         self.axs.axis('equal');
+        self.axs.set_xlabel('$x_1$');
+        self.axs.set_ylabel('$x_2$');
         self.axs.grid(1);
 
         # initialize buffer (trail)
