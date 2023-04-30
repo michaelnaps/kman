@@ -76,7 +76,7 @@ if __name__ == "__main__":
         if ans == 'save':
             figAnim.savefig(filepath+'/singlePathEnvironment', dpi=800);
             figTraj.savefig(filepath+'/singlePathTrajectories', dpi=800);
-            figStat.savefig(filepath+'/multplePathTrajectories', dpi=800);
+            figStat.savefig(filepath+'/multplePathEnvironment', dpi=800);
         else:
             plt.show();
 
