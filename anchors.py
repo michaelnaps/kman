@@ -13,7 +13,7 @@ np.set_printoptions(precision=3, suppress=True);
 
 
 # hyper paramter(s)
-eps = 0.1;
+eps = 0.5;
 delta = 2;
 dt = 0.01;
 Nx = 2;
@@ -113,11 +113,16 @@ class Vehicle:
         return self;
 
     def hard_plot(self):
+        self.body.remove();
         self.trail_patch.remove();
         trail = np.array( self.buffer );
+        self.axs.plot(self.buffer[0][0], self.buffer[0][1],
+            color=self.color, marker='x',
+            linestyle=self.linestyle);
         self.axs.plot(trail[:,0], trail[:,1],
             color=self.color,
             linestyle=self.linestyle, linewidth=self.linewidth);
+        return self;
 
 
 # plot functions
@@ -247,6 +252,25 @@ def createData(tList, N0, Nt):
 
 # plotting results helper functions
 def stationaryResults(kvar, sim_time, N0n):
+    # initial positions
+    bounds = 40;
+    X0n = 2*bounds*np.random.rand(Nx,N0n) - bounds;
+    U0n = np.zeros( (Nu,N0n) );
+    XU0n = np.vstack( (X0n + noise(delta,(Nx,N0n)), U0n) );
+
+    # main execution loop
+    fig, axs = plt.subplots();
+    for i, xu0 in enumerate(XU0n.T):
+        x0 = xu0[:Nx,None];
+        Psi0 = kvar.obsY( xu0[:,None] );
+
+        tList, xList, PsiList, _, _ = generateTrajectoryData(kvar, sim_time, x0, Psi0);
+        animatedResults(tList, xList, PsiList, axs=axs, fig=fig, rush=1, legend=(i==0));
+
+    fig.tight_layout();
+    return fig, axs;
+
+def pathComparisons(kvar, sim_time, N0n):
     # dimension variables
     NkXU = obsXU()['Nk'];
     Nt = round(sim_time/dt) + 1;
@@ -318,17 +342,22 @@ def generateTrajectoryData(kvar, sim_time, x0, Psi0):
     tList = [ [i*dt for i in range(Nt)] ];
     return tList, xList, PsiList, uList, uTrueList;
 
-def animatedResults(tList, xList, PsiList, rush=0):
+def animatedResults(tList, xList, PsiList, fig=None, axs=None, rush=0, legend=1):
+    # if no figure info is given
+    if fig is None and axs is None:
+        fig, axs = plt.subplots();
+
     # vehicle variables
     xd = np.zeros( (Nx,1) );
     xvhc = Vehicle(xList[:,0,None], xd,
-        zorder=10, label='Model',
+        fig=fig, axs=axs,
+        zorder=20, label='Model',
         radius=0.70, color=mColor,
         linewidth=2,
         buffer_length=10000);
     kvhc = Vehicle(PsiList[:,0,None], xd,
-        fig=xvhc.fig, axs=xvhc.axs,
-        zorder=20, label='KFO',
+        fig=fig, axs=axs,
+        zorder=10, label='KFO',
         radius=0.50, color=kColor,
         linewidth=2, linestyle='--',
         buffer_length=10000);
@@ -348,13 +377,12 @@ def animatedResults(tList, xList, PsiList, rush=0):
             # kvhc.update_title('time: %.3f' % float(i*dt));
 
     if rush:
-        xvhc.add_legend('$x_0$ (True)');
-        kvhc.add_legend('$\hat \Psi_0$ (Koopman)');
-        xvhc.update();
-        kvhc.update();
         xvhc.hard_plot();
         kvhc.hard_plot();
-        xvhc.axs.legend(loc='lower right');
+        if legend:
+            xvhc.add_legend('$x_0$ (True)');
+            kvhc.add_legend('$\hat \Psi_0$ (Koopman)');
+            axs.legend(loc='lower right');
 
     # xvhc.fig.tight_layout();
     return xvhc, kvhc;

@@ -64,8 +64,8 @@ def compare_data(Xlist, Ylist, X0, fig=None, axs=None):
     yColor = 'yellowgreen';
 
     n, m = X0.shape;
-    axs.plot(Xlist[-n], Xlist[-(n+1)], color=xColor, label='Model');
-    axs.plot(Ylist[-n], Ylist[-(n+1)], color=yColor, linestyle='--', label='KFO');
+    axs.plot(Xlist[-n], Xlist[-(n+1)], color=xColor, zorder=10, label='Model');
+    axs.plot(Ylist[-n], Ylist[-(n+1)], color=yColor, zorder=5, linestyle='--', label='KFO');
 
     k = 0;
     for x0 in X0.T[:-n]:
