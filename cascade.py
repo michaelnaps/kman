@@ -59,6 +59,7 @@ if __name__ == "__main__":
 
     # eList = [i for i in range(0,11,2)];
     # pathComparisons(kList[-1], sim_time, x0, Psi0, eList);
+    # plt.show();
 
     # simulation options
     ans = input("\nStationary, animated, animated complete or trajectory results? [s/a/t/all/n] ");

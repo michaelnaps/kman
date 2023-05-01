@@ -287,23 +287,30 @@ def pathComparisons(kvar, sim_time, x0, Psi0, eList):
     tList = [ [i*dt for i in range(Nt)] ];
 
     # plot initialization
-    fig, axs = plt.subplots(1,2);
+    fig, axs = plt.subplots(1,3);
+
     axs[0].set_title('$x_1$ Path Comparison');
     axs[1].set_title('$x_2$ Path Comparison');
-    axs[0].plot([tList[0][0], tList[0][-1]], [0, 0],
-        color='r', linestyle='--', zorder=100, label='Ref');
-    axs[1].plot([tList[0][0], tList[0][-1]], [0, 0],
-        color='r', linestyle='--', zorder=100, label='Ref');
+
+    for ax in axs:
+        ax.plot([tList[0][0], tList[0][-1]], [0, 0],
+            color='r', linestyle='--', zorder=100, label='Ref');
+        ax.set_ylim(0, 1.25);
 
     for eps in eList:
         xKoop = generateTrajectoryData(kvar, sim_time, x0, Psi0, eps=eps)[1];
         xTrue = generateIdealData(sim_time, x0)[1];
 
-        axs[0].plot(tList[0], abs( xTrue[0]-xKoop[0] ));
-        axs[1].plot(tList[0], abs( xTrue[1]-xKoop[1] ),
+        pathDiff = abs( xKoop - xTrue );
+        diffStack = np.hstack( (pathDiff[0], pathDiff[1]) );
+        epsAvg = np.average( diffStack );
+
+        axs[0].plot(tList[0], pathDiff[0]);
+        axs[1].plot(tList[0], pathDiff[1]);
+        axs[2].plot([tList[0][0], tList[0][-1]], [epsAvg, epsAvg],
             label='$\\varepsilon = %.2f$' % eps);
 
-    axs[1].legend(loc='upper right');
+    axs[2].legend(loc='upper right');
     return fig, axs;
 
 def openLoopComparisons(kvar, sim_time, N0n, err=epsilon):
