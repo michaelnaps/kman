@@ -57,11 +57,14 @@ if __name__ == "__main__":
     Psi0 = kList[-1].obsY(xu0);
     tList, xList, PsiList, uList, uTrueList = generateTrajectoryData(kList[-1], sim_time, x0, Psi0);
 
+    # eList = [i for i in range(0,11,2)];
+    # pathComparisons(kList[-1], sim_time, x0, Psi0, eList);
+
     # simulation options
     ans = input("\nStationary, animated, animated complete or trajectory results? [s/a/t/all/n] ");
     if ans == 'all' or ans == 'save':
         xvhc, kvhc = animatedResults(tList, xList, PsiList, rush=1);
-        xvhc.axs.set_title('$\delta=%.1f$, ' % delta + '$\\varepsilon=%.2f$' % eps);
+        xvhc.axs.set_title('$\delta=%.1f$, ' % delta + '$\\varepsilonilon=%.2f$' % epsilon);
 
         figAnim = xvhc.fig;  axsAnim = xvhc.axs;
         figTraj, axsTraj = trajPlotting(tList, xList, PsiList, uList, uTrueList);
@@ -74,9 +77,10 @@ if __name__ == "__main__":
         figStat.set_figheight(5);
 
         if ans == 'save':
+            pass;
             # figAnim.savefig(filepath+'/singlePathEnvironment', dpi=600);
             # figTraj.savefig(filepath+'/singlePathTrajectories', dpi=600);
-            figStat.savefig(filepath+'/multiplePathEnvironment_e%.3f' % eps + '.png', dpi=600);
+            # figStat.savefig(filepath+'/multiplePathEnvironment_e%.3f' % epsilon + '.png', dpi=600);
         else:
             plt.show();
 

@@ -13,7 +13,7 @@ np.set_printoptions(precision=3, suppress=True);
 
 
 # hyper paramter(s)
-eps = 0.5;
+epsilon = 0.5;
 delta = 2;
 dt = 0.01;
 Nx = 2;
@@ -220,7 +220,7 @@ def obsXUH(X=None):
 
     return Psi;
 
-def rmes(x, Psi):
+def rmes(x, Psi, eps=epsilon):
     NkX = obsX()['Nk'];
 
     PsiX = Psi[:NkX].reshape(NkX,1);
@@ -249,6 +249,16 @@ def createData(tList, N0, Nt):
 
     return X, Y, XU0;
 
+def generateIdealData(sim_time, x0):
+    # dimension variables
+    Nt = round(sim_time/dt) + 1;
+    tList = [ [i*dt for i in range(Nt)] ];
+
+    # generate data
+    xList, uList = data.generate_data(tList, model, x0,
+        control=control, Nu=Nu);
+    return tList, xList, uList
+
 
 # plotting results helper functions
 def stationaryResults(kvar, sim_time, N0n):
@@ -268,10 +278,35 @@ def stationaryResults(kvar, sim_time, N0n):
         animatedResults(tList, xList, PsiList, axs=axs, fig=fig, rush=1, legend=(i==0));
 
     plotAnchors(fig, axs, radius=1.5);
-    axs.set_title('$\\varepsilon=%.2f$' % eps);
+    axs.set_title('$\\varepsilonilon=%.2f$' % epsilon);
     return fig, axs;
 
-def pathComparisons(kvar, sim_time, N0n):
+def pathComparisons(kvar, sim_time, x0, Psi0, eList):
+    # time sets
+    Nt = round(sim_time/dt) + 1;
+    tList = [ [i*dt for i in range(Nt)] ];
+
+    # plot initialization
+    fig, axs = plt.subplots(1,2);
+    axs[0].set_title('$x_1$ Path Comparison');
+    axs[1].set_title('$x_2$ Path Comparison');
+    axs[0].plot([tList[0][0], tList[0][-1]], [0, 0],
+        color='r', linestyle='--', zorder=100, label='Ref');
+    axs[1].plot([tList[0][0], tList[0][-1]], [0, 0],
+        color='r', linestyle='--', zorder=100, label='Ref');
+
+    for eps in eList:
+        xKoop = generateTrajectoryData(kvar, sim_time, x0, Psi0, eps=eps)[1];
+        xTrue = generateIdealData(sim_time, x0)[1];
+
+        axs[0].plot(tList[0], abs( xTrue[0]-xKoop[0] ));
+        axs[1].plot(tList[0], abs( xTrue[1]-xKoop[1] ),
+            label='$\\varepsilon = %.2f$' % eps);
+
+    axs[1].legend(loc='upper right');
+    return fig, axs;
+
+def openLoopComparisons(kvar, sim_time, N0n, err=epsilon):
     # dimension variables
     NkXU = obsXU()['Nk'];
     Nt = round(sim_time/dt) + 1;
@@ -306,10 +341,10 @@ def pathComparisons(kvar, sim_time, N0n):
     figComp, axsComp = plotAnchors(figComp, axsComp, radius=1.25);
     axsComp.legend();
 
-    axsComp.set_title('$\delta=%.1f, ' % delta + '\\varepsilon=%.2f$' % eps);
+    axsComp.set_title('$\delta=%.1f, ' % delta + '\\varepsilonilon=%.2f$' % epsilon);
     return figComp, axsComp;
 
-def generateTrajectoryData(kvar, sim_time, x0, Psi0):
+def generateTrajectoryData(kvar, sim_time, x0, Psi0, eps=epsilon):
     # dimension variables
     Nt = round(sim_time/dt) + 1;
     NkX = obsX()['Nk'];
@@ -330,7 +365,7 @@ def generateTrajectoryData(kvar, sim_time, x0, Psi0):
     u = np.zeros( (Nu,1) );
     Psi = Psi0;
     for i in range(Nt-1):
-        Psi = kvar.K@rmes(x, Psi);
+        Psi = kvar.K@rmes(x, Psi, eps=eps);
         u = Psi[NkX:];
         x = model(x,u);
 
