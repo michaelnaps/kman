@@ -256,7 +256,7 @@ def stationaryResults(kvar, sim_time, N0n):
     bounds = 40;
     X0n = 2*bounds*np.random.rand(Nx,N0n) - bounds;
     U0n = np.zeros( (Nu,N0n) );
-    XU0n = np.vstack( (X0n + noise(delta,(Nx,N0n)), U0n) );
+    XU0n = np.vstack( (X0n, U0n) );
 
     # main execution loop
     fig, axs = plt.subplots();
@@ -267,7 +267,8 @@ def stationaryResults(kvar, sim_time, N0n):
         tList, xList, PsiList, _, _ = generateTrajectoryData(kvar, sim_time, x0, Psi0);
         animatedResults(tList, xList, PsiList, axs=axs, fig=fig, rush=1, legend=(i==0));
 
-    fig.tight_layout();
+    plotAnchors(fig, axs, radius=1.5);
+    axs.set_title('$\\varepsilon=%.2f$' % eps);
     return fig, axs;
 
 def pathComparisons(kvar, sim_time, N0n):
@@ -359,7 +360,7 @@ def animatedResults(tList, xList, PsiList, fig=None, axs=None, rush=0, legend=1)
         fig=fig, axs=axs,
         zorder=10, label='KFO',
         radius=0.50, color=kColor,
-        linewidth=2, linestyle='--',
+        linewidth=1.25, linestyle='--',
         buffer_length=10000);
     plotAnchors(xvhc.fig, xvhc.axs);
 

@@ -48,7 +48,7 @@ if __name__ == "__main__":
         print(k);
 
     # simulation variables
-    N0n = 25;
+    N0n = 15;
     sim_time = 10;
 
     x0 = np.array( [[-12], [-17]] );
@@ -74,9 +74,9 @@ if __name__ == "__main__":
         figStat.set_figheight(5);
 
         if ans == 'save':
-            # figAnim.savefig(filepath+'/singlePathEnvironment', dpi=800);
-            # figTraj.savefig(filepath+'/singlePathTrajectories', dpi=800);
-            figStat.savefig(filepath+'/multiplePathEnvironment_e50', dpi=800);
+            # figAnim.savefig(filepath+'/singlePathEnvironment', dpi=600);
+            # figTraj.savefig(filepath+'/singlePathTrajectories', dpi=600);
+            figStat.savefig(filepath+'/multiplePathEnvironment_e%.3f' % eps + '.png', dpi=600);
         else:
             plt.show();
 
