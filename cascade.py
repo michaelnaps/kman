@@ -1,6 +1,6 @@
 from anchors import *
 
-filepath = '/home/michaelnaps/bu_research/final_paper/figures';
+filepath = '/home/michaelnaps/bu_research/koopman_operators_in_series/figures';
 
 # perform Cascade EDMD
 def learnOperators(X, Y, X0):
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
     x0 = np.array( [[-12], [-17]] );
     u0 = np.zeros( (Nu,1) );
-    xu0 = np.vstack( (x0+[[-1],[2]], u0) );
+    xu0 = np.vstack( (x0+[[-1.3],[1.5]], u0) );
     Psi0 = kList[-1].obsY(xu0);
     tList, xList, PsiList, uList, uTrueList = generateTrajectoryData(kList[-1], sim_time, x0, Psi0);
 
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     ans = input("\nStationary, animated, animated complete or trajectory results? [s/a/t/all/n] ");
     if ans == 'all' or ans == 'save':
         xvhc, kvhc = animatedResults(tList, xList, PsiList, rush=1);
-        xvhc.axs.set_title('$\delta=%.1f$, ' % delta + '$\\varepsilonilon=%.2f$' % epsilon);
+        xvhc.axs.set_title('$\delta=%.1f$, ' % delta + '$\\varepsilon=%.2f$' % epsilon);
 
         figAnim = xvhc.fig;  axsAnim = xvhc.axs;
         figTraj, axsTraj = trajPlotting(tList, xList, PsiList, uList, uTrueList);
@@ -78,9 +78,9 @@ if __name__ == "__main__":
         figStat.set_figheight(5);
 
         if ans == 'save':
-            pass;
-            # figAnim.savefig(filepath+'/singlePathEnvironment', dpi=600);
-            # figTraj.savefig(filepath+'/singlePathTrajectories', dpi=600);
+            # pass;
+            figAnim.savefig(filepath+'/singlePathEnvironment', dpi=600);
+            figTraj.savefig(filepath+'/singlePathTrajectories', dpi=600);
             # figStat.savefig(filepath+'/multiplePathEnvironment_e%.3f' % epsilon + '.png', dpi=600);
         else:
             plt.show();

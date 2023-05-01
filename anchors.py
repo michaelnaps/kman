@@ -459,6 +459,7 @@ def trajPlotting(tList, xList, PsiList, uList, uTrueList,
         color=x1Color, label='$x_1$');
     axs[0,2].plot(nList[0], xList[1]-PsiList[1],
         color=x2Color, linestyle='--', label='$x_2$');
+    axs[0,2].set_ylim(-2,2);
     axs[0,2].set_title('State Est.');
     axs[0,2].set_ylabel('Error');
     axs[0,2].legend(loc='lower right');
@@ -482,6 +483,7 @@ def trajPlotting(tList, xList, PsiList, uList, uTrueList,
         color=x1Color, label='$u_1$');
     axs[1,2].plot(nList[0][:Nt-1], uTrueList[1]-uList[1],
         color=x2Color, linestyle='--', label='$u_2$');
+    axs[1,2].set_ylim(-2,2);
     axs[1,2].set_title('Control Est.')
     axs[1,2].set_ylabel('Error');
     # axs[1,2].set_xlabel('Iteration');
