@@ -55,7 +55,7 @@ class clVehicle:
         for a in self.aList:
             self.axs.add_patch(a);
 
-        plt.title('time: %.3f' % t);
+        plt.title('iteration: %i' % t);
         plt.pause(self.pause);
 
         return self;
@@ -114,7 +114,7 @@ def animatedResults(kvar):
     Psi0 = obsX( xu0 );
 
     # simulate results using vehicle class
-    clvhc = clVehicle(Psi0, None,
+    clvhc = clVehicle(Psi0, None, record=1,
         color='yellowgreen', radius=0.5);
     plotAnchors(clvhc.fig, clvhc.axs);
 
@@ -127,7 +127,7 @@ def animatedResults(kvar):
     for i, u in enumerate(uList.T):
         Psi = prop(Psi, u[:,None]);
         # Psi = kvar.K@Psi;
-        clvhc.update(i*dt, Psi, zorder=10);
+        clvhc.update(i, Psi, zorder=10);
 
     return clvhc;
 
