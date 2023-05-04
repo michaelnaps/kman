@@ -13,7 +13,7 @@ np.set_printoptions(precision=3, suppress=True);
 
 
 # hyper paramter(s)
-epsilon = 0.5;
+epsilon = 2;
 delta = 2;
 dt = 0.01;
 Nx = 2;
@@ -278,7 +278,7 @@ def stationaryResults(kvar, sim_time, N0n):
         animatedResults(tList, xList, PsiList, axs=axs, fig=fig, rush=1, legend=(i==0));
 
     plotAnchors(fig, axs, radius=1.5);
-    axs.set_title('$\\varepsilonilon=%.2f$' % epsilon);
+    axs.set_title('$\\varepsilon=%.2f$' % epsilon);
     return fig, axs;
 
 def pathComparisons(kvar, sim_time, x0, Psi0, eList):
