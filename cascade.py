@@ -5,7 +5,7 @@ filepath = '/home/michaelnaps/bu_research/koopman_operators_in_series/figures';
 # perform Cascade EDMD
 def learnOperators(X, Y, X0):
     # Ku block diagonal matrix function
-    def Mu(kvar):
+    def Tu(kvar):
         m = Nu;
         p = obsX()['Nk'];
         q = 1;
@@ -18,15 +18,15 @@ def learnOperators(X, Y, X0):
 
     # initialize operator variables and solve
     kuvar = KoopmanOperator(obsH, obsU);
-    kxvar = KoopmanOperator(obsXUH, obsXU, M=Mu(kuvar));
+    kxvar = KoopmanOperator(obsXUH, obsXU, T=Tu(kuvar));
 
     kList = (kxvar, kuvar);
-    mlist = (Mu, );
+    mlist = (Tu, );
     kList = cascade_edmd(kList, mlist, X, Y, X0);
     print('Cascade EDMD Complete.');
 
     # form the cumulative operator
-    Kf = kList[0].K @ Mu( kList[1] );
+    Kf = kList[0].K @ Tu( kList[1] );
     kvar = KoopmanOperator(obsXUH, obsXU, K=Kf);
     kvar.resError(X, Y, X0);
 

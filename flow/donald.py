@@ -76,7 +76,7 @@ class Parameters:
 
         self.pause = pause;
         self.xd = xd;
-        
+
         plt.close(self.fig);  # suppress figure from output till update is called
 
     def update(self, t, x, xPH):
@@ -231,7 +231,7 @@ def plotcomp(xTest, PsiTest, save=0):
         X = np.vstack( (x,u) );
 
         PsiH = obsH(X);
-        
+
         Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
 
         return Psin;
@@ -280,13 +280,13 @@ if __name__ == "__main__":
     NkU = obsU()['Nk'];
     NkH = obsH()['Nk'];
 
-    
+
     # initialize states
     x0 = [-1,-1,3*pi/2];
     xd = [1,1,3*pi/2];
     uinit = [0 for i in range(Nu*PH)];
 
-    
+
     # create MPC class variable
     model_type = 'discrete';
     params = Parameters(x0, xd, buffer_length=25);
@@ -295,13 +295,13 @@ if __name__ == "__main__":
         max_iter=100, model_type=model_type);
     mpc_var.setAlpha(0.01);
 
-    
+
     # model function for training syntax
     modelTrain = lambda x, u: np.array( model(x,u,None) ).reshape(Nx,1);
 
-    
+
     # generate initial conditions for training
-    N0 = 1;
+    N0 = 2;
     X0 = np.random.rand(Nx,N0);
 
     T = 10;  Nt = round(T/dt)+1;
@@ -310,7 +310,7 @@ if __name__ == "__main__":
     randControl = lambda x: 10*np.random.rand(Nu,1)-5;
     xTrain, uRand = data.generate_data(tList, modelTrain, X0, randControl, Nu);
 
-    
+
     # split training data into X and Y sets
     uStack = data.stack_data(uRand, N0, Nu, Nt-1);
     xStack = data.stack_data(xTrain[:,:-1], N0, Nx, Nt-1);
@@ -319,7 +319,7 @@ if __name__ == "__main__":
     X = np.vstack( (xStack, uStack) );
     Y = np.vstack( (yStack, uStack) );
 
-    
+
     # solve for K
     XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
 
@@ -352,10 +352,10 @@ if __name__ == "__main__":
 
     XU0 = np.vstack( (X0, np.zeros( (Nu*PH, N0) )) );
     kuvar = kman.KoopmanOperator(obsH, params=mpc_var);
-    Ku = kuvar.edmd(Xu, Yu, XU0);
+    kuvar.edmd(Xu, Yu, XU0);
+    Ku = kuvar.K;
 
-    print('Ku:', Ku.shape, kuvar.err);
-    print(Ku);
+    print(kuvar);
 
     xTest = 2*np.random.rand(Nx,1)-1;
     PsiTest = obsH(xTest, mpc_var);

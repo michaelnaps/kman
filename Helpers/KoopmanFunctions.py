@@ -27,7 +27,7 @@ def dimnData(X, X0, obs=None):
         Nk = obs()['Nk'];
 
     # dimension variables
-    Mx = len(X[0]);
+    Tx = len(X[0]);
     Nx = len(X0);
 
     if len(X0.shape) > 1:
@@ -35,48 +35,9 @@ def dimnData(X, X0, obs=None):
     else:
         N0 = 1;
 
-    Nt = round(Mx/N0);
+    Nt = round(Tx/N0);
 
     return N0, Nt, Nx, Nk;
-
-# iterative least squares algorithm
-def iterative_ls(klist, flist, X, Y, X0, TOL=1e-3):
-    # dimension variables and vectorized klist
-    N = len(klist);
-    (N0, Nt, _, _) = dimnData(X, X0);
-    Nklist = [kvar.K.shape for kvar in klist];
-    kvlist = [vec( kvar.K ) for kvar in klist];
-
-    PsiX = [None for i in range(N)];
-    PsiY = [None for i in range(N)];
-    for i, kvar in enumerate(klist):
-        PsiX[i], _ = kvar.liftData(X, X0);
-        PsiY[i], _ = kvar.liftData(Y, X0, kvar.obsY);
-
-    # primary algorithm loop
-    dK = 1;  count = 0;
-    while dK > TOL:
-        dK = 0;
-        for i, f in enumerate(flist):
-            kcopy = kvlist[i];
-
-            PsiShiftX = f(klist, PsiX[i]);
-
-            print('______');
-            print(PsiX[i].shape, PsiShiftX.shape, PsiY[i].shape);
-
-            G = PsiShiftX@PsiShiftX.T;
-            A = PsiShiftX@PsiY[i].T;
-            print(M.shape, G.shape, A.shape);
-
-            kvlist[i] = np.linalg.lstsq(G, A);
-            klist[i].K = nvec(kvlist[i], Nklist[i][0], Nklist[i][1]);
-
-            dK += np.linalg.norm( kvlist[i] - kcopy );
-        count += 1
-        print(count, ': %.5e' % dK);
-
-    return klist;
 
 # cascade extended dynamic mode decomposition algorithm (recursive)
 def cascade_edmd(klist, flist, X, Y, X0):
@@ -97,7 +58,7 @@ def cascade_edmd(klist, flist, X, Y, X0):
 # Koopman Operator class description
 class KoopmanOperator:
     # initialize class
-    def __init__(self, obsX, obsY=None, params=None, M=None, K=None):
+    def __init__(self, obsX, obsY=None, params=None, T=None, K=None):
         # function parameters
         if params is None:
             self.obsX = obsX;
@@ -116,13 +77,13 @@ class KoopmanOperator:
         self.metaX = self.obsX();
         self.metaY = self.obsY();
 
-        if M is None:
-            self.M = np.eye( self.metaX['Nk'] );
+        if T is None:
+            self.T = np.eye( self.metaX['Nk'] );
         else:
-            self.M = M;
+            self.T = T;
 
         if K is None:
-            self.K = np.eye( self.metaY['Nk'], self.M.shape[0] );
+            self.K = np.eye( self.metaY['Nk'], self.T.shape[0] );
         else:
             self.K = K;
 
@@ -141,29 +102,29 @@ class KoopmanOperator:
         return line1 + line2 + line3;
 
     # set the shift matrix after init
-    def setShiftMatrix(self, M):
-        self.M = M;
+    def setShiftMatrix(self, T):
+        self.T = T;
         return self;
 
     # lift data from state space to function domain
     def liftData(self, X, X0, obs=None):
         # default observation is obsX
         if obs is None:
-            M = self.M;
+            T = self.T;
             obs = self.obsX;
         else:
-            M = np.eye( obs()['Nk'] )
+            T = np.eye( obs()['Nk'] )
         (N0, Nt, Nx, Nk) = dimnData(X, X0, obs);
 
         # observation initialization
-        NkM = M.shape[0];
-        Psi = np.empty( (NkM, N0*Nt) );
+        NkT = T.shape[0];
+        Psi = np.empty( (NkT, N0*Nt) );
 
         for n in range(N0*Nt):
-            Psi_new = M@obs(X[:,n,None]);
-            Psi[:,n] = Psi_new.reshape(NkM,);
+            Psi_new = T@obs(X[:,n,None]);
+            Psi[:,n] = Psi_new.reshape(NkT,);
 
-        return Psi, NkM;
+        return Psi, NkT;
 
     # residual error over supplied data set
     def resError(self, X, Y, X0, K=None):
