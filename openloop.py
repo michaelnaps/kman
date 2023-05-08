@@ -127,7 +127,7 @@ def animatedResults(kvar):
     for i, u in enumerate(uList.T):
         Psi = prop(Psi, u[:,None]);
         # Psi = kvar.K@Psi;
-        clvhc.update(i, Psi, zorder=10);
+        clvhc.update(i+1, Psi, zorder=10);
 
     return clvhc;
 
