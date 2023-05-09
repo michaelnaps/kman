@@ -3,82 +3,18 @@
 This repository serves as the testing ground for my research at Boston University (being performed with the intent of being published). This readme currently discusses noteworthy models being evaluated and the results of their tests with the Koopman control equation (KCE). It also serves as a testing ground for my ideas on gradient flow mapping, etc.
 
 ___
-### **The Koopman Control Equation (KCE)**
+### **The Koopman-feedback Operator**
 
-The purpose of the KCE is to present the resolution of a multi-faceted observation space into multiple sub-spaces. In other words, the linear properties of the Koopman operator are exploited to break an observation space over multiple variables into multiple sub-operators which can be solved for independently and factored back into the cumulative operator.
-
-<!-- First let us present the standard Koopman form such that
+To start, we will define a single operator which moves an observation space forward in time. The space will be defined by a sub-set $\Psi_x$ which contains the state-related function list, and $\Psi_u$ which contains bilinear functions which correspond to the control injection. In this instance, the control injection $u$ will be assumed as predefined.
 
 $$
-    \Psi^+ = \mathcal{K} \Psi.
+    x^+ \in \Psi(x^+) = \mathcal{K}_x \left[
+        \begin{matrix}
+            \Psi_x(x) \\
+            \Psi_u(x) \otimes u
+        \end{matrix}
+    \right]
 $$
-
-If we first define the minimization of residual error in terms of the cumulative operator we state that...
-
-$$
-    \mathcal{K}^* = \min_\mathcal{K} || \Psi^+ - \mathcal{K} \Psi || = \min_\mathcal{K} || \begin{bmatrix}
-        \Psi_1^+ \\
-        \Psi_2^+
-    \end{bmatrix} - \mathcal{K} \begin{bmatrix}
-        \Psi_1 \\
-        \Psi_2
-    \end{bmatrix} ||
-$$
-
-Where $\mathcal{K}^*$ is the Koopman operator which minimizes the transition $\mathcal{K} : \Psi \rightarrow \Psi^+$. If $\Psi$ can be described as a composition of multiple domains, then we can similarly describe this in terms of the components of $\Psi$.
-
-The argument presented here is that, for systems that are coupled between $\Psi_1$ and $\Psi_2$ we can instead solve two minimization problems.
-
-$$
-\begin{aligned}
-    \mathcal{K}_1^* = \min_{\mathcal{K}_1} || \begin{bmatrix}
-        \Psi_1^+ \\
-        \Psi_2
-    \end{bmatrix} - \mathcal{K}_1 \begin{bmatrix}
-        \Psi_1 \\
-        \Psi_2
-    \end{bmatrix} ||
-    &&
-    \mathcal{K}_2^* = \min_{\mathcal{K}_2} || \begin{bmatrix}
-        \Psi_1 \\
-        \Psi_2^+
-    \end{bmatrix} - \mathcal{K}_2 \begin{bmatrix}
-        \Psi_1 \\
-        \Psi_2
-    \end{bmatrix} ||
-\end{aligned}
-$$
-
-Such that the two operators can be restated together to give the cumulative operator.
-
-$$
-    \mathcal{K}^* = \mathcal{K}_1^* \mathcal{K}_2^*
-$$ -->
-
-<!-- $$
-    \Psi^+ = \mathcal{K}_x \begin{bmatrix}
-        \mathbf{I}_p & 0_{p \times qb} \\
-        0_{qb \times p} & \mathbf{I}_q \otimes \mathcal{K}_u
-    \end{bmatrix}
-    \begin{bmatrix}
-        \Psi_x \\
-        \Psi_u \otimes h
-    \end{bmatrix}
-$$
-
-We can then define a cumulative operator, $\mathcal{K}$ as
-
-$$
-    \mathcal{K} = \mathcal{K}_x \begin{bmatrix}
-        \mathbf{I}_p & 0_{p \times qb} \\
-        0_{qb \times p} & \mathbf{I}_q \otimes \mathcal{K}_u
-    \end{bmatrix}
-$$ -->
-
-___
-### **Notes on Coordinate Descent**
-
-To be developed more in the future.
 
 ___
 ### **Linear System:**
@@ -261,7 +197,7 @@ $$
     \end{bmatrix}
     + \Delta t
     \begin{bmatrix}
-        \cos(x_3) (u_1 + u_2) \\ 
+        \cos(x_3) (u_1 + u_2) \\
         \sin(x_3) (u_1 + u_2) \\
         \frac{1}{R} (u_1 + u_2)
     \end{bmatrix}
@@ -275,16 +211,16 @@ $$
 \begin{aligned}
     \Psi_x = x
     &&
-    \Psi_u = \left[ \begin{matrix} 
+    \Psi_u = \left[ \begin{matrix}
         \cos(x_3) \\
         \sin(x_3) \\
         1
     \end{matrix} \right]
     &&
-    h = \left[ \begin{matrix} 
+    h = \left[ \begin{matrix}
         1 \\
         u_1 \\
-        u_2 
+        u_2
     \end{matrix} \right]
 \end{aligned}
 $$
@@ -334,18 +270,18 @@ $$
 \begin{aligned}
     \Psi_x = x
     &&
-    \Psi_u = \left[ \begin{matrix} 
+    \Psi_u = \left[ \begin{matrix}
         \cos(x_3) \\
         \sin(x_3) \\
         1
     \end{matrix} \right]
     &&
-    h = \left[ \begin{matrix} 
+    h = \left[ \begin{matrix}
         1 \\
         \cos(x_3) \\
         \sin(x_3) \\
         u_1 \\
-        u_2 
+        u_2
     \end{matrix} \right]
 \end{aligned}
 $$
