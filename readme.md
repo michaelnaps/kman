@@ -4,89 +4,7 @@ This repository serves as the testing ground for my research at Boston Universit
 
 ___
 ### **The Koopman-feedback Operator**
-
-To start, we will define a single operator which moves an observation space forward in time. The space will be defined by a sub-set $\Psi_x$ which contains the state-related function list, and $\Psi_u$ which contains bilinear functions which correspond to the control injection. In this instance, the control injection $u$ will be assumed as predefined.
-
-$$
-    x^+ \in \Psi(x^+) = \mathcal{K}_x \left[
-        \begin{matrix}
-            \Psi_x(x) \\
-            \Psi_u(x) \otimes u
-        \end{matrix}
-    \right]
-$$
-
-___
-### **Linear System:**
-**State/Model Selection:** linear/second-order/discrete
-
-$$
-    x = \left[ \begin{matrix}
-        x \\
-        y \\
-        \dot x \\
-        \dot y
-    \end{matrix} \right]
-$$
-
-With the model equation written in terms of linear matrices A and B.
-
-$$
-\begin{matrix}
-    x^+ = Ax + Bu \\
-    \textrm{where } u = C(x_g - x)
-\end{matrix}
-$$
-
-Where $x_g$ is a goal position and
-
-$$
-\begin{aligned}
-    A = \begin{bmatrix}
-        1 & 0 & \Delta t & 0 \\
-        0 & 1 & 0 & \Delta t \\
-        0 & 0 & 1 & 0 \\
-        0 & 0 & 0 & 1 \\
-    \end{bmatrix}
-&&
-    B = \begin{bmatrix}
-        0 & 0 \\
-        0 & 0 \\
-        \Delta t & 0 \\
-        0 & \Delta t \\
-    \end{bmatrix}
-&&
-    C = \begin{bmatrix}
-        10 & 0 & 2.5 & 0 \\
-        0 & 10 & 0 & 2.5
-    \end{bmatrix}
-\end{aligned}
-$$
-
-**Observation Functions Structure:**
-
-It is important to note that because the system is already linear, and the control policy is linearly dependent on the states, the state and policy functions can reside solely in the $h$ observation list.
-
-$$
-\begin{aligned}
-    \Psi_x = x
-    &&
-    \Psi_u = 1
-    &&
-    h = \begin{bmatrix}
-        x \\
-        u
-    \end{bmatrix}
-\end{aligned}
-$$
-
-In other words, for a wholistically linear system, we can represent the model in terms of solely $h$. We could also write is as $x,u \in h^+ = \mathcal{K}_u h$.
-
-The Koopman operator for this was formed using the KCE and resulted in good behavior...
-
-<p align="center">
-    <img src=./.figures/point.png width=450 />
-</p>
+COMING SOON...
 
 ___
 ### **Anchor System:**
@@ -120,7 +38,7 @@ $$
 
 Where $d_i$ references the distance from the anchor, $a_i$, located at index $i$. The goal here is to utilize the EDMD learning structure to find a correlation between the anchor distances and the control policy.
 
-**Observation Function Structure:**
+| **Observation Function Structure:** |
 
 Here the observables are listed as
 
@@ -130,12 +48,7 @@ $$
     &&
     \Psi_u = 1
     &&
-    h = \begin{bmatrix}
-        u \\
-        d_1(x) \\
-        \vdots \\
-        d_{N_a}
-    \end{bmatrix}
+    h =d^2(x)
 \end{aligned}
 $$
 
@@ -246,14 +159,12 @@ $$
     \sin(x_3^+) \approx \sin(x_3) - \cos(x_3) (\Delta t \frac{1}{R}(u_1 + u_2))
 $$
 
-Meaning that for a small enough time-step, $\Delta t$, the function $\cos(x_3)$ can be propagated using a bilinear combination with the model equation $f_3$.
+Meaning that for a small enough time-step, $\Delta t$, the function $\cos(x_3)$ can be propagated using a bilinear combination with the model equation $f_3$. To propagate the function $\cos(x_3) u_1$ we can explore a similar series of steps.
 
-<p align="center">
+<!-- <p align="center">
     <img src=./.figures/donald.png width=325 />
     <img src=./.figures/donaldError.png width=325 />
-</p>
-
-To propagate the function $\cos(x_3) u_1$ we can explore a similar series of steps.
+</p> -->
 
 $$
 \begin{aligned}
