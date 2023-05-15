@@ -25,18 +25,18 @@ and the system is modeled as...
 
 $$
 \begin{matrix}
-    x^+ = Ax + Bu \\
-    \textrm{where } u = C(x_g - x)
+    x^+ = x + (\Delta t) u \\
+    \textrm{where } u = C(x_g - x) \leftarrow \text{ideal policy}
 \end{matrix}
 $$
 
-The interesting component introduced here is the idea that the state is not observed directly, but instead observed through *anchors*. For practical purposes we assume there are four randomly distrubuted anchors which, when called, give the object its respective $L_2$-norm squared distance. That is,
+The important component introduced here is the idea that the state is not observed directly, but instead observed through *anchors*. For practical purposes we assume there are $N_a=3$ randomly distrubuted anchors which, when called, give the object its respective $L_2$ distance norm. The collection of anchor distances are thus defined by the set
 
 $$
-    d_i(x) = (x - a_i)^\intercal (x - a_i)
+    d(x) = \{ \sqrt{ (x - a_i)^\intercal (x - a_i) } : \forall i \leq N_a, i \in \mathbb{N} \}.
 $$
 
-Where $d_i$ references the distance from the anchor, $a_i$, located at index $i$. The goal here is to utilize the EDMD learning structure to find a correlation between the anchor distances and the control policy.
+Where $d$ represents the set of anchor distances, each defined by the anchor position $a_i$, or the $i$-th anchor in the system.
 
 | **Observation Function Structure:** |
 
@@ -56,6 +56,9 @@ In general we work under the assumption that the initial state of the system is 
 
 ___
 ### **Differential Drive System:**
+
+IN PROGRESS...
+
 **State/Model Selection:** nonlinear/first-order/discrete
 
 $$
