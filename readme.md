@@ -38,9 +38,11 @@ $$
 
 Where $d$ represents the set of anchor distances, each defined by the anchor position $a_i$, or the $i$-th anchor in the system.
 
+To make the system more realistic and general, we also assume there is some unknown level of noise acting on the measurement terms. In other words, for any measurement of the position $x$, we receive noise in the range space defined by $p(\delta) \in [-\delta, \delta]$, and for any measurement reading we receive noise in the range space $p(\varepsilon) \in [-\varepsilon, \varepsilon]$.
+
 | **Observation Function Structure:** |
 
-Here the observables are listed as
+Derived elsewhere, the observation space can be defined as
 
 $$
 \begin{aligned}
@@ -52,7 +54,12 @@ $$
 \end{aligned}
 $$
 
-In general we work under the assumption that the initial state of the system is known. That said, the $h$ observation list ideally updates this value as time progresses using predictions from the anchor values.
+We can show that these results can give high fidelity w.r.t the ideal system results. Shown below are some preliminary results without descriptions (upcoming).
+
+<p align="center">
+    <img src=.figures/anchors/anim_openloop.gif height=325 />
+    <img src=.figures/anchors/singlePathEnvironment.png height=325 />
+</p>
 
 ___
 ### **Differential Drive System:**
