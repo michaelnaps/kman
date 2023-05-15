@@ -40,7 +40,38 @@ Where $d$ represents the set of anchor distances, each defined by the anchor pos
 
 To make the system more realistic and general, we also assume there is some unknown level of noise acting on the measurement terms. In other words, for any measurement of the position $x$, we receive noise in the range space defined by $p(\delta) \in [-\delta, \delta]$, and for any measurement reading we receive noise in the range space $p(\varepsilon) \in [-\varepsilon, \varepsilon]$.
 
-| **Observation Function Structure:** |
+
+| **Open-loop Observation Space:** |
+
+We demonstrate elseware that the necessary observation space to propagate the state space, while also keeping track of the anchor distances are
+
+$$
+\begin{aligned}
+    \Psi_x = \begin{bmatrix}
+        x \\
+        x^\intercal x \\
+        d^2(x) \\
+        1
+    \end{bmatrix}
+    &&
+    \Psi_u = 1
+    &&
+    h = \begin{bmatrix}
+        u \\
+        u^\intercal u \\
+        x^\intercal u
+    \end{bmatrix}
+\end{aligned}
+$$
+
+A short sim which shows the vehicles ability to keep track of the anchor distances (marked by circles which include the necessary anchors in the circumference) is shown below.
+
+<p align="center">
+    <img src=.figures/anchors/anim_openloop.gif height=325 />
+</p>
+
+
+| **Closed-loop Observation Space:** |
 
 Derived elsewhere, the observation space can be defined as
 
@@ -57,8 +88,8 @@ $$
 We can show that these results can give high fidelity w.r.t the ideal system results. Shown below are some preliminary results without descriptions (upcoming).
 
 <p align="center">
-    <img src=.figures/anchors/anim_openloop.gif height=325 />
     <img src=.figures/anchors/singlePathEnvironment.png height=325 />
+    <img src=.figures/anchors/singlePathTrajectories.png height=325 />
 </p>
 
 ___
@@ -171,10 +202,10 @@ $$
 
 Meaning that for a small enough time-step, $\Delta t$, the function $\cos(x_3)$ can be propagated using a bilinear combination with the model equation $f_3$. To propagate the function $\cos(x_3) u_1$ we can explore a similar series of steps.
 
-<!-- <p align="center">
+<p align="center">
     <img src=./.figures/donald.png width=325 />
     <img src=./.figures/donaldError.png width=325 />
-</p> -->
+</p>
 
 $$
 \begin{aligned}
@@ -185,7 +216,7 @@ $$
 \end{aligned}
 $$
 
-Which shows that the bilinear term $\sin(x_3) u_i$ would require infinitely expansions to achieve an accuracy which falls below the acceptable tolerance. To avoid this issue, we can exploit the $h$ observation list and manually update the linearized terms along with the propagation of the full set of observations. In other words our observable lists become...
+Which shows that the bilinear term $\sin(x_3) u_i$ would require infinitely many expansions to achieve an accuracy which falls below the acceptable tolerance. To avoid this issue, we can exploit the $h$ observation list and manually update the linearized terms along with the propagation of the full set of observations. In other words our observable lists become...
 
 $$
 \begin{aligned}
