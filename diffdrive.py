@@ -1,6 +1,5 @@
 # script for model equation testing
 import sys
-sys.path.insert(0, '/home/michaelnaps/prog/ode');
 sys.path.insert(0, '/home/michaelnaps/prog/mpc');
 
 import mpc
@@ -25,7 +24,7 @@ kl = 1;
 Nx = 3;
 Nu = 2;
 R = 1/2;  # robot-body radius
-dt = 0.01;
+dt = 0.001;
 
 
 # callback function and parameters
@@ -130,23 +129,15 @@ def cost(mpc_var, xlist, ulist):
 
     # gain parameters
     TOL = 1e-6;
-    kh = 150;
-    kl = 10;
-    ku = 1;
+    kx = 1;
+    ko = 1;
 
     # calculate cost of current input and state
     C = 0;
-    k = 0;
     for i, x in enumerate(xlist):
-        dx = (x[0] - xd[0])**2 + (x[1] - xd[1])**2;
-        do = (x[2] - xd[2])**2;
-
-        C += kh*dx;
-        C += kl*do;
-
-        if (i != PH):
-            C += ku*(ulist[k]**2 + ulist[k+1]**2);
-            k += Nu;
+        gx = (x[0] - xd[0])**2 + (x[1] - xd[1])**2;
+        go = (x[2] - xd[2])**2;
+        C += kx*gx + ko*go;
 
     return C;
 
@@ -182,21 +173,13 @@ def obsXU(X=None, mvar=None):
     return PsiXU;
 
 def obsH(X=None, mvar=None):
-    Ng = Nu*PH;
     if X is None:
-        meta = {'Nk':1+Nx+2*Ng};
+        meta = {'Nk':1+Nu};
         return meta;
 
-    x = X[:Nx].reshape(Nx,1);
+    u = X[Nx:].reshape(Nu,1);
 
-    if len(X) != Nx:
-        u = X[-Nu*PH:].reshape(Ng,1);
-    else:
-        u = np.zeros( (Ng,1) );
-
-    dCu = np.array( mvar.gradient(x, u) ).reshape(Ng,1);
-
-    PsiH = np.vstack( ([1], x, dCu, u) );
+    PsiH = np.vstack( ([1], u) );
     return PsiH;
 
 def obsXUH(X=None, mvar=None):
@@ -216,12 +199,14 @@ def obsXUH(X=None, mvar=None):
 
 
 # plot comparisons
-def plotcomp(xTest, PsiTest, save=0):
+def posTrackingNoControl(tList, kxvar, x0ref, uref):
+    # dim variables
+    NkX = obsX()['Nk'];
+    NkU = obsU()['Nk'];
+
     # evaluate the behavior of Kx with remeasurement function
-    x0ref = np.array( [[0],[0],[pi]] );
-    uref = np.array( [[1],[2]] );
-    dModel1 = lambda x: modelTrain(x, uref);
-    kModel1 = lambda Psi: Kx@rmes(Psi);
+    dModel1 = lambda x: np.array( model(x,uref,None) ).reshape(Nx,1);
+    kModel1 = lambda Psi: kxvar.K@rmes(Psi);
     def rmes(Psi):
         PsiX = Psi[:NkX].reshape(NkX,1);
         PsiU = Psi[NkX:].reshape(NkU,1);
@@ -229,17 +214,19 @@ def plotcomp(xTest, PsiTest, save=0):
         x = Psi[:Nx].reshape(Nx,1);
         u = uref;
         X = np.vstack( (x,u) );
-
         PsiH = obsH(X);
 
         Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
-
         return Psin;
 
-    Psi0 = obsXU(np.vstack( (x0ref, uref) ));
+    # test data generation
+    Psi0 = obsXU( np.vstack( (x0ref, uref) ) );
     PsiTest = data.generate_data(tList, kModel1, Psi0)[0];
     xTest = data.generate_data(tList, dModel1, x0ref)[0];
 
+    return xTest, PsiTest;
+
+def plotcomp(tList, xTest, PsiTest, save=0):
     # plot test results
     figRes, axsRes = plt.subplots();
 
@@ -273,7 +260,7 @@ def plotcomp(xTest, PsiTest, save=0):
     else:
         plt.show();
 
-
+"""
 if __name__ == "__main__":
     # observable dimensions variables
     NkX = obsX()['Nk'];  # for reference
@@ -338,3 +325,4 @@ if __name__ == "__main__":
 
     print( mpc_var.solve(xTest.reshape(Nx,),uinit)[0] );
     print('Psi:',PsiTest.T@Ku[-Nu*PH:,:].T);
+"""
