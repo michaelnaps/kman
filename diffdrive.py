@@ -2,7 +2,6 @@
 import sys
 sys.path.insert(0, '/home/michaelnaps/prog/ode');
 sys.path.insert(0, '/home/michaelnaps/prog/mpc');
-sys.path.insert(0, '/home/michaelnaps/prog/kman');
 
 import mpc
 import numpy as np

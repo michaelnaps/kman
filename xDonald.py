@@ -76,7 +76,7 @@ class Parameters:
 
         self.pause = pause;
         self.xd = xd;
-        
+
         plt.close(self.fig);  # suppress figure from output till update is called
 
     def update(self, t, x, xPH):
@@ -205,7 +205,7 @@ def obsXUH(X=None, mvar=None):
 
     PsiXUH = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
     return PsiXUH;
-    
+
 
 if __name__ == "__main__":
     # observable dimensions variables
@@ -213,13 +213,13 @@ if __name__ == "__main__":
     NkU = obsU()['Nk'];
     NkH = obsH()['Nk'];
 
-    
+
     # initialize states
     x0 = [-1,-1,3*pi/2];
     xd = [1,1,3*pi/2];
     uinit = [0 for i in range(Nu*PH)];
 
-    
+
     # create MPC class variable
     model_type = 'discrete';
     params = Parameters(x0, xd, buffer_length=25);
@@ -228,11 +228,11 @@ if __name__ == "__main__":
         max_iter=100, model_type=model_type);
     mpc_var.setAlpha(0.01);
 
-    
+
     # model function for training syntax
     modelTrain = lambda x, u: np.array( model(x,u,None) ).reshape(Nx,1);
 
-    
+
     # generate initial conditions for training
     N0 = 10;
     X0 = np.random.rand(Nx,N0);
@@ -243,7 +243,7 @@ if __name__ == "__main__":
     randControl = lambda x: 10*np.random.rand(Nu,1)-5;
     xTrain, uRand = data.generate_data(tList, modelTrain, X0, randControl, Nu);
 
-    
+
     # split training data into X and Y sets
     uStack = data.stack_data(uRand, N0, Nu, Nt-1);
     xStack = data.stack_data(xTrain[:,:-1], N0, Nx, Nt-1);
@@ -252,24 +252,23 @@ if __name__ == "__main__":
     X = np.vstack( (xStack, uStack) );
     Y = np.vstack( (yStack, uStack) );
 
-    
+
     # solve for K
     XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
 
     kxvar = kman.KoopmanOperator(obsXUH, obsXU, mpc_var);
     Kx = kxvar.edmd(X, Y, XU0);
 
-    print('Kx:', Kx.shape, kxvar.err);
-    print(Kx.T);
-    print('Kx.PsiX:\n', Kx[:NkX,:].T);
-    print('Kx.PsiU:\n', Kx[NkX:,:].T);
+    print('Kx:\n', kxvar);
+    print('Kx.PsiX:\n', kxvar.K[:NkX,:].T);
+    print('Kx.PsiU:\n', kxvar.K[NkX:,:].T);
 
 
     # evaluate the behavior of Kx with remeasurement function
     x0ref = np.array( [[0],[0],[pi]] );
     uref = np.array( [[1],[2]] );
     dModel1 = lambda x: modelTrain(x, uref);
-    kModel1 = lambda Psi: Kx@rmes(Psi);
+    kModel1 = lambda Psi: kxvar.K@rmes(Psi);
     def rmes(Psi):
         PsiX = Psi[:NkX].reshape(NkX,1);
         PsiU = Psi[NkX:].reshape(NkU,1);
@@ -279,7 +278,7 @@ if __name__ == "__main__":
         X = np.vstack( (x,u) );
 
         PsiH = obsH(X);
-        
+
         Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
 
         return Psin;
@@ -321,4 +320,3 @@ if __name__ == "__main__":
         figError.savefig('/home/michaelnaps/prog/kman/.figures/donaldError.png', dpi=600);
     else:
         plt.show();
-
