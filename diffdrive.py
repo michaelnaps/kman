@@ -324,12 +324,12 @@ if __name__ == "__main__":
     XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
 
     kxvar = kman.KoopmanOperator(obsXUH, obsXU, mpc_var);
-    # Kx = kxvar.edmd(X, Y, XU0);
+    Kx = kxvar.edmd(X, Y, XU0);
 
-    # print('Kx:', Kx.shape, kxvar.err);
-    # print(Kx.T);
-    # print('Kx.PsiX:\n', Kx[:NkX,:].T);
-    # print('Kx.PsiU:\n', Kx[NkX:,:].T);
+    print('Kx:', Kx.shape, kxvar.err);
+    print(Kx.T);
+    print('Kx.PsiX:\n', Kx[:NkX,:].T);
+    print('Kx.PsiU:\n', Kx[NkX:,:].T);
 
 
     # generate data for training of Ku
