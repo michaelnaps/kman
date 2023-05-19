@@ -10,17 +10,19 @@ if __name__ == "__main__":
 
 
     # initialize states
-    x0 = [0,0.1,0];
+    x0 = [1,0,0];
     xd = [0,0,0];
     uinit = [0 for i in range(Nu*PH)];
 
 
     # create MPC class variable
+    dt_mpc = 0.01;
     model_type = 'discrete';
+    max_iter = 100;
     params = Parameters(x0, xd, buffer_length=25);
     mpc_var = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
-        num_ssvar=Nx, PH_length=PH, knot_length=kl, time_step=dt,
-        max_iter=100, model_type=model_type);
+        num_ssvar=Nx, PH_length=PH, knot_length=kl, time_step=dt_mpc,
+        max_iter=max_iter, model_type=model_type);
     mpc_var.setAlpha(0.01);
 
 
@@ -30,12 +32,12 @@ if __name__ == "__main__":
 
 
     # generate initial conditions for training
-    A = 0.1;
+    A = 10;
     N0 = 2;
     X0 = 2*A*np.random.rand(Nx,N0) - A;
 
     # simulation variables and data gen.
-    T = 10;  Nt = round(T/dt)+1;
+    T = 1;  Nt = round(T/dt)+1;
     tList = [[i*dt for i in range(Nt)]];
     xTrain, uRand = data.generate_data(tList, modelTrain, X0, controlTrain, Nu);
 

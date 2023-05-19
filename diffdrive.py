@@ -24,7 +24,7 @@ kl = 2;
 Nx = 3;
 Nu = 2;
 R = 1/2;  # robot-body radius
-dt = 0.01;
+dt = 0.001;
 
 
 # callback function and parameters
@@ -208,12 +208,13 @@ def posTrackingNoControl(tList, kxvar, x0ref, uref):
     dModel1 = lambda x: np.array( model(x,uref,None) ).reshape(Nx,1);
     kModel1 = lambda Psi: kxvar.K@rmes(Psi);
     def rmes(Psi):
-        PsiX = Psi[:NkX].reshape(NkX,1);
-        PsiU = Psi[NkX:].reshape(NkU,1);
-
+        # tweaks for initial tests
         x = Psi[:Nx].reshape(Nx,1);
         u = uref;
         X = np.vstack( (x,u) );
+
+        PsiX = Psi[:NkX].reshape(NkX,1);
+        PsiU = Psi[NkX:].reshape(NkU,1);
         PsiH = obsH(X);
 
         Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
@@ -241,7 +242,7 @@ def plotcomp(tList, xTest, PsiTest, save=0):
     plt.grid();
 
     # evaluate error
-    Te = 2;  Ne = round(Te/dt) + 1;
+    Ne = len( tList[0] ) - 1;
     figError, axsError = plt.subplots();
 
     axsError.plot([tList[0][0], tList[0][Ne]], [0,0], color='r', linestyle='--');
