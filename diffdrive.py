@@ -16,7 +16,7 @@ import matplotlib.path as path
 
 
 # print precision
-np.set_printoptions(precision=3, suppress=True);
+np.set_printoptions(precision=5, suppress=True);
 
 # hyper parameter(s)
 pi = math.pi;
@@ -307,30 +307,6 @@ if __name__ == "__main__":
     T = 10;  Nt = round(T/dt)+1;
     tList = [[i*dt for i in range(Nt)]];
 
-    randControl = lambda x: 10*np.random.rand(Nu,1)-5;
-    xTrain, uRand = data.generate_data(tList, modelTrain, X0, randControl, Nu);
-
-
-    # split training data into X and Y sets
-    uStack = data.stack_data(uRand, N0, Nu, Nt-1);
-    xStack = data.stack_data(xTrain[:,:-1], N0, Nx, Nt-1);
-    yStack = data.stack_data(xTrain[:,1:], N0, Nx, Nt-1);
-
-    X = np.vstack( (xStack, uStack) );
-    Y = np.vstack( (yStack, uStack) );
-
-
-    # solve for K
-    XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
-
-    kxvar = kman.KoopmanOperator(obsXUH, obsXU, mpc_var);
-    Kx = kxvar.edmd(X, Y, XU0);
-
-    print('Kx:', Kx.shape, kxvar.err);
-    print(Kx.T);
-    print('Kx.PsiX:\n', Kx[:NkX,:].T);
-    print('Kx.PsiU:\n', Kx[NkX:,:].T);
-
 
     # generate data for training of Ku
     randModel = lambda x, u: np.random.rand(Nx,1);
@@ -360,5 +336,5 @@ if __name__ == "__main__":
     xTest = 2*np.random.rand(Nx,1)-1;
     PsiTest = obsH(xTest, mpc_var);
 
-    mpc_var.solve(xTest.reshape(Nx,),uinit,output=1)[0];
+    print( mpc_var.solve(xTest.reshape(Nx,),uinit)[0] );
     print('Psi:',PsiTest.T@Ku[-Nu*PH:,:].T);
