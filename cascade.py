@@ -10,8 +10,8 @@ if __name__ == "__main__":
 
 
     # initialize states
-    x0 = [-1,-1,3*pi/2];
-    xd = [1,1,3*pi/2];
+    x0 = [0,0.1,0];
+    xd = [0,0,0];
     uinit = [0 for i in range(Nu*PH)];
 
 
@@ -26,17 +26,18 @@ if __name__ == "__main__":
 
     # model function for training syntax
     modelTrain = lambda x, u: np.array( model(x,u,None) ).reshape(Nx,1);
+    controlTrain = lambda x: np.array( mpc_var.solve(x, uinit)[0][:Nu] ).reshape(Nu,1);
 
 
     # generate initial conditions for training
-    N0 = 10;
-    X0 = np.random.rand(Nx,N0);
+    A = 0.1;
+    N0 = 2;
+    X0 = 2*A*np.random.rand(Nx,N0) - A;
 
+    # simulation variables and data gen.
     T = 10;  Nt = round(T/dt)+1;
     tList = [[i*dt for i in range(Nt)]];
-
-    randControl = lambda x: 10*np.random.rand(Nu,1)-5;
-    xTrain, uRand = data.generate_data(tList, modelTrain, X0, randControl, Nu);
+    xTrain, uRand = data.generate_data(tList, modelTrain, X0, controlTrain, Nu);
 
 
     # split training data into X and Y sets

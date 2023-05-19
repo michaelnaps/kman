@@ -19,12 +19,12 @@ np.set_printoptions(precision=5, suppress=True);
 
 # hyper parameter(s)
 pi = math.pi;
-PH = 1;
-kl = 1;
+PH = 10;
+kl = 2;
 Nx = 3;
 Nu = 2;
 R = 1/2;  # robot-body radius
-dt = 0.001;
+dt = 0.01;
 
 
 # callback function and parameters
