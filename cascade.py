@@ -16,7 +16,7 @@ def createDynamicSets(tList, X0):
     X = np.vstack( (xStack, uStack) );
     Y = np.vstack( (yStack, uStack) );
 
-    # solve for K
+    # reshape initial condition set
     XU0 = np.vstack( (X0, np.zeros( (Nu, N0) )) );
 
     return X, Y, XU0;
@@ -28,12 +28,12 @@ if __name__ == "__main__":
     NkH = obsH()['Nk'];
 
     # initialize states
-    x0 = [1,0,0];
+    x0 = [0,0,pi];
     xd = [0,0,0];
     uinit = [0 for i in range(Nu*PH)];
 
     # simulation variables and data gen.
-    T = 1;  Nt = round(T/dt)+1;
+    T = 10;  Nt = round(T/dt)+1;
     tList = [[i*dt for i in range(Nt)]];
 
     # create MPC class variable
@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     # generate initial conditions for training
     A = 10;
-    N0 = 2;
+    N0 = 10;
     X0 = 2*A*np.random.rand(Nx,N0) - A;
     X, Y, XU0 = createDynamicSets(tList, X0);
 
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     print('Kx.PsiU:\n', kxvar.K[NkX:,:].T);
 
     # evaluate the behavior of Kx with remeasurement function
-    x0ref = np.array( [[0],[0],[pi]] );
+    x0ref = np.array( x0 )[:,None];
     uref = np.array( [[1],[2]] );
     xTest, PsiTest = posTrackingNoControl(tList, kxvar, x0ref, uref);
 
