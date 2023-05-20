@@ -28,7 +28,7 @@ def learnOperators(X, Y, X0):
     # form the cumulative operator
     Kf = kList[0].K @ Tu( kList[1] );
     kvar = KoopmanOperator(obsXUH, obsXU, K=Kf);
-    kvar.resError(X, Y, X0);
+    kvar.resErrorXY(X, Y, X0);
 
     return kxvar, kuvar, kvar;
 

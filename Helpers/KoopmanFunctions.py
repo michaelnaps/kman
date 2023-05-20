@@ -96,7 +96,7 @@ class KoopmanOperator:
 
     # when asked to print - return operator
     def __str__(self):
-        line1 = 'Error: %.3f' % self.err;
+        line1 = 'Error: %.5e' % self.err;
         line2 = ', Shape: (' + str(self.K.shape[0]) + ', ' + str(self.K.shape[1]) + ')\n';
         line3 = np.array2string( self.K, precision=5, suppress_small=1 );
         return line1 + line2 + line3;
@@ -127,12 +127,12 @@ class KoopmanOperator:
         return Psi, NkT;
 
     # residual error over supplied data set
-    def resError(self, X, Y, X0, K=None):
+    def resErrorXY(self, X, Y, X0, K=None):
         # set operator
         if K is None:
             K = self.K;
 
-        # get data parameters
+        # lift data into observation space
         (N0, Nt, Nx, _) = dimnData(X, X0);
         PsiX, NkX = self.liftData(X, X0);
         PsiY, NkY = self.liftData(Y, X0, self.obsY);
@@ -145,45 +145,67 @@ class KoopmanOperator:
         self.err = err;
         return err;
 
-    # extended dynamical mode decomposition (EDMD)
-    def edmd(self, X, Y, X0, G=None, A=None, eps=None):
-        # tolerance variable
-        TOL = 1e-12;
+    # residual error over supplied data set
+    def resErrorLifted(self, PsiX, PsiY, PsiX0, K=None):
+        # set operator
+        if K is None:
+            K = self.K;
 
-        # evaluate for observable functions over X and Y
+        # data dimensions
+        (N0, Nt, Nx, _) = dimnData(PsiX, PsiX0);
+
+        # calculate residual error
+        err = 0;
+        for n in range(N0*(Nt-1)):
+            err += np.linalg.norm(PsiY[:,n,None] - K@PsiX[:,n,None])**2;
+
+        self.err = err;
+        return err;
+
+    # dynamic mode decomposition (DMD)
+    def dmd(self, X, Y, X0, eps=None):
+        # get data dimensions (optional step)
+        TOL = 1e-12;
         (N0, Nt, Nx, _) = dimnData(X, X0);
 
-        if G is None and A is None:
-            PsiX, NkX = self.liftData(X, X0);
-            PsiY, NkY = self.liftData(Y, X0, self.obsY);
-
-        # perform EDMD
+        # perform DMD on given data
         # create matrices for least squares
         #   K = inv(G)*A
         # (according to abraham, model-based)
-        if G is None:
-            G = 1/(N0*Nt) * (PsiX @ PsiX.T);
-        if A is None:
-            A = 1/(N0*Nt) * (PsiX @ PsiY.T);
+        G = 1/(N0*Nt) * (X @ X.T);
+        A = 1/(N0*Nt) * (X @ Y.T);
 
+        # get SVD matrices
         (U, S, V) = np.linalg.svd(G);
 
+        # get priority functions
         if eps is None:
             eps = TOL*max(S);
-
         ind = S > eps;
 
+        # truncate space for prioritized functions
         U = U[:,ind];
+        S = S[ind];
         V = V[ind,:].T;
 
-        S = S[ind];
+        # invert S values and create matrix
         Sinv = np.diag([1/S[i] for i in range(len(S))]);
 
         # solve for the Koopman operator
         K = A.T @ (U @ Sinv @ V.T);
 
+        # update class variables
         self.K = K;
-        self.resError(X, Y, X0);
+        self.resErrorLifted(X, Y, X0);
         self.ind = ind;
 
         return self;
+
+    # extended dynamic mode decomposition (EDMD)
+    def edmd(self, X, Y, X0, eps=None):
+        # lift data to observation space
+        PsiX, _ = self.liftData(X, X0);
+        PsiY, _ = self.liftData(Y, X0, self.obsY);
+
+        # give lifted data to DMD algorithm
+        return self.dmd(PsiX, PsiY, X0, eps=eps);
