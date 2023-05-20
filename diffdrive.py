@@ -14,19 +14,6 @@ import matplotlib.patches as patch
 import matplotlib.path as path
 
 
-# print precision
-np.set_printoptions(precision=5, suppress=True);
-
-# hyper parameter(s)
-pi = math.pi;
-PH = 10;
-kl = 2;
-Nx = 3;
-Nu = 2;
-R = 1/2;  # robot-body radius
-dt = 0.001;
-
-
 # callback function and parameters
 class Parameters:
     def __init__(self, x0, xd,
@@ -110,6 +97,10 @@ class Parameters:
 def callback(mvar, T, x, u):
     xPH = mvar.simulate(x, u);
     return mvar.params.update(T, x, xPH);
+
+
+# print precision
+np.set_printoptions(precision=5, suppress=True);
 
 
 # functions for MPC
@@ -260,3 +251,28 @@ def plotcomp(tList, xTest, PsiTest, save=0):
         figError.savefig('/home/michaelnaps/prog/kman/.figures/donaldError.png', dpi=600);
     else:
         plt.show();
+
+
+# hyper parameter(s)
+pi = math.pi;
+PH = 10;
+kl = 2;
+Nx = 3;
+Nu = 2;
+R = 1/2;  # robot-body radius
+dt = 0.001;
+
+# initialize states
+x0 = [0,0,0];
+xd = [0,0,0];
+uinit = [0 for i in range(Nu*PH)];
+
+# create MPC class variable
+dt_mpc = 0.01;
+model_type = 'discrete';
+max_iter = 25;
+params = Parameters(x0, xd, buffer_length=25);
+mpc_var = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
+    num_ssvar=Nx, PH_length=PH, knot_length=kl, time_step=dt_mpc,
+    max_iter=max_iter, model_type=model_type);
+mpc_var.setAlpha(0.01);

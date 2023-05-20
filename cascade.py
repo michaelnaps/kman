@@ -1,6 +1,12 @@
 # script for model equation testing
 from diffdrive import *
 
+def controlDynamics(u, x):
+    alpha = 0.01;
+    g = mpc_var.gradient(x, u);
+    un = u - alpha*g;
+    return un;
+
 def createDynamicSets(tList, X0):
     # model function for training syntax
     modelTrain = lambda x, u: np.array( model(x,u,None) ).reshape(Nx,1);
@@ -27,24 +33,9 @@ if __name__ == "__main__":
     NkU = obsU()['Nk'];
     NkH = obsH()['Nk'];
 
-    # initialize states
-    x0 = [0,0,pi];
-    xd = [0,0,0];
-    uinit = [0 for i in range(Nu*PH)];
-
     # simulation variables and data gen.
     T = 10;  Nt = round(T/dt)+1;
     tList = [[i*dt for i in range(Nt)]];
-
-    # create MPC class variable
-    dt_mpc = 0.01;
-    model_type = 'discrete';
-    max_iter = 25;
-    params = Parameters(x0, xd, buffer_length=25);
-    mpc_var = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
-        num_ssvar=Nx, PH_length=PH, knot_length=kl, time_step=dt_mpc,
-        max_iter=max_iter, model_type=model_type);
-    mpc_var.setAlpha(0.01);
 
     # generate initial conditions for training
     A = 10;
@@ -52,7 +43,7 @@ if __name__ == "__main__":
     X0 = 2*A*np.random.rand(Nx,N0) - A;
     X, Y, XU0 = createDynamicSets(tList, X0);
 
-    kxvar = kman.KoopmanOperator(obsXUH, obsXU, mpc_var);
+    kxvar = kman.KoopmanOperator(obsXUH, obsXU);
     Kx = kxvar.edmd(X, Y, XU0);
 
     print('Kx:\n', kxvar);
