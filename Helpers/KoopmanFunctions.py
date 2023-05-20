@@ -106,7 +106,7 @@ class KoopmanOperator:
         self.T = T;
         return self;
 
-    # lift data from state space to function domain
+    # lift data from state space to observation space
     def liftData(self, X, X0, obs=None):
         # default observation is obsX
         if obs is None:
@@ -126,7 +126,7 @@ class KoopmanOperator:
 
         return Psi, NkT;
 
-    # residual error over supplied data set
+    # residual error over data set (pre-lift)
     def resErrorXY(self, X, Y, X0, K=None):
         # set operator
         if K is None:
@@ -145,7 +145,7 @@ class KoopmanOperator:
         self.err = err;
         return err;
 
-    # residual error over supplied data set
+    # residual error over data set (post-lift)
     def resErrorLifted(self, PsiX, PsiY, PsiX0, K=None):
         # set operator
         if K is None:
