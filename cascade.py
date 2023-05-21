@@ -1,10 +1,9 @@
 # script for model equation testing
 from diffdrive import *
 
-def controlDynamics(u, x):
-    alpha = 0.01;
-    g = mpc_var.gradient(x, u);
-    un = u - alpha*g;
+def controlFlow(u, x0):
+    g = np.array( mpc_var.gradient(x0, u) );
+    un = np.array( u ).reshape(Nu*PH,1) - alpha*g.reshape(Nu*PH,1);
     return un;
 
 def createDynamicSets(tList, X0):
@@ -27,6 +26,33 @@ def createDynamicSets(tList, X0):
 
     return X, Y, XU0;
 
+def createControlSets(iList, X0):
+    # dimension variables
+    NuPH = Nu*PH;
+    N0 = len( X0[0] );
+    Ni = len( iList[0] );
+
+    # use flow function at varying positions
+    uinit = [0 for i in range(NuPH)];
+    U0 = np.array( [uinit for i in range(N0)] ).T;
+
+    i = 0;  j = 0;
+    uTrain = np.empty( (N0*NuPH, Ni) );
+    xTrain = np.empty( (N0*Nx, Ni-1) );
+    for k in range(N0):
+        control = lambda u: X0[:,k,None];  # position treated as constant 'control'
+        uTemp, xTemp = data.generate_data(iList, controlFlow, U0[:,k,None], control, Nx);
+
+        uTrain[i:i+NuPH,:] = uTemp;
+        i += NuPH;
+
+        xTrain[j:j+Nx,:] = xTemp;
+        j += Nx;
+
+
+
+    return;
+
 if __name__ == "__main__":
     # observable dimensions variables
     NkX = obsX()['Nk'];  # for reference
@@ -37,23 +63,30 @@ if __name__ == "__main__":
     T = 10;  Nt = round(T/dt)+1;
     tList = [[i*dt for i in range(Nt)]];
 
+
+    # model functions
     # generate initial conditions for training
     A = 10;
     N0 = 10;
     X0 = 2*A*np.random.rand(Nx,N0) - A;
-    X, Y, XU0 = createDynamicSets(tList, X0);
+    # X, Y, XU0 = createDynamicSets(tList, X0);
 
-    kxvar = kman.KoopmanOperator(obsXUH, obsXU);
-    Kx = kxvar.edmd(X, Y, XU0);
+    # kxvar = kman.KoopmanOperator(obsXUH, obsXU);
+    # Kx = kxvar.edmd(X, Y, XU0);
 
-    print('Kx:\n', kxvar);
-    print('Kx.PsiX:\n', kxvar.K[:NkX,:].T);
-    print('Kx.PsiU:\n', kxvar.K[NkX:,:].T);
+    # print('Kx:\n', kxvar);
+    # print('Kx.PsiX:\n', kxvar.K[:NkX,:].T);
+    # print('Kx.PsiU:\n', kxvar.K[NkX:,:].T);
 
-    # evaluate the behavior of Kx with remeasurement function
-    x0ref = np.array( x0 )[:,None];
-    uref = np.array( [[1],[2]] );
-    xTest, PsiTest = posTrackingNoControl(tList, kxvar, x0ref, uref);
+    # # evaluate the behavior of Kx with remeasurement function
+    # x0ref = np.array( x0 )[:,None];
+    # uref = np.array( [[1],[2]] );
+    # xTest, PsiTest = posTrackingNoControl(tList, kxvar, x0ref, uref);
 
-    # plot test results
-    plotcomp(tList, xTest, PsiTest);
+    # # plot test results
+    # plotcomp(tList, xTest, PsiTest);
+
+
+    # control flow functions
+    iList = [ [i for i in range(max_iter)] ];
+    createControlSets(iList, X0);

@@ -261,6 +261,7 @@ Nx = 3;
 Nu = 2;
 R = 1/2;  # robot-body radius
 dt = 0.001;
+alpha = 0.01;
 
 # initialize states
 x0 = [0,0,0];
@@ -270,9 +271,9 @@ uinit = [0 for i in range(Nu*PH)];
 # create MPC class variable
 dt_mpc = 0.01;
 model_type = 'discrete';
-max_iter = 25;
+max_iter = 100;
 params = Parameters(x0, xd, buffer_length=25);
 mpc_var = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
     num_ssvar=Nx, PH_length=PH, knot_length=kl, time_step=dt_mpc,
     max_iter=max_iter, model_type=model_type);
-mpc_var.setAlpha(0.01);
+mpc_var.setAlpha(alpha);
