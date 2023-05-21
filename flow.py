@@ -2,15 +2,15 @@
 from diffdrive import *
 
 def flow(u, x0):
-    g = np.array( mpc_var.gradient(x0, u) );
-    un = np.array( u ).reshape(Nu*PH,1) - alpha*g.reshape(Nu*PH,1);
-    return un;
+    g = np.array( mvar.gradient(x0, u) );
+    un = u - alpha*g;
+    return un.reshape(Nu*PH,1);
 
 def createDynamicSets(tList, X0):
     # model function for training syntax
     modelTrain = lambda x, u: np.array( model(x,u,None) ).reshape(Nx,1);
     controlTrain = lambda x: np.random.rand(Nu,1);
-    # np.array( mpc_var.solve(x, uinit)[0][:Nu] ).reshape(Nu,1);
+    # np.array( mvar.solve(x, uinit)[0][:Nu] ).reshape(Nu,1);
     xTrain, uTrain = data.generate_data(tList, modelTrain, X0, controlTrain, Nu);
 
     # split training data into X and Y sets
@@ -103,3 +103,4 @@ if __name__ == "__main__":
     kuvar.edmd(U1, U2, UX0);
 
     print('Ku:\n', kuvar);
+    print( kuvar.K[:Nu,:].T )

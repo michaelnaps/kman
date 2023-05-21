@@ -112,11 +112,11 @@ def model(x, u, _):
     ]
     return xn;
 
-def cost(mpc_var, xlist, ulist):
+def cost(mvar, xlist, ulist):
     # grab class variables
-    xd = mpc_var.params.xd;
-    Nu = mpc_var.u_num;
-    PH = mpc_var.PH;
+    xd = mvar.params.xd;
+    Nu = mvar.u_num;
+    PH = mvar.PH;
 
     # gain parameters
     TOL = 1e-6;
@@ -216,10 +216,10 @@ dt_mpc = 0.01;
 model_type = 'discrete';
 max_iter = 100;
 params = Parameters(x0, xd, buffer_length=25);
-mpc_var = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
+mvar = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
     num_ssvar=Nx, PH_length=PH, knot_length=kl, time_step=dt_mpc,
     max_iter=max_iter, model_type=model_type);
-mpc_var.setAlpha(alpha);
+mvar.setAlpha(alpha);
 
 
 # observable functions
@@ -238,7 +238,7 @@ def obsU(x=None):
     PsiU = np.vstack( (np.cos(x[2]), np.sin(x[2]), [1]) );
     return PsiU;
 
-def obsXU(X=None, mvar=None):
+def obsXU(X=None):
     if X is None:
         meta = {'Nk':obsX()['Nk']+obsU()['Nk']};
         return meta;
@@ -252,19 +252,19 @@ def obsXU(X=None, mvar=None):
     PsiXU = np.vstack( (PsiX, PsiU) );
     return PsiXU;
 
-def obsH(X=None, mvar=None):
+def obsH(X=None):
     if X is None:
         meta = {'Nk':2*Nu*PH};
         return meta;
 
     u = X[:Nu*PH].reshape(Nu*PH,);
     x = X[Nu*PH:].reshape(Nx,);
-    g = np.array( mpc_var.gradient(x, u) );
+    g = np.array( mvar.gradient(x, u) );
 
     PsiH = np.vstack( (u[:,None], g[:,None]) );
     return PsiH;
 
-def obsXUH(X=None, mvar=None):
+def obsXUH(X=None):
     if X is None:
         meta = {'Nk':obsX()['Nk']+obsU()['Nk']*obsH()['Nk']};
         return meta;
