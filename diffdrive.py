@@ -244,7 +244,7 @@ def obsXU(X=None):
         return meta;
 
     x = X[:Nx].reshape(Nx,1);
-    u = X[Nx:].reshape(Nu,1);
+    u = X[Nx:].reshape(Nu*PH,1);
 
     PsiX = obsX(x);
     PsiU = obsU(x);
@@ -270,11 +270,11 @@ def obsXUH(X=None):
         return meta;
 
     x = X[:Nx].reshape(Nx,1);
-    u = X[Nx:].reshape(Nu,1);
+    u = X[Nx:].reshape(Nu*PH,1);
 
     PsiX = obsX(x);
     PsiU = obsU(x);
-    PsiH = obsH(X, mvar);
+    PsiH = obsH(X);
 
     PsiXUH = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
     return PsiXUH;
