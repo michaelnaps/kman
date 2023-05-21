@@ -44,14 +44,21 @@ def createControlSets(iList, X0):
         uTemp, xTemp = data.generate_data(iList, controlFlow, U0[:,k,None], control, Nx);
 
         uTrain[i:i+NuPH,:] = uTemp;
-        i += NuPH;
-
         xTrain[j:j+Nx,:] = xTemp;
-        j += Nx;
 
+        i = i + NuPH;
+        j = j + Nx;
 
+    # split training data into snapshots
+    xStack  = data.stack_data(xTrain, N0, Nx, Ni-1);
+    u1Stack = data.stack_data(uTrain[:,:-1], N0, NuPH, Ni-1);
+    u2Stack = data.stack_data(uTrain[:,1:], N0, NuPH, Ni-1);
 
-    return;
+    U1 = np.vstack( (u1Stack, xStack) );
+    U2 = np.vstack( (u2Stack, xStack) );
+    UX0 = np.vstack( (U0, X0) );
+
+    return U1, U2, UX0;
 
 if __name__ == "__main__":
     # observable dimensions variables
@@ -69,22 +76,22 @@ if __name__ == "__main__":
     A = 10;
     N0 = 10;
     X0 = 2*A*np.random.rand(Nx,N0) - A;
-    # X, Y, XU0 = createDynamicSets(tList, X0);
+    X, Y, XU0 = createDynamicSets(tList, X0);
 
-    # kxvar = kman.KoopmanOperator(obsXUH, obsXU);
-    # Kx = kxvar.edmd(X, Y, XU0);
+    kxvar = kman.KoopmanOperator(obsXUH, obsXU);
+    Kx = kxvar.edmd(X, Y, XU0);
 
-    # print('Kx:\n', kxvar);
-    # print('Kx.PsiX:\n', kxvar.K[:NkX,:].T);
-    # print('Kx.PsiU:\n', kxvar.K[NkX:,:].T);
+    print('Kx:\n', kxvar);
+    print('Kx.PsiX:\n', kxvar.K[:NkX,:].T);
+    print('Kx.PsiU:\n', kxvar.K[NkX:,:].T);
 
-    # # evaluate the behavior of Kx with remeasurement function
-    # x0ref = np.array( x0 )[:,None];
-    # uref = np.array( [[1],[2]] );
-    # xTest, PsiTest = posTrackingNoControl(tList, kxvar, x0ref, uref);
+    # evaluate the behavior of Kx with remeasurement function
+    x0ref = np.array( x0 )[:,None];
+    uref = np.array( [[1],[2]] );
+    xTest, PsiTest = posTrackingNoControl(tList, kxvar, x0ref, uref);
 
-    # # plot test results
-    # plotcomp(tList, xTest, PsiTest);
+    # plot test results
+    plotcomp(tList, xTest, PsiTest);
 
 
     # control flow functions
