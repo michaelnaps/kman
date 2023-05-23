@@ -74,7 +74,7 @@ if __name__ == "__main__":
     # model functions
     # generate initial conditions for training
     A = 10;
-    N0 = 2;
+    N0 = 5;
     X0 = 2*A*np.random.rand(Nx,N0) - A;
     X, Y, XU0 = createDynamicSets(tList, X0);
 

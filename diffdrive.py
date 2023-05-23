@@ -254,14 +254,14 @@ def obsXU(X=None):
 
 def obsH(X=None):
     if X is None:
-        meta = {'Nk':2*Nu*PH};
+        meta = {'Nk':2*Nu*PH+1};
         return meta;
 
     u = X[:Nu*PH].reshape(Nu*PH,);
     x = X[Nu*PH:].reshape(Nx,);
     g = np.array( mvar.gradient(x, u) );
 
-    PsiH = np.vstack( (u[:,None], g[:,None]) );
+    PsiH = np.vstack( (u[:,None], g[:,None], [1]) );
     return PsiH;
 
 def obsXUH(X=None):
