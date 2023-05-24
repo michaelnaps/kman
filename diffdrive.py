@@ -296,13 +296,13 @@ def obsUG(X=None):
 
 def obsUGX(X=None):
     if X is None:
-        meta = {'Nk': 2*Nu*PH+5*Nx}
+        meta = {'Nk': (2*Nu*PH+1)*5*Nx}
         return meta;
 
     x0  = X[Nu*PH:];
-    x_01 = np.vstack( (x0[:2], [1]) );
-    xTrg = np.vstack( ([np.cos(x0[2])**i for i in range(1,3)], [np.sin(x0[2])**i for i in range(1,3)], [1]) );
+    x_01 = np.vstack( ([1], x0[:2]) );
+    xTrg = np.vstack( ([1], [np.cos(x0[2])**i for i in range(1,3)], [np.sin(x0[2])**i for i in range(1,3)]) );
 
-    PsiUG = obsUG(X);
-    PsiUGX = np.vstack( (PsiUG, np.kron(x_01, xTrg)) );
+    PsiUG = np.vstack( (obsUG(X), [1]) );
+    PsiUGX = np.kron( PsiUG, np.kron( x_01, xTrg ) );
     return PsiUGX;
