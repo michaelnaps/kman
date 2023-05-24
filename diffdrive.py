@@ -278,3 +278,31 @@ def obsXUH(X=None):
 
     PsiXUH = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
     return PsiXUH;
+
+
+def obsUG(X=None):
+    if X is None:
+        meta = {'Nk': 2*Nu*PH}
+        return meta;
+
+    x0  = X[Nu*PH:];
+    uPH = X[:Nu*PH];
+
+    PsiU = uPH;
+    PsiG = np.array( mvar.gradient( x0[:,0], uPH[:,0] ) )[:,None];
+    PsiUG = np.vstack( (PsiU, PsiG) );
+
+    return PsiUG;
+
+def obsUGX(X=None):
+    if X is None:
+        meta = {'Nk': 2*Nu*PH+5*Nx}
+        return meta;
+
+    x0  = X[Nu*PH:];
+    x_01 = np.vstack( (x0[:2], [1]) );
+    xTrg = np.vstack( ([np.cos(x0[2])**i for i in range(1,3)], [np.sin(x0[2])**i for i in range(1,3)], [1]) );
+
+    PsiUG = obsUG(X);
+    PsiUGX = np.vstack( (PsiUG, np.kron(x_01, xTrg)) );
+    return PsiUGX;

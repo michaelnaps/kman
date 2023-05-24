@@ -67,40 +67,40 @@ if __name__ == "__main__":
     NkH = obsH()['Nk'];
 
     # simulation variables and data gen.
-    T = 1;  Nt = round(T/dt)+1;
+    T = 10;  Nt = round(T/dt)+1;
     tList = [[i*dt for i in range(Nt)]];
 
 
     # model functions
     # generate initial conditions for training
     A = 10;
-    N0 = 5;
+    N0 = 10;
     X0 = 2*A*np.random.rand(Nx,N0) - A;
-    X, Y, XU0 = createDynamicSets(tList, X0);
+    # X, Y, XU0 = createDynamicSets(tList, X0);
 
-    kxvar = kman.KoopmanOperator(obsXUH, obsXU);
-    kxvar = kxvar.edmd(X, Y, XU0);
+    # kxvar = kman.KoopmanOperator(obsXUH, obsXU);
+    # kxvar = kxvar.edmd(X, Y, XU0);
 
-    print('Kx:\n', kxvar);
-    print('Kx.PsiX:\n', kxvar.K[:NkX,:].T);
-    print('Kx.PsiU:\n', kxvar.K[NkX:,:].T);
+    # print('Kx:\n', kxvar);
+    # print('Kx.PsiX:\n', kxvar.K[:NkX,:].T);
+    # print('Kx.PsiU:\n', kxvar.K[NkX:,:].T);
 
-    # evaluate the behavior of Kx with remeasurement function
-    x0ref = np.array( x0 )[:,None];
-    uref = np.vstack( ([[1],[2]], np.zeros( (Nu*(PH-1),1) )) );
-    xTest, PsiTest = posTrackingNoControl(tList, kxvar, x0ref, uref);
+    # # evaluate the behavior of Kx with remeasurement function
+    # x0ref = np.array( x0 )[:,None];
+    # uref = np.vstack( ([[1],[2]], np.zeros( (Nu*(PH-1),1) )) );
+    # xTest, PsiTest = posTrackingNoControl(tList, kxvar, x0ref, uref);
 
-    # plot test results
-    plotcomp(tList, xTest, PsiTest);
-    plt.show();
+    # # plot test results
+    # plotcomp(tList, xTest, PsiTest);
+    # plt.show();
 
 
     # control flow functions
     iList = [ [i for i in range(max_iter)] ];
     U1, U2, UX0 = createControlSets(iList, X0);
 
-    kuvar = kman.KoopmanOperator( obsH );
+    kuvar = kman.KoopmanOperator( obsUGX );
     kuvar.edmd(U1, U2, UX0);
 
     print('Ku:\n', kuvar);
-    print( kuvar.K[:Nu,:].T )
+    print( kuvar.K[:2*Nu,:].T )
