@@ -1,6 +1,7 @@
 # script for model equation testing
 import sys
-sys.path.insert(0, '/home/michaelnaps/prog/mpc');
+from os.path import expanduser
+sys.path.insert(0, expanduser('~')+'/prog/mpc');
 
 import mpc
 import numpy as np
