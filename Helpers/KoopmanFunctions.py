@@ -54,10 +54,10 @@ def cascade_edmd(klist, flist, X, Y, X0):
 
     return klist;
 
-# Koopman Operator class description
-class KoopmanOperator:
+# General operator class description
+class Operator:
     # initialize class
-    def __init__(self, obsX, obsY=None, params=None, T=None, K=None):
+    def __init__(self, obsX, obsY=None, params=None):
         # function parameters
         if params is None:
             self.obsX = obsX;
@@ -76,34 +76,9 @@ class KoopmanOperator:
         self.metaX = self.obsX();
         self.metaY = self.obsY();
 
-        if T is None:
-            self.T = np.eye( self.metaX['Nk'] );
-        else:
-            self.T = T;
-
-        if K is None:
-            self.K = np.eye( self.metaY['Nk'], self.T.shape[0] );
-        else:
-            self.K = K;
-
+        # hyper parameters
         self.eps = None;
         self.params = params;
-
-        # accuracy variables
-        self.err = -1;
-        self.ind = None;
-
-    # when asked to print - return operator
-    def __str__(self):
-        line1 = 'Error: %.5e' % self.err;
-        line2 = ', Shape: (' + str(self.K.shape[0]) + ', ' + str(self.K.shape[1]) + ')\n';
-        line3 = np.array2string( self.K, precision=5, suppress_small=1 );
-        return line1 + line2 + line3;
-
-    # set the shift matrix after init
-    def setShiftMatrix(self, T):
-        self.T = T;
-        return self;
 
     # lift data from state space to observation space
     def liftData(self, X, X0, obs=None):
@@ -191,14 +166,12 @@ class KoopmanOperator:
         Sinv = np.diag([1/S[i] for i in range(len(S))]);
 
         # solve for the Koopman operator
-        K = A.T @ (U @ Sinv @ V.T);
+        O = A.T @ (U @ Sinv @ V.T);
 
-        # update class variables
-        self.K = K;
-        self.resErrorLifted(X, Y, X0);
-        self.ind = ind;
+        # calculate error
+        err = self.resErrorLifted(X, Y, X0);
 
-        return self;
+        return O, err, ind;
 
     # extended dynamic mode decomposition (EDMD)
     def edmd(self, X, Y, X0, eps=None):
@@ -206,5 +179,49 @@ class KoopmanOperator:
         PsiX, _ = self.liftData(X, X0);
         PsiY, _ = self.liftData(Y, X0, self.obsY);
 
-        # give lifted data to DMD algorithm
+        # give lifted data to DMD algorithm and solve
         return self.dmd(PsiX, PsiY, X0, eps=eps);
+
+# Koopman Operator class description
+class KoopmanOperator(Operator):
+    # initialize class
+    def __init__(self, obsX, obsY=None, params=None, T=None, K=None):
+        Operator.__init__(self, obsX, obsY, params);
+
+        if T is None:
+            self.T = np.eye( self.metaX['Nk'] );
+        else:
+            self.T = T;
+
+        if K is None:
+            self.K = np.eye( self.metaY['Nk'], self.T.shape[0] );
+        else:
+            self.K = K;
+
+        # accuracy variables
+        self.err = -1;
+        self.ind = None;
+
+    # when asked to print - return operator
+    def __str__(self):
+        line1 = 'Error: %.5e' % self.err;
+        line2 = ', Shape: (' + str(self.K.shape[0]) + ', ' + str(self.K.shape[1]) + ')\n';
+        line3 = np.array2string( self.K, precision=5, suppress_small=1 );
+        return line1 + line2 + line3;
+
+    # set the shift matrix after init
+    def setShiftMatrix(self, T):
+        self.T = T;
+        return self;
+
+    # EDMD: child class modification
+    def edmd(self, X, Y, X0, eps=None):
+        # call parent class EDMD
+        K, err, ind = Operator.edmd(self, X, Y, X0, eps=eps);
+
+        # set class variables equal to
+        self.K = K;
+        self.err = err;
+        self.ind = ind;
+
+        return self;
