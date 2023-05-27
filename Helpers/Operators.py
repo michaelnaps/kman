@@ -22,12 +22,12 @@ class Observables:
 		M = len( X0[0] );
 
 		# Lifted state initialization
-		Psi = np.empty( (Nk, K*M) );
+		PSI = np.empty( (Nk, K*M) );
 
 		for n in range( K*M ):
-			Psi[:,n] = obs( X[:,n,None] )[:,0];
+			PSI[:,n] = obs( X[:,n,None] )[:,0];
 
-		return Psi;
+		return PSI;
 
 class KoopmanOperator(LearningStrategies):
 	def __init__(self, obsX, obsY=None, T=None, K=None):
