@@ -1,7 +1,5 @@
 import sys
-from os.path import expanduser
-sys.path.insert(0, expanduser('~')+'/prog/kman');
-sys.path.insert(0, expanduser('~')+'/prog/mpc');
+sys.path.insert(0, '/home/michaelnaps/prog/kman')
 
 import numpy as np
 import matplotlib.pyplot as plt
