@@ -13,20 +13,21 @@ class Observables:
 		return self.obs(x);
 
 	def liftData(self, X, X0, obs=None):
+		# If obs not given, use class.
 		if obs is None:
 			obs = self.obs;
 
 		# Dimension variable definitions.
-		N = len( X0 );
-		K = len( X[0] );
-		M = len( X0[0] );
+		N, K, M = StateDataSet(X, X0=X0).getDataDimn();
 
-		# Lifted state initialization
+		# Lifted state variable initialization.
 		PSI = np.empty( (Nk, K*M) );
 
+		# Lift data set.
 		for n in range( K*M ):
 			PSI[:,n] = obs( X[:,n,None] )[:,0];
 
+		# Return lifted set.
 		return PSI;
 
 class KoopmanOperator(LearningStrategies):
