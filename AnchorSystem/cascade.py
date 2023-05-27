@@ -25,11 +25,6 @@ def learnOperators(X, Y, X0):
     Klist = cascade_edmd(Klist, Tlist, X, Y, X0);
     print('Cascade EDMD Complete.');
 
-    print( Klist[0].K.shape );
-    print( Tu(Klist[1]).shape );
-    for K in Klist:
-        print(K);
-
     # Form the cumulative operator.
     Kf = Klist[0].K @ Tu( Klist[1] );
     kvar = KoopmanOperator(obsXUH, obsXU, K=Kf);
