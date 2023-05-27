@@ -106,6 +106,7 @@ class StateDataSet:
 class LearningStrategies:
 	def __init__(self, X, Y, X0=None, Y0=None):
 		self.setDataLists(X, Y, X0=X0, Y0=Y0);
+		self.err = -1;
 
 	# Set data variables post-init.
 	def setDataLists(self, X, Y, X0=None, Y0=None):
@@ -159,4 +160,6 @@ class LearningStrategies:
 
 		# Solve for the DMD operator (TRANSPOSED) and return.
 		C = A.T @ (U @ Sinv @ V.T);
+
+		self.err = self.resError(C);
 		return C;

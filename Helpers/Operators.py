@@ -6,27 +6,20 @@ def cascade_edmd(Klist, Tlist, X, Y, X0):
 
 class Observables:
 	def __init__(self, obs):
+		# Set obs, Nk and meta variables.
 		self.obs = obs;
 		self.Nk = obs()['Nk'];
-		self.meta = obs();
+		self.meta = obs();  # optional: for user only
 
-	# Assumption: Data set is already flattened.
-	def liftData(self, X, obs=None):
-		# If obs not given, use class.
-		if obs is None:
-			obs = self.obs;
+	# Assumption: Data set is flat.
+	def liftData(self, X):
 
-		# Dimension variable definitions.
-		N, K, M = StateDataSet(X).getDataDimn();
-		print( N, K, M );
-		print( X.shape );
-
-		# Lifted state variable initialization.
-		Psi = np.empty( (self.Nk, K*M) );
+		# Number of steps and matrix initialization.
+		P = len( X[0] );
+		Psi = np.empty( (self.Nk, P) );
 
 		# Lift data set.
-		print(K*M, X.shape);
-		for n in range( K*M ):
+		for n in range( P ):
 			Psi[:,n] = obs( X[:,n,None] )[:,0];
 
 		# Return lifted set.
@@ -64,14 +57,31 @@ class KoopmanOperator(LearningStrategies):
 		line3 = np.array2string( self.K, precision=5, suppress_small=1 );
 		return line1 + line2 + line3;
 
-	def setTrainingData(self, X, Y, X0=None):
-		Psi0 = self.obsX.liftData(X0);
+	def initTrainingData(self, X, Y, X0=None):
+		# Lift sets into observation space.
 		PsiX = self.obsX.liftData(X);
 		PsiY = self.obsY.liftData(Y);
-		self.trainingData = LearningStrategies(PsiX, PsiY, X0=Psi0);
+		PsiX0 = self.obsX.liftData(X0);
+
+		# Initialize LearningStrategies class.
+		LearningStrategies(self, PsiX, PsiY, X0=PsiX0);
+
+		# Return instance of self.
 		return self;
 
     # Set shift function post-init.
 	def setShiftFunction(self, T):
 		self.T = T;
+		# Return instance of self.
+		return self;
+
+	# Extended Dynamic Mode Decomposition (EDMD)
+	def edmd(self, X, Y, X0=None, EPS=None):
+		# Lift data sets into observation space.
+		self.liftDataSets(X, Y, X0=X0);
+
+		# Compute Koopman operator through DMD.
+		self.K = self.dmd(EPS=EPS);
+
+		# Return instance of self.
 		return self;
