@@ -55,6 +55,10 @@ class StateDataSet:
 #	the learning stategies presented.
 class LearningStrategies:
 	def __init__(self, X, Y, X0=None, Y0=None):
+		self.setDataLists(X, Y, X0=X0, Y0=Y0);
+
+	# Set data variables post-init.
+	def setDataLists(self, X, Y, X0=None, Y0=None):
 		# If Y0 is None set equal to X0.
 		if Y0 is None:
 			Y0 = X0;
@@ -66,6 +70,12 @@ class LearningStrategies:
 		# Flatten data (suppress warning).
 		self.Xset.flattenData(suppress=1);
 		self.Yset.flattenData(suppress=1);
+		return self;
+
+	# Calculate the residual error of a given operator.
+	def resError(self, F):
+        err = np.linalg.norm( Y - F@X );
+		return err;
 
 	# Dynamic Mode Decomposition (DMD)
 	# Assumption: Datasets are already flattened.
@@ -98,5 +108,5 @@ class LearningStrategies:
 		Sinv = np.diag([1/S[i] for i in range(len(S))]);
 
 		# Solve for the DMD operator (TRANSPOSED) and return.
-		F = A.T @ (U @ Sinv @ V.T);
-		return F;
+		C = A.T @ (U @ Sinv @ V.T);
+		return C;
