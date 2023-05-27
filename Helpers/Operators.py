@@ -2,8 +2,22 @@ import numpy as np
 from LearningStrategies import *
 
 def cascade_edmd(Klist, Tlist, X, Y, X0):
-	pass;
+	# If number of operators is 1, solve EDMD
+	if len( Klist ) == 1:
+		knvar = Klist[0].edmd(X, Y, X0);
+		return knvar
 
+	# Otherwise, cut front operator and re-eneter function
+	K = cascade_edmd(Klist[1:], Tlist[1:], X, Y, X0);
+
+	# Give resulting operator list to shift function and solve.
+	Klist[0].setShiftFunction( Tlist[0](K) );
+	Klist[0].edmd(X, Y, X0);
+
+	# Return solved list of Koopman operators.
+	return Klist;
+
+# Class: Observables
 class Observables:
 	def __init__(self, obs):
 		# Set obs, Nk and meta variables.
@@ -24,6 +38,7 @@ class Observables:
 		# Return lifted set.
 		return Psi;
 
+# Class: KoopmanOperator
 class KoopmanOperator(LearningStrategies):
 	def __init__(self, obsX, obsY=None, T=None, K=None):
 		# Data list variables initially None.
