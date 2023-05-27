@@ -1,12 +1,12 @@
 import sys
 from os.path import expanduser
-sys.path.insert(0, expanduser('~')+'/prog/kman')
+sys.path.insert(0, expanduser('~')+'/prog/kman/Helpers')
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Helpers.KoopmanFunctions import *
-import Helpers.DataFunctions as data
+from KoopmanFunctions import *
+import DataFunctions as data
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
