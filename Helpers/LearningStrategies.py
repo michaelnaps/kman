@@ -14,37 +14,47 @@ class StateDataSet:
 
 	def setNewData(self, X, X0=None):
 		self.X = X;
+		self.X0 = X0;
 
 		# If X0 is None, then data is flat.
 		if X0 is None:
-			self.N, self.K = X.shape;
+			self.N, self.P = X.shape;
 			self.M = 1;
 		# otherwise, data has 3-D shape (M).
 		else:
 			self.N = len( X0 );			# Number of states
-			self.K = len( X[0] );		# Number of time-steps
+			self.P = len( X[0] );		# Number of time-steps
 			self.M = len( X0[0] );		# Number of data sets
 
 	def getDataDimn(self):
-		return self.N, self.K, self.M;
+		return self.N, self.P, self.M;
 
 	def flattenData(self, suppress=0):
 		# Execute flatten if M > 1
 		if self.M > 1:
-			Xflat = np.empty( (self.N, self.M*self.K) );
+			# Warning.
+			if not suppress:
+				print( "\nWARING: Flatten function cannot be undone...\n")
 
+			# Initialize flattened data matrix.
+			Xflat = np.empty( (self.N, self.M*self.P) );
+
+			# Iterate through and reshape matrix.
 			n = 0;
-			k = 0;
+			p = 0;
 			for i in range(self.M):
-				Xflat[:,k:k+self.K] = self.X[n:n+self.N,:];
+				Xflat[:,p:p+self.P] = self.X[n:n+self.N,:];
 				n += self.N;
-				k += self.K;
+				p += self.P;
 
+			# Set internal data to flattened data.
 			self.setNewData(Xflat, X0=None);
-		# otherwise, print warning.
+		# otherwise,
 		elif not suppress:
+			# print warning.
 			print( "\nWARNING: Data already flattened...\n" )
 
+		# Return instance of self.
 		return self;
 
 # Class: LearningStrategies
