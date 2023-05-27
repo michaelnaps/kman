@@ -21,9 +21,9 @@ class StateDataSet:
 			self.M = 1;
 		# otherwise, data has 3-D shape (M).
 		else:
-			self.N = len(X0);		# Number of states
-			self.K = len(X[0]);		# Number of time-steps
-			self.M = len(X0[0]);	# Number of data sets
+			self.N = len( X0 );			# Number of states
+			self.K = len( X[0] );		# Number of time-steps
+			self.M = len( X0[0] );		# Number of data sets
 
 	def getDataDimn(self):
 		return self.N, self.K, self.M;
@@ -43,7 +43,7 @@ class StateDataSet:
 			self.setNewData(Xflat, X0=None);
 		# otherwise, print warning.
 		elif not suppress:
-			print("\nWARNING: Data already flattened...\n")
+			print( "\nWARNING: Data already flattened...\n" )
 
 		return self;
 
@@ -51,8 +51,8 @@ class StateDataSet:
 # Assumptions: Y set is a forward snapshot of X; meaning
 #	they share a common length, even if the number of states
 #	represented (width) is different.
-#	I.e. the statement F: X -> Y is justifiable by the
-#	learning stategies presented.
+#	In other words, the statement F: X -> Y is justifiable by
+#	the learning stategies presented.
 class LearningStrategies:
 	def __init__(self, X, Y, X0=None, Y0=None):
 		# If Y0 is None set equal to X0.
