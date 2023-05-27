@@ -13,14 +13,13 @@ class Observables:
 
 	# Assumption: Data set is flat.
 	def liftData(self, X):
-
 		# Number of steps and matrix initialization.
 		P = len( X[0] );
 		Psi = np.empty( (self.Nk, P) );
 
 		# Lift data set.
 		for n in range( P ):
-			Psi[:,n] = obs( X[:,n,None] )[:,0];
+			Psi[:,n] = self.obs( X[:,n,None] )[:,0];
 
 		# Return lifted set.
 		return Psi;
@@ -57,14 +56,13 @@ class KoopmanOperator(LearningStrategies):
 		line3 = np.array2string( self.K, precision=5, suppress_small=1 );
 		return line1 + line2 + line3;
 
-	def initTrainingData(self, X, Y, X0=None):
+	def initLearningStrategies(self, X, Y, X0=None):
 		# Lift sets into observation space.
 		PsiX = self.obsX.liftData(X);
 		PsiY = self.obsY.liftData(Y);
-		PsiX0 = self.obsX.liftData(X0);
 
 		# Initialize LearningStrategies class.
-		LearningStrategies(self, PsiX, PsiY, X0=PsiX0);
+		super().__init__(PsiX, PsiY);
 
 		# Return instance of self.
 		return self;
@@ -78,7 +76,7 @@ class KoopmanOperator(LearningStrategies):
 	# Extended Dynamic Mode Decomposition (EDMD)
 	def edmd(self, X, Y, X0=None, EPS=None):
 		# Lift data sets into observation space.
-		self.liftDataSets(X, Y, X0=X0);
+		self.initLearningStrategies(X, Y, X0=X0);
 
 		# Compute Koopman operator through DMD.
 		self.K = self.dmd(EPS=EPS);

@@ -54,7 +54,7 @@ class StateDataSet:
 
 	def setNewData(self, X, X0=None):
 		self.X = X;
-		self.X0 = X0;
+		self.X0 = X0;0
 
 		# If X0 is None, then data is flat.
 		if X0 is None:
@@ -125,7 +125,7 @@ class LearningStrategies:
 
 	# Calculate the residual error of a given operator.
 	def resError(self, F):
-		err = np.linalg.norm( Y - F@X );
+		err = np.linalg.norm( self.Yset.X - F@self.Xset.X );
 		return err;
 
 	# Dynamic Mode Decomposition (DMD)
@@ -133,6 +133,7 @@ class LearningStrategies:
 	def dmd(self, EPS=None):
 		# Get set dimensions.
 		# Assume Yset is similarly shaped.
+		TOL = 1E-12;
 		_, K, _ = self.Xset.getDataDimn();
 
 		# Perform DMD on data sets.
@@ -143,7 +144,7 @@ class LearningStrategies:
 		A = 1/K * (self.Xset.X @ self.Yset.X.T);
 
 		# Get single value decomposition (SVD) matrices.
-		(U, S, V) = mp.linalg.svd(G);
+		(U, S, V) = np.linalg.svd(G);
 
 		# Get priority functions from S.
 		if EPS is None:
