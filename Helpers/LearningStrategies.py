@@ -74,7 +74,7 @@ class LearningStrategies:
 
 	# Calculate the residual error of a given operator.
 	def resError(self, F):
-        err = np.linalg.norm( Y - F@X );
+		err = np.linalg.norm( Y - F@X );
 		return err;
 
 	# Dynamic Mode Decomposition (DMD)
