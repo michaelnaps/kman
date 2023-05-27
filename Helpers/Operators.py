@@ -1,6 +1,7 @@
 import numpy as np
 from LearningStrategies import *
 
+# Cascade EDMD
 def cascade_edmd(Klist, Tlist, X, Y, X0):
 	# If number of operators is 1, solve EDMD
 	if len( Klist ) == 1:
