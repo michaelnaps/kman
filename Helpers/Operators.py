@@ -40,7 +40,7 @@ class Observables:
 		return Psi;
 
 # Class: KoopmanOperator
-class KoopmanOperator(LearningStrategies):
+class KoopmanOperator:
 	def __init__(self, obsX, obsY=None, T=None, K=None):
 		# Data list variables initially None.
 		self.trainingSets = None;
@@ -62,6 +62,7 @@ class KoopmanOperator(LearningStrategies):
 			self.K = K;
 
 		# Accuracy parameters.
+		self.solver = None;
 		self.err = -1;
 		self.ind = None;
 
@@ -72,17 +73,6 @@ class KoopmanOperator(LearningStrategies):
 		line3 = np.array2string( self.K, precision=5, suppress_small=1 );
 		return line1 + line2 + line3;
 
-	def initLearningStrategies(self, X, Y, X0=None):
-		# Lift sets into observation space.
-		PsiX = self.obsX.liftData(X);
-		PsiY = self.obsY.liftData(Y);
-
-		# Initialize LearningStrategies class.
-		super().__init__(PsiX, PsiY);
-
-		# Return instance of self.
-		return self;
-
     # Set shift function post-init.
 	def setShiftFunction(self, T):
 		self.T = T;
@@ -91,11 +81,15 @@ class KoopmanOperator(LearningStrategies):
 
 	# Extended Dynamic Mode Decomposition (EDMD)
 	def edmd(self, X, Y, X0=None, EPS=None):
-		# Lift data sets into observation space.
-		self.initLearningStrategies(X, Y, X0=X0);
+		# Lift sets into observation space.
+		PsiX = self.obsX.liftData(X);
+		PsiY = self.obsY.liftData(Y);
+
+		# Initialize LearningStrategies class.
+		self.solver = LearningStrategies(PsiX, PsiY);
 
 		# Compute Koopman operator through DMD.
-		self.K = self.dmd(EPS=EPS);
+		self.K = self.solver.dmd(EPS=EPS);
 
 		# Return instance of self.
 		return self;

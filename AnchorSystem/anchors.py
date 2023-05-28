@@ -5,7 +5,7 @@ sys.path.insert(0, expanduser('~')+'/prog/kman/Helpers')
 import numpy as np
 import matplotlib.pyplot as plt
 
-from KoopmanFunctions import *
+from Operators import *
 import DataFunctions as data
 
 import matplotlib.pyplot as plt
