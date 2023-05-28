@@ -166,3 +166,6 @@ class LearningStrategies:
 
 		self.err = self.resError(C);
 		return C;
+
+	def edmd(self, kvar, X, Y, X0=None):
+		pass;

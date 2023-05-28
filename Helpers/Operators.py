@@ -37,14 +37,65 @@ class Observables:
 		Psi = np.empty( (self.Nk, P) );
 
 		# Lift data set.
-		for n in range( P ):
-			Psi[:,n] = self.obs( X[:,n,None] )[:,0];
+		for k, x in enumerate( X.T ):
+			Psi[:,k] = self.obs( x[:,None] )[:,0];
 
 		# Return lifted set.
 		return Psi;
 
+# Class: Operator
+class Operator:
+	def __init__(self, C=None):
+		# Shift and Koopman initialization
+		self.C = C;
+
+		# Accuracy parameters.
+		self.solver = None;
+		self.err = -1;
+
+    # Default print function.
+	def __str__(self):
+		if self.C is None:
+			return "\n ERROR: Operator.C has not been set...\n";
+		line1 = 'Error: %.5e' % self.err;
+		line2 = ', Shape: (' + str(self.K.shape[0]) + ', ' + str(self.K.shape[1]) + ')\n';
+		line3 = np.array2string( self.K, precision=5, suppress_small=1 );
+		return line1 + line2 + line3;
+
+	# Manually set operator.
+	def setOperator(self, C):
+		self.C = C;
+		# Return instance of self.
+		return self;
+
+	# Calculate error over data set.
+	# Assumption: C has been set manually or solved for...
+	def resError(self, X, Y, X0=None):
+		# If solver is not initialized...
+		if self.solver is None:
+			self.solver = LearningStrategies(X, Y);
+
+		# Calculate residual error.
+		self.err = self.solver.resError( self.C );
+
+		# Return instance of self.
+		return self;
+
+	# Extended Dynamic Mode Decomposition (EDMD)
+	def dmd(self, X, Y, X0=None, EPS=None):
+		# Initialize LearningStrategies class.
+		self.solver = LearningStrategies(X, Y);
+
+		# Compute Koopman operator through DMD.
+		self.C = self.solver.dmd( EPS=EPS );
+		self.err = self.solver.resError( self.C );
+
+		# Return instance of self.
+		return self;
+
 # Class: KoopmanOperator
-class KoopmanOperator:
+# Parent Class: Operator
+class KoopmanOperator(Operator):
 	def __init__(self, obsX, obsY=None, T=None, K=None):
 		# Data list variables initially None.
 		self.trainingSets = None;
@@ -61,20 +112,36 @@ class KoopmanOperator:
 
 		# Koopman operator initialization.
 		if K is None:
-			self.K = np.eye( self.obsY.Nk, self.T.shape[0] );
-		else:
-			self.K = K;
+			K = np.eye( self.obsY.Nk, self.T.shape[0] );
 
-		# Accuracy parameters.
-		self.solver = None;
-		self.err = -1;
+		# Initialize inhertied class variables.
+		Operator.__init__(self, C=K);
 
-    # Default print function.
-	def __str__(self):
-		line1 = 'Error: %.5e' % self.err;
-		line2 = ', Shape: (' + str(self.K.shape[0]) + ', ' + str(self.K.shape[1]) + ')\n';
-		line3 = np.array2string( self.K, precision=5, suppress_small=1 );
-		return line1 + line2 + line3;
+	# Class property: K = C (from parent).
+	@property
+	def K(self):
+		# Return the composition operator.
+		return self.C;
+
+	def liftData(self, X, Y, X0=None):
+		# Lift sets into observation space.
+		TPsiX = self.T@self.obsX.liftData(X);
+		PsiY  = self.obsY.liftData( Y );
+		Psi0  = self.obsX.liftData( X0 );
+
+		# Return lifted data sets.
+		return TPsiX, PsiY, Psi0;
+
+	# Redefine residual error from parent for lifted sets.
+	def resError(self, X, Y, X0=None):
+		# Lift data insto observation space.
+		TPsiX, PsiY, Psi0 = self.liftData(X, Y, X0=X0);
+
+		# Calculate residual error from parent class.
+		Operator.resError(self, TPsiX, PsiY, X0=Psi0);
+
+		# Return instance of self.
+		return self;
 
     # Set shift function post-init.
 	def setShiftFunction(self, T):
@@ -82,34 +149,13 @@ class KoopmanOperator:
 		# Return instance of self.
 		return self;
 
-	# Calculate error over data set.
-	def resError(self, X, Y, X0=None):
-		# Lift sets into observation space.
-		PsiX = self.T@self.obsX.liftData(X);
-		PsiY = self.obsY.liftData(Y);
-
-		# If solver is not initialized...
-		if self.solver is None:
-			self.solver = LearningStrategies(PsiX, PsiY);
-
-		# Calculate residual error.
-		self.err = self.solver.resError( self.K );
-
-		# Return instance of self.
-		return self;
-
 	# Extended Dynamic Mode Decomposition (EDMD)
 	def edmd(self, X, Y, X0=None, EPS=None):
 		# Lift sets into observation space.
-		PsiX = self.T@self.obsX.liftData(X);
-		PsiY = self.obsY.liftData(Y);
-
-		# Initialize LearningStrategies class.
-		self.solver = LearningStrategies(PsiX, PsiY);
+		TPsiX, PsiY, Psi0 = self.liftData(X, Y, X0=X0);
 
 		# Compute Koopman operator through DMD.
-		self.K = self.solver.dmd(EPS=EPS);
-		self.err = self.solver.resError( self.K );
+		self.dmd(TPsiX, PsiY, X0=Psi0, EPS=EPS);
 
 		# Return instance of self.
 		return self;
