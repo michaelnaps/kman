@@ -28,7 +28,7 @@ def learnOperators(X, Y, X0):
     # Form the cumulative operator.
     Kf = Klist[0].K @ Tu( Klist[1] );
     kvar = KoopmanOperator(obsXUH, obsXU, K=Kf);
-    kvar.resErrorXY(X, Y, X0);
+    kvar.resError(X, Y, X0);
 
     # Return the individual operators and cumulative.
     return kxvar, kuvar, kvar;
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     x0 = np.array( [[-12], [-17]] );
     u0 = np.zeros( (Nu,1) );
     xu0 = np.vstack( (x0+[[-1.3],[1.5]], u0) );
-    Psi0 = kList[-1].obsY(xu0);
+    Psi0 = kList[-1].obsY.lift(xu0);
     tList, xList, PsiList, uList, uTrueList = generateTrajectoryData(kList[-1], sim_time, x0, Psi0);
 
     # eList = [i for i in range(0,11,2)];

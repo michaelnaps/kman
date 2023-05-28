@@ -124,8 +124,10 @@ class LearningStrategies:
 		return self;
 
 	# Calculate the residual error of a given operator.
-	def resError(self, F):
-		err = np.linalg.norm( self.Yset.X - F@self.Xset.X );
+	def resError(self, C):
+		err = 0;
+		for n in range( self.Xset.P ):
+			err += np.linalg.norm(self.Yset.X[:,n,None] - C@self.Xset.X[:,n,None])**2;
 		return err;
 
 	# Dynamic Mode Decomposition (DMD)

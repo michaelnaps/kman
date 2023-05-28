@@ -26,6 +26,10 @@ class Observables:
 		self.Nk = obs()['Nk'];
 		self.meta = obs();  # optional: for user only
 
+	# Alternative to user called var.obs().
+	def lift(self, X):
+		return self.obs(X);
+
 	# Assumption: Data set is flat.
 	def liftData(self, X):
 		# Number of steps and matrix initialization.
@@ -64,7 +68,6 @@ class KoopmanOperator:
 		# Accuracy parameters.
 		self.solver = None;
 		self.err = -1;
-		self.ind = None;
 
     # Default print function.
 	def __str__(self):
@@ -79,10 +82,26 @@ class KoopmanOperator:
 		# Return instance of self.
 		return self;
 
+	# Calculate error over data set.
+	def resError(self, X, Y, X0=None):
+		# Lift sets into observation space.
+		PsiX = self.T@self.obsX.liftData(X);
+		PsiY = self.obsY.liftData(Y);
+
+		# If solver is not initialized...
+		if self.solver is None:
+			self.solver = LearningStrategies(PsiX, PsiY);
+
+		# Calculate residual error.
+		self.err = self.solver.resError( self.K );
+
+		# Return instance of self.
+		return self;
+
 	# Extended Dynamic Mode Decomposition (EDMD)
 	def edmd(self, X, Y, X0=None, EPS=None):
 		# Lift sets into observation space.
-		PsiX = self.obsX.liftData(X);
+		PsiX = self.T@self.obsX.liftData(X);
 		PsiY = self.obsY.liftData(Y);
 
 		# Initialize LearningStrategies class.
@@ -90,6 +109,7 @@ class KoopmanOperator:
 
 		# Compute Koopman operator through DMD.
 		self.K = self.solver.dmd(EPS=EPS);
+		self.err = self.solver.resError( self.K );
 
 		# Return instance of self.
 		return self;

@@ -276,7 +276,7 @@ def stationaryResults(kvar, sim_time, N0n):
     fig, axs = plt.subplots();
     for i, xu0 in enumerate(XU0n.T):
         x0 = xu0[:Nx,None];
-        Psi0 = kvar.obsY( xu0[:,None] );
+        Psi0 = kvar.obsY.lift( xu0[:,None] );
 
         tList, xList, PsiList, _, _ = generateTrajectoryData(kvar, sim_time, x0, Psi0);
         animatedResults(tList, xList, PsiList, axs=axs, fig=fig, rush=1, legend=(i==0));
