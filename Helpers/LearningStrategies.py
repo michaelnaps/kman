@@ -8,9 +8,9 @@ import numpy as np
 
 # Helper data function for generating sets.
 def generate_data(tlist, model, X0, control=None, Nu=0):
-    Nx = len(X0);
-    N0 = len(X0[0]);
-    Nt = len(tlist[0]);
+    Nx = len( X0 );
+    N0 = len( X0[0] );
+    Nt = len( tlist[0] );
 
     if control is not None:
         ulist = np.empty( (N0*Nu, Nt-1) );
@@ -32,10 +32,10 @@ def generate_data(tlist, model, X0, control=None, Nu=0):
 
         for t in range(Nt-1):
             if control is not None:
-                u[:,t] = control(x[:Nx,t]).reshape(Nu,);
-                x[:,t+1] = model(x[:Nx,t], u[:,t]).reshape(Nx,);
+                u[:,t] = control( x[:Nx,t] ).reshape(Nu,);
+                x[:,t+1] = model( x[:Nx,t], u[:,t] ).reshape(Nx,);
             else:
-                x[:,t+1] = model(x[:Nx,t]).reshape(Nx,);
+                x[:,t+1] = model( x[:Nx,t] ).reshape(Nx,);
 
         if control is not None:
             ulist[k:k+Nu,:] = u;
@@ -54,7 +54,7 @@ class StateDataSet:
 
 	def setNewData(self, X, X0=None):
 		self.X = X;
-		self.X0 = X0;0
+		self.X0 = X0;
 
 		# If X0 is None, then data is flat.
 		if X0 is None:
@@ -82,13 +82,13 @@ class StateDataSet:
 			# Iterate through and reshape matrix.
 			n = 0;
 			p = 0;
-			for i in range(self.M):
+			for i in range( self.M ):
 				Xflat[:,p:p+self.P] = self.X[n:n+self.N,:];
 				n += self.N;
 				p += self.P;
 
 			# Set internal data to flattened data.
-			self.setNewData(Xflat, X0=None);
+			self.setNewData( Xflat, X0=None );
 		# otherwise,
 		elif not suppress:
 			# print warning.
@@ -105,7 +105,7 @@ class StateDataSet:
 #	the learning stategies presented.
 class LearningStrategies:
 	def __init__(self, X, Y, X0=None, Y0=None):
-		self.setDataLists(X, Y, X0=X0, Y0=Y0);
+		self.setDataLists( X, Y, X0=X0, Y0=Y0 );
 		self.err = -1;
 
 	# Set data variables post-init.
@@ -115,19 +115,19 @@ class LearningStrategies:
 			Y0 = X0;
 
 		# Create two snapshot data sets
-		self.Xset = StateDataSet(X, X0=X0);
-		self.Yset = StateDataSet(Y, X0=Y0);
+		self.Xset = StateDataSet( X, X0=X0 );
+		self.Yset = StateDataSet( Y, X0=Y0 );
 
 		# Flatten data (suppress warning).
-		self.Xset.flattenData(suppress=1);
-		self.Yset.flattenData(suppress=1);
+		self.Xset.flattenData( suppress=1 );
+		self.Yset.flattenData( suppress=1 );
 		return self;
 
 	# Calculate the residual error of a given operator.
 	def resError(self, C):
 		err = 0;
 		for n in range( self.Xset.P ):
-			err += np.linalg.norm(self.Yset.X[:,n,None] - C@self.Xset.X[:,n,None])**2;
+			err += np.linalg.norm( self.Yset.X[:,n,None] - C@self.Xset.X[:,n,None] )**2;
 		return err;
 
 	# Dynamic Mode Decomposition (DMD)
@@ -146,11 +146,11 @@ class LearningStrategies:
 		A = 1/K * (self.Xset.X @ self.Yset.X.T);
 
 		# Get single value decomposition (SVD) matrices.
-		(U, S, V) = np.linalg.svd(G);
+		(U, S, V) = np.linalg.svd( G );
 
 		# Get priority functions from S.
 		if EPS is None:
-			EPS = TOL*max(S);
+			EPS = TOL*max( S );
 		ind = S > EPS;
 
 		# Truncate space for prioritized functions.
@@ -159,13 +159,10 @@ class LearningStrategies:
 		V = V[ind,:].T;
 
 		# Invert S values and create matrix.
-		Sinv = np.diag([1/S[i] for i in range(len(S))]);
+		Sinv = np.diag( [1/S[i] for i in range( len( S ) )] );
 
 		# Solve for the DMD operator (TRANSPOSED) and return.
 		C = A.T @ (U @ Sinv @ V.T);
 
-		self.err = self.resError(C);
+		self.err = self.resError( C );
 		return C;
-
-	def edmd(self, kvar, X, Y, X0=None):
-		pass;

@@ -95,7 +95,7 @@ class Operator:
 
 # Class: KoopmanOperator
 # Parent Class: Operator
-class KoopmanOperator(Operator):
+class KoopmanOperator( Operator ):
 	def __init__(self, obsX, obsY=None, T=None, K=None):
 		# Data list variables initially None.
 		self.trainingSets = None;
@@ -115,7 +115,7 @@ class KoopmanOperator(Operator):
 			K = np.eye( self.obsY.Nk, self.T.shape[0] );
 
 		# Initialize inhertied class variables.
-		Operator.__init__(self, C=K);
+		Operator.__init__( self, C=K );
 
 	# Class property: K = C (from parent).
 	@property
@@ -125,7 +125,7 @@ class KoopmanOperator(Operator):
 
 	def liftData(self, X, Y, X0=None):
 		# Lift sets into observation space.
-		TPsiX = self.T@self.obsX.liftData(X);
+		TPsiX = self.T@self.obsX.liftData( X );
 		PsiY  = self.obsY.liftData( Y );
 		Psi0  = self.obsX.liftData( X0 );
 
@@ -135,10 +135,10 @@ class KoopmanOperator(Operator):
 	# Redefine residual error from parent for lifted sets.
 	def resError(self, X, Y, X0=None):
 		# Lift data insto observation space.
-		TPsiX, PsiY, Psi0 = self.liftData(X, Y, X0=X0);
+		TPsiX, PsiY, Psi0 = self.liftData( X, Y, X0=X0 );
 
 		# Calculate residual error from parent class.
-		Operator.resError(self, TPsiX, PsiY, X0=Psi0);
+		Operator.resError( self, TPsiX, PsiY, X0=Psi0 );
 
 		# Return instance of self.
 		return self;
@@ -152,10 +152,10 @@ class KoopmanOperator(Operator):
 	# Extended Dynamic Mode Decomposition (EDMD)
 	def edmd(self, X, Y, X0=None, EPS=None):
 		# Lift sets into observation space.
-		TPsiX, PsiY, Psi0 = self.liftData(X, Y, X0=X0);
+		TPsiX, PsiY, Psi0 = self.liftData( X, Y, X0=X0 );
 
 		# Compute Koopman operator through DMD.
-		self.dmd(TPsiX, PsiY, X0=Psi0, EPS=EPS);
+		self.dmd( TPsiX, PsiY, X0=Psi0, EPS=EPS );
 
 		# Return instance of self.
 		return self;
