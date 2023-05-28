@@ -44,7 +44,7 @@ $$
 The important component introduced here is the idea that the state is not observed directly, but instead observed through **anchors**. For practical purposes we assume there are $N_a=3$ anchors which, when called, give the object its respective $L_2$ distance norm. The position of the anchors can be chosen by the user and are defined by the set
 
 $$
-    d(x) = \{ \sqrt{ (x - a_i)^\intercal (x - a_i) } : \forall i \leq N_a, i \in \mathbb{N} \}.
+    d(x) = \\{ \sqrt{ (x - a_i)^\intercal (x - a_i) } : \forall i \leq N_a, i \in \mathbb{N} \\}.
 $$
 
 Where $d$ represents the set of anchor distances, each defined by the anchor position $a_i$, or the $i$-th anchor in the system.
