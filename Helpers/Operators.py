@@ -28,7 +28,7 @@ class Observables:
 
 	# Alternative to user called var.obs().
 	def lift(self, X):
-		return self.obs(X);
+		return self.obs( X );
 
 	# Assumption: Data set is flat.
 	def liftData(self, X):
@@ -130,6 +130,12 @@ class KoopmanOperator( Operator ):
 		# Return the composition operator.
 		return self.C;
 
+	def propagate(self, X):
+		if self.K is None:
+			print( "\nERROR: Operator is unset...\n" );
+			return None;
+		return self.K@self.obsX.lift( X );
+
 	def liftData(self, X, Y, X0=None):
 		# Lift sets into observation space.
 		TPsiX = self.T@self.obsX.liftData( X );
@@ -166,3 +172,15 @@ class KoopmanOperator( Operator ):
 
 		# Return instance of self.
 		return self;
+
+class LieOperator( KoopmanOperator ):
+	def __init__(self, obsX, obsY=None, T=None, L=None):
+		KoopmanOperator.__init__(self, obsX, obsY=obsY, T=T, K=L);
+
+	@property
+	def L(self):
+		return self.C;
+
+	def propagate(self, X, dt=1e-3):
+		dX = KoopmanOperator.propagate(self, X);
+		return X + dt*dX;
