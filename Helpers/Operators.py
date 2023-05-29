@@ -1,5 +1,5 @@
 import numpy as np
-from LearningStrategies import *
+from Helpers.LearningStrategies import *
 
 # Cascade EDMD
 def cascade_edmd(Klist, Tlist, X, Y, X0):
