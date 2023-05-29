@@ -44,6 +44,10 @@ class Observables:
 		return Psi;
 
 # Class: Operator
+# Purpose: The generalized operator, denoted by C, moves any
+#	array, X, into an array, Y. The operator defined here does need
+#	to represent a dynamic system, but can be found through the DMD
+#	algorithm as long as the appropriate data can be provided.
 class Operator:
 	def __init__(self, C=None):
 		# Shift and Koopman initialization
@@ -95,6 +99,9 @@ class Operator:
 
 # Class: KoopmanOperator
 # Parent Class: Operator
+# Purpose: The operator discussed here defines the propagation of
+#	appropriate underlying observation functions forward in time. It
+# 	is a more specific case of its parent class, Operator.
 class KoopmanOperator( Operator ):
 	def __init__(self, obsX, obsY=None, T=None, K=None):
 		# Data list variables initially None.
