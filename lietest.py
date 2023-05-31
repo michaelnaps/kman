@@ -17,4 +17,4 @@ def model(x):
 
 if __name__=="__main__":
 	N0 = 2;
-	X0 = 2*A*p.random.rand(Nx, N0) - A;
+	X0 = 2*A*np.random.rand(Nx, N0) - A;
