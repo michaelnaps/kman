@@ -32,6 +32,10 @@ class Observables:
 
 	# Assumption: Data set is flat.
 	def liftData(self, X):
+		# For rare case where X is None
+		if X is None:
+			return None;
+
 		# Number of steps and matrix initialization.
 		P = len( X[0] );
 		Psi = np.empty( (self.Nk, P) );
@@ -108,6 +112,8 @@ class KoopmanOperator( Operator ):
 		self.trainingSets = None;
 
 		# X and Y observable initialization.
+		if obsY is None:
+			obsY = obsX;
 		self.obsX = Observables( obsX );
 		self.obsY = Observables( obsY );
 
