@@ -67,9 +67,6 @@ if __name__=="__main__":
 
 	# Simulate using discrete functions.
 	for i in range( Nt-1 ):
-		if i % 100 == 0:
-			print( xList[:,i] );
-			print( psiList[:,i] );
 		xList[:,i+1] = mDiscrete( xList[:,i,None] )[:,0];
 		psiList[:,i+1] = kDiscrete( psiList[:,i,None] )[:,0];
 
