@@ -136,11 +136,11 @@ class KoopmanOperator( Operator ):
 		# Return the composition operator.
 		return self.C;
 
-	def propagate(self, X):
-		if self.K is None:
-			print( "\nERROR: Operator is unset...\n" );
-			return None;
-		return self.K@self.obsX.lift( X );
+    # Set shift function post-init.
+	def setShiftFunction(self, T):
+		self.T = T;
+		# Return instance of self.
+		return self;
 
 	def liftData(self, X, Y, X0=None):
 		# Lift sets into observation space.
@@ -151,6 +151,12 @@ class KoopmanOperator( Operator ):
 		# Return lifted data sets.
 		return TPsiX, PsiY, Psi0;
 
+	def propagate(self, X):
+		if self.K is None:
+			print( "\nERROR: Operator is unset...\n" );
+			return None;
+		return self.K@self.obsX.lift( X );
+
 	# Redefine residual error from parent for lifted sets.
 	def resError(self, X, Y, X0=None):
 		# Lift data insto observation space.
@@ -159,12 +165,6 @@ class KoopmanOperator( Operator ):
 		# Calculate residual error from parent class.
 		Operator.resError( self, TPsiX, PsiY, X0=Psi0 );
 
-		# Return instance of self.
-		return self;
-
-    # Set shift function post-init.
-	def setShiftFunction(self, T):
-		self.T = T;
 		# Return instance of self.
 		return self;
 
