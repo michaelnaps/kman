@@ -1,8 +1,12 @@
+import sys
+from os.path import expanduser
+sys.path.insert(0, expanduser('~')+'/prog/kman/Helpers')
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Helpers.LearningStrategies import *
-from Helpers.Operators import *
+from LearningStrategies import *
+from Operators import *
 
 # hyper paramters
 dt = 0.001;
@@ -11,8 +15,8 @@ Nx = 2;
 
 # model function: continuous, second-order
 def model(x):
-	a = 3;
-	b = 1;
+	a = 1.5;
+	b = 2.0;
 	dx = np.array( [
 		a*(x[0]),
 		b*(x[1] - x[0]**2)

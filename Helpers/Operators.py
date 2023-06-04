@@ -1,11 +1,11 @@
 import numpy as np
-from Helpers.LearningStrategies import *
+from LearningStrategies import *
 
 # Cascade EDMD
-def cascade_edmd(Klist, Tlist, X, Y, X0):
+def cascade_edmd(Klist, Tlist, X, Y, X0=None):
 	# If number of operators is 1, solve EDMD
 	if len( Klist ) == 1:
-		knvar = Klist[0].edmd(X, Y, X0);
+		knvar = Klist[0].edmd(X, Y, X0=X0);
 		return knvar
 
 	# Otherwise, cut front operator and re-eneter function
