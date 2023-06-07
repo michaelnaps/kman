@@ -52,15 +52,13 @@ if __name__=="__main__":
 	kvar = KoopmanOperator( obs );
 
 	# Learn operators.
-	print(Y);
 	lvar.edmd( X,dX );
 	kvar.edmd( X,Y );
 
 
 	# lvar.L[2,2] = 3;
-
-	print( lvar );
-	print( kvar );
+	print( 'L:\n', lvar );
+	print( 'K:\n', kvar );
 
 	# Initial condition comparison.
 	x0 = np.array( [[0.1], [0.1]] );
