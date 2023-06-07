@@ -48,6 +48,9 @@ if __name__=="__main__":
 	# Generate Lie operator from data.
 	lvar = LieOperator( obs );
 	lvar.edmd( X,Y );
+
+	# lvar.L[2,2] = 3;
+
 	print( lvar );
 
 	# Initial condition comparison.
