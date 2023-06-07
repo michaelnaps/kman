@@ -41,25 +41,33 @@ if __name__=="__main__":
 	X = 2*A*np.random.rand( Nx,N0 ) - A;
 
 	# Take derivative of positions using model.
+	dX = np.empty( (Nx, N0) );
 	Y = np.empty( (Nx, N0) );
 	for i, x in enumerate( X.T ):
-		Y[:,i] = model( x[:,None] )[:,0];
+		dX[:,i] = model( x[:,None] )[:,0];
+		Y[:,i] = x + dt*dX[:,i];
 
-	# Generate Lie operator from data.
+	# Initialize L and K operator variables.
 	lvar = LieOperator( obs );
-	lvar.edmd( X,Y );
+	kvar = KoopmanOperator( obs );
+
+	# Learn operators.
+	print(Y);
+	lvar.edmd( X,dX );
+	kvar.edmd( X,Y );
+
 
 	# lvar.L[2,2] = 3;
 
 	print( lvar );
+	print( kvar );
 
 	# Initial condition comparison.
 	x0 = np.array( [[0.1], [0.1]] );
 	Psi0 = obs( x0 );
 
 	# Simulation time parameters.
-	T = 1;  dt = 0.001;
-	Nt = round(T/dt) + 1;
+	T = 1;  Nt = round(T/dt) + 1;
 	tList = [ [i*dt for i in range( Nt )] ];
 
 	# Discrete model functions.
@@ -68,27 +76,34 @@ if __name__=="__main__":
 
 	# Initialize matrices and set initial point.
 	xList = np.empty( (Nx,Nt) );
-	psiList = np.empty( (lvar.obsY.Nk,Nt) );
+	LpsiList = np.empty( (lvar.obsY.Nk,Nt) );
+	KpsiList = np.empty( (kvar.obsY.Nk,Nt) );
+
 	xList[:,0] = x0[:,0];
-	psiList[:,0] = Psi0[:,0];
+	LpsiList[:,0] = Psi0[:,0];
+	KpsiList[:,0] = Psi0[:,0];
 
 	# Simulate using discrete functions.
 	for i in range( Nt-1 ):
 		xList[:,i+1] = mDiscrete( xList[:,i,None] )[:,0];
-		psiList[:,i+1] = lDiscrete( psiList[:,i,None] )[:,0];
+		LpsiList[:,i+1] = lDiscrete( LpsiList[:,i,None] )[:,0];
+		KpsiList[:,i+1] = (kvar.K@KpsiList[:,i,None])[:,0];
 
 	# Plot results of the simulation.
 	fig, axs = plt.subplots( 3,1 );
-	axs[0].plot(tList[0], xList[0], label='Model');
-	axs[0].plot(tList[0], psiList[0], linestyle='--', label='Lie');
+	axs[0].plot(tList[0], xList[0], linewidth=3, label='Model');
+	axs[0].plot(tList[0], LpsiList[0], linestyle='--', label='Lie');
+	axs[0].plot(tList[0], KpsiList[0], linestyle='--', label='Koopman');
 	axs[0].set_title( '$x_1$' );
 
-	axs[1].plot(tList[0], xList[1], label='Model');
-	axs[1].plot(tList[0], psiList[1], linestyle='--', label='Lie');
+	axs[1].plot(tList[0], xList[1], linewidth=3, label='Model');
+	axs[1].plot(tList[0], LpsiList[1], linestyle='--', label='Lie');
+	axs[1].plot(tList[0], KpsiList[1], linestyle='--', label='Koopman');
 	axs[1].set_title( '$x_2$' );
 
-	axs[2].plot(tList[0], xList[0]**2, label='Model');
-	axs[2].plot(tList[0], psiList[2], linestyle='--', label='Lie');
+	axs[2].plot(tList[0], xList[0]**2, linewidth=3, label='Model');
+	axs[2].plot(tList[0], LpsiList[2], linestyle='--', label='Lie');
+	axs[2].plot(tList[0], KpsiList[2], linestyle='--', label='Koopman');
 	axs[2].set_title( '$x_1^2$' );
 
 	axs[0].legend();
