@@ -24,15 +24,17 @@ def model(x):
 	return dx;
 
 # observation list
-def obs(X=None):
-	if X is None:
+def obsX(x=None):
+	if x is None:
 		meta = {'Nk': Nx+1};
 		return meta;
+
 	Psi = np.array( [
-		X[0],
-		X[1],
-		X[0]**2
+		x[0],
+		x[1],
+		x[0]**2
 	] );
+
 	return Psi;
 
 if __name__=="__main__":
@@ -48,8 +50,8 @@ if __name__=="__main__":
 		Y[:,i] = x + dt*dX[:,i];
 
 	# Initialize L and K operator variables.
-	lvar = LieOperator( obs );
-	kvar = KoopmanOperator( obs );
+	lvar = LieOperator( obsX );
+	kvar = KoopmanOperator( obsX );
 
 	# Learn operators.
 	lvar.edmd( X,dX );
@@ -62,7 +64,7 @@ if __name__=="__main__":
 
 	# Initial condition comparison.
 	x0 = np.array( [[0.1], [0.1]] );
-	Psi0 = obs( x0 );
+	Psi0 = obsX( x0 );
 
 	# Simulation time parameters.
 	T = 1;  Nt = round(T/dt) + 1;
