@@ -1,3 +1,11 @@
+# ============================================================================ #
+# Polynomial Functions in Terms of Koopman/Lie Operators
+# Dynamical system and observable selection techniques taken from:
+#	Brunton SL, Brunton BW, Proctor JL, Kutz JN (2016) Koopman Invariant
+#	Subspaces and Finite Linear Representations of Nonlinear Dynamical Systems
+#	for Control. PLoS ONE 11(2): e0150171. doi:10.1371/journal.pone.0150171
+# ============================================================================ #
+
 import sys
 from os.path import expanduser
 sys.path.insert(0, expanduser('~')+'/prog/kman/Helpers')
@@ -54,7 +62,6 @@ if __name__=="__main__":
 	# Learn operators.
 	lvar.edmd( X,dX );
 	kvar.edmd( X,Y );
-
 
 	# lvar.L[2,2] = 3;
 	print( 'L:\n', lvar );
