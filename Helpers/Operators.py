@@ -196,7 +196,7 @@ class LieOperator( KoopmanOperator ):
 		KoopmanOperator.edmd( self, X, Y, X0=X0, EPS=EPS );
 
 		# Convert discrete operator to Lie operator
-		self.L = 1/t*np.log( self.L );
+		self.C = 1/dt*np.log( self.C );
 
 		# Return instance of self.
 		return self;

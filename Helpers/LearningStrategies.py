@@ -165,4 +165,4 @@ class LearningStrategies:
 		C = A.T @ (U @ Sinv @ V.T);
 
 		self.err = self.resError( C );
-		return C, (U, S, V);
+		return C;
