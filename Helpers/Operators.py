@@ -56,6 +56,7 @@ class Operator:
 	def __init__(self, C=None):
 		# Shift and Koopman initialization
 		self.C = C;
+		self.USV = None;
 
 		# Accuracy parameters.
 		self.solver = None;
@@ -95,7 +96,7 @@ class Operator:
 		self.solver = LearningStrategies(X, Y);
 
 		# Compute Koopman operator through DMD.
-		self.C = self.solver.dmd( EPS=EPS );
+		self.C, self.USV = self.solver.dmd( EPS=EPS );
 		self.err = self.solver.resError( self.C );
 
 		# Return instance of self.
@@ -192,11 +193,22 @@ class LieOperator( KoopmanOperator ):
 		return X + dt*dX;
 
 	def edmd(self, X, Y, X0=None, EPS=None, dt=1e-3):
-		# Calculate discrete Koopman operator form
+		# Calculate discrete Koopman operator form.
 		KoopmanOperator.edmd( self, X, Y, X0=X0, EPS=EPS );
 
-		# Convert discrete operator to Lie operator
-		self.C = 1/dt*np.log( self.C );
+		# Convert discrete operator to Lie operator.
+		# Grab eignvalues and invert for transition.
+		S = np.diag( self.USV[1] );
+		Sinv = np.diag( 1/np.diag( S ) );
+
+		# Calculate the logarithm of K.
+		Kp = Sinv@self.K@S;
+		logKp = np.diag( np.log( np.diag( Kp ) ) );
+		logK = S@logKp@Sinv;
+
+		# Calculate the Lie operator.
+		self.C = 1/dt*logK;
+		self.resError(X, Y, X0=X0);
 
 		# Return instance of self.
 		return self;

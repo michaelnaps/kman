@@ -45,7 +45,7 @@ def obs(X=None):
 
 if __name__=="__main__":
 	# Generating random positions to learn from.
-	N0 = 3;
+	N0 = 100;
 	X = 2*A*np.random.rand( Nx,N0 ) - A;
 
 	# Take derivative of positions using model.

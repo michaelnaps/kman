@@ -154,15 +154,15 @@ class LearningStrategies:
 		ind = S > EPS;
 
 		# Truncate space for prioritized functions.
-		U = U[:,ind];
-		S = S[ind];
-		V = V[ind,:].T;
+		Ut = U[:,ind];
+		St = S[ind];
+		Vt = V[ind,:].T;
 
 		# Invert S values and create matrix.
-		Sinv = np.diag( [1/S[i] for i in range( len( S ) )] );
+		Sinv = np.diag( [1/St[i] for i in range( len( St ) )] );
 
 		# Solve for the DMD operator (TRANSPOSED) and return.
-		C = A.T @ (U @ Sinv @ V.T);
+		C = A.T @ (Ut @ Sinv @ Vt.T);
 
 		self.err = self.resError( C );
-		return C;
+		return C, (U,S,V);
