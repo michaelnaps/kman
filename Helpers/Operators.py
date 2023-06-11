@@ -190,3 +190,13 @@ class LieOperator( KoopmanOperator ):
 	def propagate(self, X, dt=1e-3):
 		dX = KoopmanOperator.propagate(self, X);
 		return X + dt*dX;
+
+	def edmd(self, X, Y, X0=None, EPS=None, dt=1e-3):
+		# Calculate discrete Koopman operator form
+		KoopmanOperator.edmd( self, X, Y, X0=X0, EPS=EPS );
+
+		# Convert discrete operator to Lie operator
+		self.L = 1/t*np.log( self.L );
+
+		# Return instance of self.
+		return self;

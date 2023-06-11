@@ -60,7 +60,7 @@ if __name__=="__main__":
 	kvar = KoopmanOperator( obs );
 
 	# Learn operators.
-	lvar.edmd( X,dX );
+	lvar.edmd( X,Y );
 	kvar.edmd( X,Y );
 
 	# lvar.L[2,2] = 3;
