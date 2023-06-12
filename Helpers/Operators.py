@@ -192,8 +192,9 @@ class LieOperator( KoopmanOperator ):
 		dX = KoopmanOperator.propagate(self, X);
 		return X + dt*dX;
 
+	# Convert Koopman operator with time-step to Lie operator.
+	# Assumption: Koopman operator matrix is diagonalizable
 	def learnFromKoopman(self, kvar, dt=1e-3):
-		# Convert discrete operator to Lie operator.
 		# Grab eignvalues and invert for transition.
 		S = np.diag( kvar.USV[1] );
 		Sinv = np.diag( 1/np.diag( S ) );
