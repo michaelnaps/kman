@@ -192,23 +192,20 @@ class LieOperator( KoopmanOperator ):
 		dX = KoopmanOperator.propagate(self, X);
 		return X + dt*dX;
 
-	def edmd(self, X, Y, X0=None, EPS=None, dt=1e-3):
-		# Calculate discrete Koopman operator form.
-		KoopmanOperator.edmd( self, X, Y, X0=X0, EPS=EPS );
-
+	def learnFromKoopman(self, kvar, dt=1e-3):
 		# Convert discrete operator to Lie operator.
 		# Grab eignvalues and invert for transition.
-		S = np.diag( self.USV[1] );
+		S = np.diag( kvar.USV[1] );
 		Sinv = np.diag( 1/np.diag( S ) );
 
 		# Calculate the logarithm of K.
-		Kp = Sinv@self.K@S;
+		Kp = Sinv@kvar.K@S;
 		logKp = np.diag( np.log( np.diag( Kp ) ) );
 		logK = S@logKp@Sinv;
 
 		# Calculate the Lie operator.
 		self.C = 1/dt*logK;
-		self.resError(X, Y, X0=X0);
+		# self.resError(X, Y, X0=X0);
 
 		# Return instance of self.
 		return self;
