@@ -23,8 +23,8 @@ Nx = 2;
 
 # model function: continuous, second-order
 def model(x):
-	a = 1.5;
-	b = 2.0;
+	a = 1.25;
+	b = 1.50;
 	dx = np.array( [
 		a*(x[0]),
 		b*(x[1] - x[0]**2)

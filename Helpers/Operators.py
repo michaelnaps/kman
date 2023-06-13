@@ -196,13 +196,13 @@ class LieOperator( KoopmanOperator ):
 	# Assumption: Koopman operator matrix is diagonalizable
 	def learnFromKoopman(self, kvar, dt=1e-3):
 		# Grab eignvalues and invert for transition.
-		S = np.diag( kvar.USV[1] );
-		Sinv = np.diag( 1/np.diag( S ) );
+		_, V = np.linalg.eig( kvar.K );
+		Vinv = np.linalg.solve( V,np.eye( self.obsX.Nk ) )
 
 		# Calculate the logarithm of K.
-		Kp = Sinv@kvar.K@S;
+		Kp = Vinv@kvar.K@V;
 		logKp = np.diag( np.log( np.diag( Kp ) ) );
-		logK = S@logKp@Sinv;
+		logK = V@logKp@Vinv;
 
 		# Calculate the Lie operator.
 		self.C = 1/dt*logK;
