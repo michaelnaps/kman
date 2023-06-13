@@ -96,19 +96,19 @@ if __name__=="__main__":
 
 	# Plot results of the simulation.
 	fig, axs = plt.subplots( 3,1 );
-	axs[0].plot(tList[0], xList[0], linewidth=3, label='Model');
-	axs[0].plot(tList[0], KpsiList[0], linestyle='--', label='Koopman');
-	axs[0].plot(tList[0], LpsiList[0], linestyle='--', label='Lie');
+	axs[0].plot(tList[0], xList[0], linewidth=3.0, label='Model');
+	axs[0].plot(tList[0], KpsiList[0], linewidth=2.0, linestyle='--', label='Koopman');
+	axs[0].plot(tList[0], LpsiList[0], linewidth=1.5, linestyle='--', label='Lie');
 	axs[0].set_title( '$x_1$' );
 
-	axs[1].plot(tList[0], xList[1], linewidth=3, label='Model');
-	axs[1].plot(tList[0], KpsiList[1], linestyle='--', label='Koopman');
-	axs[1].plot(tList[0], LpsiList[1], linestyle='--', label='Lie');
+	axs[1].plot(tList[0], xList[1], linewidth=3.0, label='Model');
+	axs[1].plot(tList[0], KpsiList[1], linewidth=2.0, linestyle='--', label='Koopman');
+	axs[1].plot(tList[0], LpsiList[1], linewidth=1.5, linestyle='--', label='Lie');
 	axs[1].set_title( '$x_2$' );
 
-	axs[2].plot(tList[0], xList[0]**2, linewidth=3, label='Model');
-	axs[2].plot(tList[0], KpsiList[2], linestyle='--', label='Koopman');
-	axs[2].plot(tList[0], LpsiList[2], linestyle='--', label='Lie');
+	axs[2].plot(tList[0], xList[0]**2, linewidth=3.0, label='Model');
+	axs[2].plot(tList[0], KpsiList[2], linewidth=2.0, linestyle='--', label='Koopman');
+	axs[2].plot(tList[0], LpsiList[2], linewidth=1.5, linestyle='--', label='Lie');
 	axs[2].set_title( '$x_1^2$' );
 
 	axs[0].legend();
