@@ -63,7 +63,7 @@ if __name__=="__main__":
 
 	# Learn operators.
 	kvar.edmd( X,Y );
-	lvar.learnFromKoopman( kvar );
+	lvar.K2L( kvar );
 	print( 'L:\n', lvar );
 	print( 'K:\n', kvar );
 

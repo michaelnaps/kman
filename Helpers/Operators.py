@@ -180,6 +180,26 @@ class KoopmanOperator( Operator ):
 		# Return instance of self.
 		return self;
 
+	# Convert Lie operator to discrete Koopman operator with time-step.
+	# Assumption(s):
+	#	1). Lie operator is diagonalizable.
+	#	2). Eigenvectors of L are invertible.
+	def L2K(self, lvar, dt=1e-3):
+		# Grab eignvalues and invert for transition.
+		_, V = np.linalg.eig( lvar.L );
+		Vinv = np.linalg.solve( V,np.eye( self.obsX.Nk ) )
+
+		# Calculate the logarithm of K.
+		Lp = Vinv@lvar.L@V;
+		eLp = np.diag( np.exp( np.diag( dt*Lp ) ) );
+		eL = V@eLp@Vinv;
+
+		# Calculate the Lie operator.
+		self.C = eL;
+
+		# Return instance of self.
+		return self;
+
 class LieOperator( KoopmanOperator ):
 	def __init__(self, obsX, obsY=None, T=None, L=None):
 		KoopmanOperator.__init__(self, obsX, obsY=obsY, T=T, K=L);
@@ -196,7 +216,7 @@ class LieOperator( KoopmanOperator ):
 	# Assumption(s):
 	#	1). Koopman operator is diagonalizable.
 	#	2). Eigenvectors of K are invertible.
-	def learnFromKoopman(self, kvar, dt=1e-3):
+	def K2L(self, kvar, dt=1e-3):
 		# Grab eignvalues and invert for transition.
 		_, V = np.linalg.eig( kvar.K );
 		Vinv = np.linalg.solve( V,np.eye( self.obsX.Nk ) )
