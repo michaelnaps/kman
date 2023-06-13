@@ -193,7 +193,9 @@ class LieOperator( KoopmanOperator ):
 		return X + dt*dX;
 
 	# Convert Koopman operator with time-step to Lie operator.
-	# Assumption: Koopman operator matrix is diagonalizable
+	# Assumption(s):
+	#	1). Koopman operator is diagonalizable.
+	#	2). Eigenvectors of K are invertible.
 	def learnFromKoopman(self, kvar, dt=1e-3):
 		# Grab eignvalues and invert for transition.
 		_, V = np.linalg.eig( kvar.K );
