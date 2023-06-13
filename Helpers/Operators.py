@@ -208,7 +208,6 @@ class LieOperator( KoopmanOperator ):
 
 		# Calculate the Lie operator.
 		self.C = 1/dt*logK;
-		# self.resError(X, Y, X0=X0);
 
 		# Return instance of self.
 		return self;
