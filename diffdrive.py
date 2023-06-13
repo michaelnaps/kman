@@ -2,12 +2,13 @@
 import sys
 from os.path import expanduser
 sys.path.insert(0, expanduser('~')+'/prog/mpc');
+sys.path.insert(0, expanduser('~')+'/prog/kman/Helpers');
 
 import mpc
 import numpy as np
 
-import Helpers.DataFunctions as data
-import Helpers.KoopmanFunctions as kman
+import DataFunctions as data
+import Operators as kman
 
 import math
 import matplotlib.pyplot as plt
