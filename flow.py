@@ -11,7 +11,7 @@ def createDynamicSets(tList, X0):
     modelTrain = lambda x, u: np.array( model(x,u,None) ).reshape(Nx,1);
     controlTrain = lambda x: np.vstack( (np.random.rand(Nu,1), np.zeros( (Nu*(PH-1),1) )) );
     # np.array( mvar.solve(x, uinit)[0][:Nu] ).reshape(Nu,1);
-    xTrain, uTrain = data.generate_data(tList, modelTrain, X0, controlTrain, Nu*PH);
+    xTrain, uTrain = generate_data(tList, modelTrain, X0, controlTrain, Nu*PH);
 
     # split training data into X and Y sets
     uStack = data.stack_data(uTrain, N0, Nu*PH, Nt-1);
@@ -41,7 +41,7 @@ def createControlSets(iList, X0):
     xTrain = np.empty( (N0*Nx, Ni-1) );
     for k in range(N0):
         control = lambda u: X0[:,k,None];  # position treated as constant 'control'
-        uTemp, xTemp = data.generate_data(iList, flow, U0[:,k,None], control, Nx);
+        uTemp, xTemp = generate_data(iList, flow, U0[:,k,None], control, Nx);
 
         uTrain[i:i+NuPH,:] = uTemp;
         xTrain[j:j+Nx,:] = xTemp;
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     X0 = 2*A*np.random.rand(Nx,N0) - A;
     # X, Y, XU0 = createDynamicSets(tList, X0);
 
-    # kxvar = kman.KoopmanOperator(obsXUH, obsXU);
+    # kxvar = KoopmanOperator(obsXUH, obsXU);
     # kxvar = kxvar.edmd(X, Y, XU0);
 
     # print('Kx:\n', kxvar);
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     iList = [ [i for i in range(max_iter)] ];
     U1, U2, UX0 = createControlSets(iList, X0);
 
-    kuvar = kman.KoopmanOperator( obsUGX );
+    kuvar = KoopmanOperator( obsUGX );
     kuvar.edmd(U1, U2, UX0);
 
     print('Ku:\n', kuvar);

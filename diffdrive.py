@@ -7,8 +7,7 @@ sys.path.insert(0, expanduser('~')+'/prog/kman/Helpers');
 import mpc
 import numpy as np
 
-import DataFunctions as data
-import Operators as kman
+from Operators import *
 
 import math
 import matplotlib.pyplot as plt
@@ -159,8 +158,8 @@ def posTrackingNoControl(tList, kxvar, x0ref, uref):
 
     # test data generation
     Psi0 = obsXU( np.vstack( (x0ref, uref) ) );
-    PsiTest = data.generate_data(tList, kModel1, Psi0)[0];
-    xTest = data.generate_data(tList, dModel1, x0ref)[0];
+    PsiTest = generate_data(tList, kModel1, Psi0)[0];
+    xTest = generate_data(tList, dModel1, x0ref)[0];
 
     return xTest, PsiTest;
 
