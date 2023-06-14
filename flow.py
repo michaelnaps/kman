@@ -14,9 +14,9 @@ def createDynamicSets(tList, X0):
     xTrain, uTrain = generate_data(tList, modelTrain, X0, controlTrain, Nu*PH);
 
     # split training data into X and Y sets
-    uStack = data.stack_data(uTrain, N0, Nu*PH, Nt-1);
-    xStack = data.stack_data(xTrain[:,:-1], N0, Nx, Nt-1);
-    yStack = data.stack_data(xTrain[:,1:], N0, Nx, Nt-1);
+    uStack = stack_data(uTrain, N0, Nu*PH, Nt-1);
+    xStack = stack_data(xTrain[:,:-1], N0, Nx, Nt-1);
+    yStack = stack_data(xTrain[:,1:], N0, Nx, Nt-1);
 
     X = np.vstack( (xStack, uStack) );
     Y = np.vstack( (yStack, uStack) );
@@ -50,9 +50,9 @@ def createControlSets(iList, X0):
         j = j + Nx;
 
     # split training data into snapshots
-    xStack  = data.stack_data(xTrain, N0, Nx, Ni-1);
-    u1Stack = data.stack_data(uTrain[:,:-1], N0, NuPH, Ni-1);
-    u2Stack = data.stack_data(uTrain[:,1:], N0, NuPH, Ni-1);
+    xStack  = stack_data(xTrain, N0, Nx, Ni-1);
+    u1Stack = stack_data(uTrain[:,:-1], N0, NuPH, Ni-1);
+    u2Stack = stack_data(uTrain[:,1:], N0, NuPH, Ni-1);
 
     U1 = np.vstack( (u1Stack, xStack) );
     U2 = np.vstack( (u2Stack, xStack) );

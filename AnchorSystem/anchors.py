@@ -6,7 +6,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from Operators import *
-import DataFunctions as data
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
@@ -239,13 +238,13 @@ def rmes(x, Psi, eps=epsilon):
 def createData(tList, N0, Nt):
     # generate training data for Kx
     X0 = 10*np.random.rand(Nx,N0) - 5;
-    xData, uData = data.generate_data(tList, model, X0,
+    xData, uData = generate_data(tList, model, X0,
         control=control, Nu=Nu);
 
     # formatting training data from xData and uData
-    uStack = data.stack_data(uData, N0, Nu, Nt-1);
-    xStack = data.stack_data(xData[:,:-1], N0, Nx, Nt-1);
-    yStack = data.stack_data(xData[:,1:], N0, Nx, Nt-1);
+    uStack = stack_data(uData, N0, Nu, Nt-1);
+    xStack = stack_data(xData[:,:-1], N0, Nx, Nt-1);
+    yStack = stack_data(xData[:,1:], N0, Nx, Nt-1);
 
     XU0 = np.vstack( (X0, np.zeros( (Nu,N0) )) );
     X = np.vstack( (xStack, uStack) );
@@ -259,7 +258,7 @@ def generateIdealData(sim_time, x0):
     tList = [ [i*dt for i in range(Nt)] ];
 
     # generate data
-    xList, uList = data.generate_data(tList, model, x0,
+    xList, uList = generate_data(tList, model, x0,
         control=control, Nu=Nu);
     return tList, xList, uList
 
@@ -337,9 +336,9 @@ def openLoopComparisons(kvar, sim_time, N0n, err=epsilon):
     NkX = obsX()['Nk'];
     kModel = lambda Psi: kvar.K@rmes(Psi[:Nx,None], Psi);
 
-    xTest, uTest = data.generate_data(tList, model, X0n,
+    xTest, uTest = generate_data(tList, model, X0n,
         control=control, Nu=Nu);
-    PsiTest, _ = data.generate_data(tList, kModel, Psi0);
+    PsiTest, _ = generate_data(tList, kModel, Psi0);
 
     # plot results
     xPsi = np.empty( (N0n*Nx, Nt) );
@@ -348,7 +347,7 @@ def openLoopComparisons(kvar, sim_time, N0n, err=epsilon):
         xPsi[i:i+Nx,:] = PsiTest[j:j+Nx,:];
         i += Nx;
         j += NkXU;
-    figComp, axsComp = data.compare_data(xTest, xPsi, X0n);
+    figComp, axsComp = compare_data(xTest, xPsi, X0n);
     figComp, axsComp = plotAnchors(figComp, axsComp, radius=1.25);
     axsComp.legend();
 

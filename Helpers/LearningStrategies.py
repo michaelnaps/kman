@@ -46,6 +46,20 @@ def generate_data(tlist, model, X0, control=None, Nu=0):
 
     return xlist, ulist;
 
+# Helper data function for stacking sets.
+# Equivalent to StateDataSet.flattenData()
+def stack_data(data, N0, Nx, Nt):
+    x = np.empty( (Nx, N0*Nt) );
+
+    k = 0;
+    t = 0;
+    for i in range(N0):
+        x[:,t:t+Nt] = data[k:k+Nx,:];
+        k += Nx;
+        t += Nt;
+
+    return x;
+
 # Class: DataSet
 # Assumption: Uniform series/stacked data structure.
 class StateDataSet:

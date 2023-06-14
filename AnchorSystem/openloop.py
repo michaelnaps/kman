@@ -141,13 +141,13 @@ if __name__ == '__main__':
     N0 = 1;
     X0 = 10*np.random.rand(Nx,N0) - 5;
     randControl = lambda x: 5*np.random.rand(Nu,1)-2.5;
-    xData, uRand = data.generate_data(tList, model, X0,
+    xData, uRand = generate_data(tList, model, X0,
         control=randControl, Nu=Nu);
 
     # stack data appropriately
-    uStack = data.stack_data(uRand, N0, Nu, Nt-1);
-    xStack = data.stack_data(xData[:,:-1], N0, Nx, Nt-1);
-    yStack = data.stack_data(xData[:,1:], N0, Nx, Nt-1);
+    uStack = stack_data(uRand, N0, Nu, Nt-1);
+    xStack = stack_data(xData[:,:-1], N0, Nx, Nt-1);
+    yStack = stack_data(xData[:,1:], N0, Nx, Nt-1);
 
     # create data tuples for training
     XU0 = np.vstack( (X0, np.zeros( (Nu,N0) )) );
