@@ -79,13 +79,17 @@ class Operator:
 
 	# Calculate error over data set.
 	# Assumption: C has been set manually or solved for...
-	def resError(self, X, Y, X0=None):
+	def resError(self, X, Y, X0=None, C=None):
 		# If solver is not initialized...
 		if self.solver is None:
 			self.solver = LearningStrategies(X, Y);
 
+		# In the event an alternative operator should be tested.
+		if C is None:
+			C = self.C;
+
 		# Calculate residual error.
-		self.err = self.solver.resError( self.C );
+		self.err = self.solver.resError( C );
 
 		# Return instance of self.
 		return self;
@@ -183,7 +187,7 @@ class KoopmanOperator( Operator ):
 	# Convert Lie operator to discrete Koopman operator with time-step.
 	# Assumption(s):
 	#	1). Lie operator is diagonalizable.
-	#	2). Eigenvectors of L are invertible.
+	#	2). Eigenvectors of L create an invertible matrix.
 	def L2K(self, lvar, dt=1e-3):
 		# Grab eignvalues and invert for transition.
 		_, V = np.linalg.eig( lvar.L );
@@ -209,13 +213,30 @@ class LieOperator( KoopmanOperator ):
 		return self.C;
 
 	def propagate(self, X, dt=1e-3):
-		dX = KoopmanOperator.propagate(self, X);
-		return X + dt*dX;
+		PsiX = self.obsX.lift( X );
+		dPsiX = KoopmanOperator.propagate(self, X);
+		return PsiX + dt*dPsiX;
+
+	def resError(self, X, Y, dt=1e-3):
+		# Lift the Y data set
+		PsiY = self.obsY.liftData( Y );
+
+		# Propagate the X set forward using L
+		PsiXp = self.propagate( X, dt=dt );
+
+		# Identity matrix used as operator since propagating in function.
+		I = np.eye( self.obsY.Nk,self.obsX.Nk );
+
+		# Calculate the residual error
+		Operator.resError(self, PsiY, PsiXp, C=I)
+
+		# Return instance of self.
+		return self;
 
 	# Convert Koopman operator with time-step to Lie operator.
 	# Assumption(s):
 	#	1). Koopman operator is diagonalizable.
-	#	2). Eigenvectors of K are invertible.
+	#	2). Eigenvectors of K create an invertible matrix.
 	def K2L(self, kvar, dt=1e-3):
 		# Grab eignvalues and invert for transition.
 		_, V = np.linalg.eig( kvar.K );

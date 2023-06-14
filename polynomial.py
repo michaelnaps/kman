@@ -47,7 +47,7 @@ def obsX(x=None):
 
 if __name__=="__main__":
 	# Generating random positions to learn from.
-	N0 = 100;
+	N0 = 3;
 	X = 2*A*np.random.rand( Nx,N0 ) - A;
 
 	# Take derivative of positions using model.
@@ -64,6 +64,7 @@ if __name__=="__main__":
 	# Learn operators.
 	kvar.edmd( X,Y );
 	lvar.K2L( kvar );
+	lvar.resError( X,Y );
 	print( 'L:\n', lvar );
 	print( 'K:\n', kvar );
 

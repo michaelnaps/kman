@@ -106,7 +106,6 @@ class StateDataSet:
 class LearningStrategies:
 	def __init__(self, X, Y, X0=None, Y0=None):
 		self.setDataLists( X, Y, X0=X0, Y0=Y0 );
-		self.err = -1;
 
 	# Set data variables post-init.
 	def setDataLists(self, X, Y, X0=None, Y0=None):
@@ -125,9 +124,12 @@ class LearningStrategies:
 
 	# Calculate the residual error of a given operator.
 	def resError(self, C):
+		# Calculate residual error in between sets.
 		err = 0;
 		for n in range( self.Xset.P ):
 			err += np.linalg.norm( self.Yset.X[:,n,None] - C@self.Xset.X[:,n,None] )**2;
+
+		# Return residual error.
 		return err;
 
 	# Dynamic Mode Decomposition (DMD)
