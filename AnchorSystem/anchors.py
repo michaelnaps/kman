@@ -165,6 +165,14 @@ def control(x):
 
     return u;
 
+def cyclicControl(x):
+    l = np.linalg.norm( x );
+    u = np.array( [
+        l*np.cos( x[0] ),
+        l*np.sin( x[1] )
+    ] );
+    return u;
+
 def noise(alpha, shape):
     return 2*alpha*np.random.rand(shape[0], shape[1]) - alpha;
 
