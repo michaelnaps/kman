@@ -76,17 +76,14 @@ def obsXU(X=None):
         return meta;
 
     x = X[:Nx];
+    d = anchorMeasure(x);
     u = X[Nx:];
 
     xx = np.multiply(x,x);
     uu = np.multiply(u,u);
     xu = np.multiply(x,u);
 
-    d = np.empty( (Na,1) );
-    for i, a in enumerate(aList.T):
-        d[i] = (x - a[:,None]).T@(x - a[:,None]);
-
-    Psi = np.vstack( (x, d, xx, 1, u, uu, xu) );
+    Psi = np.vstack( (x, d**2, xx, 1, u, uu, xu) );
 
     return Psi;
 
@@ -123,9 +120,9 @@ def animatedResults(kvar):
     Psi0 = obsX( xu0 );
 
     # simulate results using vehicle class
-    vhc = Vehicle(Psi0, None, record=1,
+    vhc = Vehicle( Psi0, None, record=1,
         color='yellowgreen', radius=0.5);
-    plotAnchors(vhc.fig, vhc.axs);
+    plotAnchors( vhc.fig, vhc.axs );
 
     A = 5;
     Psi = Psi0;
@@ -134,10 +131,9 @@ def animatedResults(kvar):
         -np.cos( np.linspace(0, 1.5*np.pi, Nt-1) ) ] );
 
     for i, u in enumerate(uList.T):
-        u = cyclicControl( Psi[:Nx] );
-        Psi = prop(Psi, u);
+        Psi = prop( Psi,cyclicControl( Psi[:Nx] ) );
         # Psi = kvar.K@Psi;
-        vhc.update(i+1, Psi, zorder=10);
+        vhc.update( i+1, Psi, zorder=10 );
 
     return vhc;
 
