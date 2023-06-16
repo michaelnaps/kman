@@ -1,5 +1,5 @@
 import numpy as np
-from LearningStrategies import *
+from Helpers.LearningStrategies import *
 
 # Cascade EDMD
 def cascade_edmd(Klist, Tlist, X, Y, X0=None):
@@ -108,9 +108,10 @@ class Operator:
 
 # Class: KoopmanOperator
 # Parent Class: Operator
-# Purpose: The operator discussed here defines the propagation of
-#	appropriate underlying observation functions forward in time. It
-# 	is a more specific case of its parent class, Operator.
+# Purpose: The Koopman operator is defined as an operator matrix
+#	which takes a list of linear/nonlinear observation functions
+# 	and propagates them forward w.r.t to a constant time-step.
+# Principle equation: Psi(x+) = K Psi(x)
 class KoopmanOperator( Operator ):
 	def __init__(self, obsX, obsY=None, T=None, K=None):
 		# Data list variables initially None.
@@ -204,6 +205,14 @@ class KoopmanOperator( Operator ):
 		# Return instance of self.
 		return self;
 
+# Class: LieOperator
+# Parent Class: KoopmanOperator
+# Grandparent Class: Operator
+# Purpose: The operator defined in this class is the continuous-time
+#	analog to the Koopman opreator. In other words, it uses the
+#	appropriately defined observation functions to calculate the rate-
+#	of-change of the entire list; as opposed to taking discrete steps.
+# Principle equation: (d/dt) Psi(x) = L Psi(x)
 class LieOperator( KoopmanOperator ):
 	def __init__(self, obsX, obsY=None, T=None, L=None):
 		KoopmanOperator.__init__(self, obsX, obsY=obsY, T=T, K=L);
@@ -212,11 +221,16 @@ class LieOperator( KoopmanOperator ):
 	def L(self):
 		return self.C;
 
+	# Elementary IVP solution method.
+	# Assumption: dt << 1, or the system is strongly linear.
 	def propagate(self, X, dt=1e-3):
 		PsiX = self.obsX.lift( X );
 		dPsiX = KoopmanOperator.propagate(self, X);
 		return PsiX + dt*dPsiX;
 
+	# Calculate the residual error of the operator compared to
+	#	some given data set, X and Y.
+	# Note: Uses the class elementary IVP solver.
 	def resError(self, X, Y, dt=1e-3):
 		# Lift the Y data set
 		PsiY = self.obsY.liftData( Y );

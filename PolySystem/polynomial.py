@@ -8,13 +8,12 @@
 
 import sys
 from os.path import expanduser
-sys.path.insert(0, expanduser('~')+'/prog/kman/Helpers')
+sys.path.insert(0, expanduser('~')+'/prog/kman')
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-from LearningStrategies import *
-from Operators import *
+from Helpers.Operators import *
 
 # hyper paramters
 dt = 0.001;

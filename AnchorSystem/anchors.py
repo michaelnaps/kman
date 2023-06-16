@@ -1,11 +1,11 @@
 import sys
 from os.path import expanduser
-sys.path.insert(0, expanduser('~')+'/prog/kman/Helpers')
+sys.path.insert(0, expanduser('~')+'/prog/kman')
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Operators import *
+from Helpers.Operators import *
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch

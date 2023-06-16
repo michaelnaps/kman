@@ -2,12 +2,12 @@
 import sys
 from os.path import expanduser
 sys.path.insert(0, expanduser('~')+'/prog/mpc');
-sys.path.insert(0, expanduser('~')+'/prog/kman/Helpers');
+sys.path.insert(0, expanduser('~')+'/prog/kman');
 
 import mpc
 import numpy as np
 
-from Operators import *
+from Helpers.Operators import *
 
 import math
 import matplotlib.pyplot as plt
