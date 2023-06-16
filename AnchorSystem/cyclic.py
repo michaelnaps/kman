@@ -163,7 +163,7 @@ if __name__ == '__main__':
     Y = np.vstack( (yStack, uStack) );
 
     # initialize operator
-    kvar = KoopmanOperator( obsXU );
+    kvar = KoopmanOperator( obsXU,obsX );
     print( kvar.edmd(X, Y, XU0) );
 
     # animated results
