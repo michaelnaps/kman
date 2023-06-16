@@ -1,5 +1,8 @@
 from anchors import *
 
+# hyper parameter(s)
+Ntr = 2;
+
 # open-loop vehicle class
 class Vehicle:
     def __init__(self, Psi0, xd,
@@ -60,14 +63,24 @@ class Vehicle:
 
         return self;
 
+# cyclic control function
+def cyclicControl(x):
+    v = 5;  # constant velocity condition
+    u = np.array( [
+        -v*x[1]/np.linalg.norm(x),
+        v*x[0]/np.linalg.norm(x)
+    ] );
+    return u;
+
 # closed-loop observation functions
+# Assumption: ||x|| = 0 is never true.
 def obsXU(X=None):
     if X is None:
         meta = {'Nk': 3*Nx+2*Nu+Na+1};
         return meta;
 
     x = X[:Nx];
-    d = anchorMeasure( x );
+    d = anchorMeasure(x);
     u = X[Nx:];
 
     xx = np.multiply(x,x);
@@ -106,14 +119,14 @@ def animatedResults(kvar):
         Psi = np.vstack( (PsiX, u, uu, xu) );
         return kvar.K@Psi;
 
-    x0 = np.array( [[1],[0]] );
+    x0 = np.array( [[5],[0]] );
     xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
     Psi0 = obsX( xu0 );
 
     # simulate results using vehicle class
-    vhc = Vehicle(Psi0, None, record=1,
-        color='yellowgreen', radius=0.5);
-    plotAnchors(vhc.fig, vhc.axs);
+    vhc = Vehicle( Psi0, None, record=0,
+        color='yellowgreen', radius=0.5 );
+    plotAnchors( vhc.fig, vhc.axs );
 
     A = 5;
     Psi = Psi0;
@@ -122,9 +135,8 @@ def animatedResults(kvar):
         -np.cos( np.linspace(0, 1.5*np.pi, Nt-1) ) ] );
 
     for i, u in enumerate(uList.T):
-        Psi = prop(Psi, u[:,None]);
-        # Psi = kvar.K@Psi;
-        vhc.update(i+1, Psi, zorder=10);
+        Psi = prop( Psi,cyclicControl( Psi[:Nx] ) );
+        vhc.update( i+1, Psi, zorder=10 );
 
     return vhc;
 
@@ -135,14 +147,13 @@ if __name__ == '__main__':
     tList = [[i*dt for i in range(Nt)]];
 
     # generate data
-    N0 = 1;
+    N0 = 10;
     X0 = 10*np.random.rand(Nx,N0) - 5;
-    randControl = lambda x: 5*np.random.rand(Nu,1)-2.5;
-    xData, uRand = generate_data(tList, model, X0,
-        control=randControl, Nu=Nu);
+    xData, uData = generate_data(tList, model, X0,
+        control=cyclicControl, Nu=Nu);
 
     # stack data appropriately
-    uStack = stack_data(uRand, N0, Nu, Nt-1);
+    uStack = stack_data(uData, N0, Nu, Nt-1);
     xStack = stack_data(xData[:,:-1], N0, Nx, Nt-1);
     yStack = stack_data(xData[:,1:], N0, Nx, Nt-1);
 
@@ -152,11 +163,11 @@ if __name__ == '__main__':
     Y = np.vstack( (yStack, uStack) );
 
     # initialize operator
-    kvar = KoopmanOperator( obsXU, obsX );
+    kvar = KoopmanOperator( obsXU );
     print( kvar.edmd(X, Y, XU0) );
 
     # animated results
     ans = input("See results? [a] ");
     if ans == 'a':
         animatedResults(kvar);
-        plt.pause(10);
+        print("Animation finished...")
