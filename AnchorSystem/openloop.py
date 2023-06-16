@@ -1,5 +1,8 @@
 from anchors import *
 
+# hyper parameter(s)
+Ntr = 2;
+
 # open-loop vehicle class
 class Vehicle:
     def __init__(self, Psi0, xd,
@@ -70,6 +73,7 @@ def cyclicControl(x):
     return u;
 
 # closed-loop observation functions
+# Assumption: ||x|| = 0 is never true.
 def obsXU(X=None):
     if X is None:
         meta = {'Nk': 3*Nx+2*Nu+Na+1};
@@ -120,7 +124,7 @@ def animatedResults(kvar):
     Psi0 = obsX( xu0 );
 
     # simulate results using vehicle class
-    vhc = Vehicle( Psi0, None, record=1,
+    vhc = Vehicle( Psi0, None, record=0,
         color='yellowgreen', radius=0.5 );
     plotAnchors( vhc.fig, vhc.axs );
 
@@ -132,7 +136,6 @@ def animatedResults(kvar):
 
     for i, u in enumerate(uList.T):
         Psi = prop( Psi,cyclicControl( Psi[:Nx] ) );
-        # Psi = kvar.K@Psi;
         vhc.update( i+1, Psi, zorder=10 );
 
     return vhc;
@@ -144,14 +147,13 @@ if __name__ == '__main__':
     tList = [[i*dt for i in range(Nt)]];
 
     # generate data
-    N0 = 1;
+    N0 = 10;
     X0 = 10*np.random.rand(Nx,N0) - 5;
-    randControl = lambda x: 5*np.random.rand(Nu,1)-2.5;
-    xData, uRand = generate_data(tList, model, X0,
-        control=randControl, Nu=Nu);
+    xData, uData = generate_data(tList, model, X0,
+        control=cyclicControl, Nu=Nu);
 
     # stack data appropriately
-    uStack = stack_data(uRand, N0, Nu, Nt-1);
+    uStack = stack_data(uData, N0, Nu, Nt-1);
     xStack = stack_data(xData[:,:-1], N0, Nx, Nt-1);
     yStack = stack_data(xData[:,1:], N0, Nx, Nt-1);
 
@@ -161,7 +163,7 @@ if __name__ == '__main__':
     Y = np.vstack( (yStack, uStack) );
 
     # initialize operator
-    kvar = KoopmanOperator( obsXU, obsX );
+    kvar = KoopmanOperator( obsXU );
     print( kvar.edmd(X, Y, XU0) );
 
     # animated results
