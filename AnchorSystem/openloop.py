@@ -64,7 +64,7 @@ class Vehicle:
 def cyclicControl(x):
     v = 1;  # constant velocity condition
     u = np.array( [
-        v*x[1]/np.linalg.norm(x),
+        -v*x[1]/np.linalg.norm(x),
         v*x[0]/np.linalg.norm(x)
     ] );
     return u;
