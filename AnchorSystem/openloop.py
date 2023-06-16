@@ -109,7 +109,7 @@ def animatedResults(kvar):
         Psi = np.vstack( (PsiX, u, uu, xu) );
         return kvar.K@Psi;
 
-    x0 = np.array( [[0],[0]] );
+    x0 = np.array( [[1],[0]] );
     xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
     Psi0 = obsX( xu0 );
 
@@ -125,7 +125,8 @@ def animatedResults(kvar):
         -np.cos( np.linspace(0, 1.5*np.pi, Nt-1) ) ] );
 
     for i, u in enumerate(uList.T):
-        Psi = prop(Psi, u[:,None]);
+        u = cyclicControl( Psi[:Nx] );
+        Psi = prop(Psi, u);
         # Psi = kvar.K@Psi;
         vhc.update(i+1, Psi, zorder=10);
 

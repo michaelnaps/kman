@@ -168,8 +168,8 @@ def control(x):
 def cyclicControl(x):
     v = 1;  # constant velocity condition
     u = np.array( [
-        v*np.cos( x[0] ),
-        v*np.sin( x[1] )
+        v*x[1]/np.linalg.norm(x),
+        v*x[0]/np.linalg.norm(x)
     ] );
     return u;
 
