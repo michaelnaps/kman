@@ -1,7 +1,7 @@
 from anchors import *
 
-# closed-loop vehicle class
-class clVehicle:
+# open-loop vehicle class
+class Vehicle:
     def __init__(self, Psi0, xd,
                  fig=None, axs=None,
                  buffer_length=10, pause=1e-3,
@@ -114,9 +114,9 @@ def animatedResults(kvar):
     Psi0 = obsX( xu0 );
 
     # simulate results using vehicle class
-    clvhc = clVehicle(Psi0, None, record=1,
+    vhc = Vehicle(Psi0, None, record=1,
         color='yellowgreen', radius=0.5);
-    plotAnchors(clvhc.fig, clvhc.axs);
+    plotAnchors(vhc.fig, vhc.axs);
 
     A = 5;
     Psi = Psi0;
@@ -127,9 +127,9 @@ def animatedResults(kvar):
     for i, u in enumerate(uList.T):
         Psi = prop(Psi, u[:,None]);
         # Psi = kvar.K@Psi;
-        clvhc.update(i+1, Psi, zorder=10);
+        vhc.update(i+1, Psi, zorder=10);
 
-    return clvhc;
+    return vhc;
 
 # main execution block
 if __name__ == '__main__':
