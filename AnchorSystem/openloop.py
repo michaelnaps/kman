@@ -60,6 +60,15 @@ class Vehicle:
 
         return self;
 
+# cyclic control function
+def cyclicControl(x):
+    v = 1;  # constant velocity condition
+    u = np.array( [
+        v*x[1]/np.linalg.norm(x),
+        v*x[0]/np.linalg.norm(x)
+    ] );
+    return u;
+
 # closed-loop observation functions
 def obsXU(X=None):
     if X is None:
