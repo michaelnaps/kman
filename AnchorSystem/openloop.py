@@ -62,7 +62,7 @@ class Vehicle:
 
 # cyclic control function
 def cyclicControl(x):
-    v = 1;  # constant velocity condition
+    v = 5;  # constant velocity condition
     u = np.array( [
         -v*x[1]/np.linalg.norm(x),
         v*x[0]/np.linalg.norm(x)
@@ -115,13 +115,13 @@ def animatedResults(kvar):
         Psi = np.vstack( (PsiX, u, uu, xu) );
         return kvar.K@Psi;
 
-    x0 = np.array( [[1],[0]] );
+    x0 = np.array( [[5],[0]] );
     xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
     Psi0 = obsX( xu0 );
 
     # simulate results using vehicle class
     vhc = Vehicle( Psi0, None, record=1,
-        color='yellowgreen', radius=0.5);
+        color='yellowgreen', radius=0.5 );
     plotAnchors( vhc.fig, vhc.axs );
 
     A = 5;
@@ -168,4 +168,4 @@ if __name__ == '__main__':
     ans = input("See results? [a] ");
     if ans == 'a':
         animatedResults(kvar);
-        plt.pause(10);
+        print("Animation finished...")
