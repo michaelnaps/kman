@@ -108,31 +108,42 @@ def obsX(X=None):
 
     return Psi;
 
+# animate results
 def animatedResults(kvar):
-    # Initial conditions
-    x0 = np.array( [[1],[0]] );
+    # propagation function
+    def prop(PsiX, u):
+        x = PsiX[:Nx];
+        uu = np.multiply(u,u);
+        xu = np.multiply(x,u);
+
+        Psi = np.vstack( (PsiX, u, uu, xu) );
+        return kvar.K@Psi;
+
+    x0 = np.array( [[5],[0]] );
     xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
-    Psi0 = obsXU( xu0 );
+    Psi0 = obsX( xu0 );
 
     # simulate results using vehicle class
-    vhc = Vehicle(Psi0, None, record=1,
-        color='yellowgreen', radius=0.5);
-    plotAnchors(vhc.fig, vhc.axs);
+    vhc = Vehicle( Psi0, None, record=0,
+        color='yellowgreen', radius=0.5 );
+    plotAnchors( vhc.fig, vhc.axs );
 
-    # Simulation loop.
-    Ni = 100;
+    A = 5;
     Psi = Psi0;
-    for i in range( Ni ):
-        Psi = kvar.K@Psi;
-        vhc.update(i+1, Psi, zorder=10);
+    uList = A*np.array( [
+         np.cos( np.linspace(0, 2*np.pi, Nt-1) ),
+        -np.cos( np.linspace(0, 1.5*np.pi, Nt-1) ) ] );
 
-    # Return final vehicle instance.
+    for i, u in enumerate(uList.T):
+        Psi = prop( Psi,cyclicControl( Psi[:Nx] ) );
+        vhc.update( i+1, Psi, zorder=10 );
+
     return vhc;
 
 # main execution block
 if __name__ == '__main__':
     # simulation data (for training)
-    T = 10;  Nt = round(T/dt)+1;
+    T = 5;  Nt = round(T/dt)+1;
     tList = [[i*dt for i in range(Nt)]];
 
     # generate data
@@ -147,9 +158,8 @@ if __name__ == '__main__':
     yStack = stack_data(xData[:,1:], N0, Nx, Nt-1);
 
     # create data tuples for training
-    Nt = len( tList[0] );
     XU0 = np.vstack( (X0, np.zeros( (Nu,N0) )) );
-    X = np.vstack( (xStack, np.zeros( (Nu,N0*(Nt-1)) )) );
+    X = np.vstack( (xStack, uStack) );
     Y = np.vstack( (yStack, uStack) );
 
     # initialize operator
