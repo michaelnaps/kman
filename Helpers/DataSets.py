@@ -111,16 +111,38 @@ class DataSet:
 #       - Flat with a single initial point.
 #   2). Data has a continuous solution.
 class FiniteDifferenceMethod( DataSet ):
-    def __init__(self, X, X0=None, method=-1):
+    def __init__(self, X, X0=None, h=1e-3, method=-1):
         # Initialize data set.
         DataSet.__init__(self, X, X0=X0);
 
+        # Initialize step-size parameter.
+        self.h = h;
+
         # Initialize FDM method.
-        #   0: Highest resolution available.
+        #   1: Highest resolution available (not supported).
         #   2: Two-point resolution.
         #   3: Three-point resolution.
         #   4: Four-point resolution.
         self.method = method;
+
+    @property
+    def denominator(self, h=None):
+        # Return the denominator coefficient
+        #   depending on the method of choice.
+        if method is None:
+            method = self.method;
+        if method == 2:
+            return h;
+        elif method == 3:
+            return 2*h;
+        elif method == 4:
+            return 12*h;
+
+    def overhead(self):
+        dX = np.empty( self.X.shape );
+        for x in X.T:
+            break;
+        pass;
 
     def forward(self, x):
         pass;
