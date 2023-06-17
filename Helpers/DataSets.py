@@ -138,14 +138,25 @@ class FiniteDifferenceMethod( DataSet ):
         elif method == 4:
             return 12*h;
 
-    def overhead(self):
+    def solve(self):
+        # Initialize data matrices.
         dX = np.empty( self.X.shape );
-        for x in X.T:
-            break;
-        pass;
+
+        # Primary execution loop.
+        for i, x in enumerate( X.T ):
+            if i < 2:
+                dx = self.forward( x[:,None] );
+            elif i > (self.N-2):
+                dx = self.backward( x[:,None] );
+            else:
+                dx = self.central( x[:,None] );
+            dX[:,i] = dx[:,0];
+
+        # Return matrices with every point differentiated.
+        return dX;
 
     def forward(self, x):
-        pass;
+        return dx;
 
     def central(self, x):
         pass;
