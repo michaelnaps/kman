@@ -2,6 +2,7 @@ from anchors import *
 
 # hyper parameter(s)
 Ntr = 2;
+Nsim = 250;
 
 # open-loop vehicle class
 class Vehicle:
@@ -26,10 +27,11 @@ class Vehicle:
         self.color = color;
         self.body_radius = radius;
 
+        x0 = Psi0[:Nx];
         dList = Psi0[Nx:Nx+Na];
-        self.body = patch.Circle(Psi0[:Nx,0], self.body_radius,
+        self.body = patch.Circle(x0, self.body_radius,
             facecolor=self.color, edgecolor='k', zorder=1);
-        self.aList = [patch.Circle(Psi0[:Nx], np.sqrt(d),
+        self.aList = [patch.Circle(x0, np.sqrt(d),
             facecolor="None", edgecolor='k') for d in dList];
 
         self.axs.add_patch(self.body);
@@ -63,6 +65,13 @@ class Vehicle:
 
         return self;
 
+# Generate random point on the circumference of a circle.
+# Assumption: Center points at origin.
+def randCirc(R=1):
+    theta = 2*np.pi*np.random.rand();
+    x = [R*np.cos(theta), R*np.sin(theta)];
+    return x;
+
 # cyclic control function
 def cyclicControl(x):
     v = 5;  # constant velocity condition
@@ -72,8 +81,8 @@ def cyclicControl(x):
     ] );
     # th = np.arccos( x[0]/np.linalg.norm( x ) );
     # u = v*np.array( [
-    #     -np.sin( th ),
-    #     np.cos( th )
+    #     -np.sin( th + np.pi/2 ),
+    #      np.cos( th + np.pi/2 )
     # ] );
     return u;
 
@@ -115,6 +124,9 @@ def obsX(X=None):
 
 # animate results
 def animatedResults(kvar):
+    # Number of initial points.
+    N0 = 1;
+
     # propagation function
     def prop(PsiX, u):
         x = PsiX[:Nx];
@@ -124,21 +136,30 @@ def animatedResults(kvar):
         Psi = np.vstack( (PsiX, u, uu, xu) );
         return kvar.K@Psi;
 
-    x0 = np.array( [[5],[0]] );
-    xu0 = np.vstack( (x0, np.zeros( (Nu,1) )) );
-    Psi0 = obsX( xu0 );
+    x0 = np.array( [ randCirc(R=5) for i in range( N0 )] ).T;
+    xu0 = np.vstack( (x0, np.zeros( (Nu,N0) )) );
+    Psi0 = np.array( [
+        obsX( xu[:,None] )[:,0] for xu in xu0.T
+    ] ).T;
 
     # simulate results using vehicle class
-    vhc = Vehicle( Psi0, None, record=0,
-        color='yellowgreen', radius=0.5 );
-    plotAnchors( vhc.fig, vhc.axs );
+    figSim, axsSim = plt.subplots();
+    vhcList = [
+        Vehicle( Psi, None, fig=figSim, axs=axsSim,
+            record=0, color='yellowgreen', radius=0.5 )
+        for Psi in Psi0.T
+    ];
+    plotAnchors( figSim,axsSim );
 
-    Nt = 1000;
-    Psi = Psi0;
-    for i in range( Nt ):
-        Psi = prop( Psi,cyclicControl( Psi[:Nx] ) );
-        vhc.update( i+1, Psi, zorder=10 );
+    # Animation loop.
+    PsiList = Psi0;
+    for k in range( Nsim ):
+        for i, vhc in enumerate(vhcList):
+            u = cyclicControl( PsiList[:Nx,i,None] )
+            PsiList[:,i] = prop( PsiList[:,i,None],u )[:,0];
+            vhc.update( k+1, PsiList[:,i,None], zorder=10 );
 
+    # Return instance of vehicle for plotting.
     return vhc;
 
 # main execution block
@@ -169,7 +190,7 @@ if __name__ == '__main__':
     print( kvar.edmd( X,Y,XU0 ) );
 
     # animated results
-    ans = input("See results? [a] ");
-    if ans == 'a':
-        animatedResults(kvar);
-        print("Animation finished...")
+    # ans = input("See results? [a] ");
+    # if ans == 'a':
+    animatedResults(kvar);
+    print("Animation finished...")
