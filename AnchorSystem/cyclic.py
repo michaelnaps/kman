@@ -66,10 +66,15 @@ class Vehicle:
 # cyclic control function
 def cyclicControl(x):
     v = 5;  # constant velocity condition
-    u = np.array( [
-        -v*x[1]/np.linalg.norm(x),
-        v*x[0]/np.linalg.norm(x)
+    u = v*np.array( [
+        -x[1]/np.linalg.norm(x),
+        x[0]/np.linalg.norm(x)
     ] );
+    # th = np.arccos( x[0]/np.linalg.norm( x ) );
+    # u = v*np.array( [
+    #     -np.sin( th ),
+    #     np.cos( th )
+    # ] );
     return u;
 
 # closed-loop observation functions
@@ -128,13 +133,9 @@ def animatedResults(kvar):
         color='yellowgreen', radius=0.5 );
     plotAnchors( vhc.fig, vhc.axs );
 
-    A = 5;
+    Nt = 1000;
     Psi = Psi0;
-    uList = A*np.array( [
-         np.cos( np.linspace(0, 2*np.pi, Nt-1) ),
-        -np.cos( np.linspace(0, 1.5*np.pi, Nt-1) ) ] );
-
-    for i, u in enumerate(uList.T):
+    for i in range( Nt ):
         Psi = prop( Psi,cyclicControl( Psi[:Nx] ) );
         vhc.update( i+1, Psi, zorder=10 );
 
@@ -149,6 +150,7 @@ if __name__ == '__main__':
     # generate data
     N0 = 10;
     X0 = 10*np.random.rand(Nx,N0) - 5;
+    # randControl = lambda x: np.random.rand(Nu,1);
     xData, uData = generate_data(tList, model, X0,
         control=cyclicControl, Nu=Nu);
 
@@ -164,7 +166,7 @@ if __name__ == '__main__':
 
     # initialize operator
     kvar = KoopmanOperator( obsXU,obsX );
-    print( kvar.edmd(X, Y, XU0) );
+    print( kvar.edmd( X,Y,XU0 ) );
 
     # animated results
     ans = input("See results? [a] ");
