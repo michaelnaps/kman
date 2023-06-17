@@ -18,8 +18,8 @@ class Vehicle:
             self.axs = axs;
 
         # figure scaling
-        self.axs.set_xlim(-12,12);
-        self.axs.set_ylim(-12,12);
+        self.axs.set_xlim(-18,18);
+        self.axs.set_ylim(-18,18);
         self.axs.axis('equal');
         self.axs.grid(1);
 
@@ -45,7 +45,7 @@ class Vehicle:
             plt.show(block=0);
             input("Press enter when ready...");
 
-    def update(self, t, Psi, zorder=1):
+    def update(self, t, Psi, update_title=1, zorder=1):
         self.body.remove();
         for a in self.aList:
             a.remove();
@@ -60,7 +60,8 @@ class Vehicle:
         for a in self.aList:
             self.axs.add_patch(a);
 
-        plt.title('iteration: %i' % t);
+        if update_title:
+            plt.title('iteration: %i' % t);
         plt.pause(self.pause);
 
         return self;
@@ -73,8 +74,7 @@ def randCirc(R=1):
     return x;
 
 # cyclic control function
-def cyclicControl(x):
-    v = 5;  # constant velocity condition
+def cyclicControl(x, v=5):
     u = v*np.array( [
         -x[1]/np.linalg.norm(x),
         x[0]/np.linalg.norm(x)
@@ -125,7 +125,7 @@ def obsX(X=None):
 # animate results
 def animatedResults(kvar):
     # Number of initial points.
-    N0 = 1;
+    N0 = 4;
 
     # propagation function
     def prop(PsiX, u):
@@ -155,9 +155,11 @@ def animatedResults(kvar):
     PsiList = Psi0;
     for k in range( Nsim ):
         for i, vhc in enumerate(vhcList):
-            u = cyclicControl( PsiList[:Nx,i,None] )
-            PsiList[:,i] = prop( PsiList[:,i,None],u )[:,0];
-            vhc.update( k+1, PsiList[:,i,None], zorder=10 );
+            Psi = PsiList[:,i,None];
+            u = cyclicControl( Psi[:Nx], v=5 )
+            PsiList[:,i] = prop( Psi,u )[:,0];
+            vhc.update( k+1, Psi,
+                update_title=0, zorder=10+i );
 
     # Return instance of vehicle for plotting.
     return vhc;
