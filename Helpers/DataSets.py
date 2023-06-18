@@ -143,20 +143,21 @@ class FiniteDifferenceMethod( DataSet ):
         dX = np.empty( self.X.shape );
 
         # Primary execution loop.
-        for i, x in enumerate( X.T ):
-            if i < 2:
-                dx = self.forward( x[:,None] );
-            elif i > (self.N-2):
-                dx = self.backward( x[:,None] );
+        n = self.method;
+        for i in range( self.N ):
+            if i < n:
+                dx = self.forward( X[:,i:i+n] );
+            elif i > (self.N-n):
+                dx = self.backward( X[:,i-n:i+n] );
             else:
-                dx = self.central( x[:,None] );
+                dx = self.central( X[:,i-n:i] );
             dX[:,i] = dx[:,0];
 
         # Return matrices with every point differentiated.
         return dX;
 
     def forward(self, x):
-        return dx;
+        pass;
 
     def central(self, x):
         pass;
