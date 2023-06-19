@@ -111,20 +111,17 @@ def obsX(X=None):
         return meta;
 
     x = X[:Nx];
+    d = anchorMeasure( x );
+    xx = np.multiply( x,x );
 
-    xx = np.multiply(x,x);
-
-    d = np.empty( (Na,1) );
-    for i, a in enumerate(aList.T):
-        d[i] = (x - a[:,None]).T@(x - a[:,None]);
-
-    Psi = np.vstack( (x, d, xx, 1) );
+    Psi = np.vstack( (x, d**2, xx, 1) );
 
     return Psi;
 
 # animate results
 def animatedResults(kvar):
     # Number of initial points.
+    R = 5;
     N0 = 4;
 
     # propagation function
@@ -136,7 +133,7 @@ def animatedResults(kvar):
         Psi = np.vstack( (PsiX, u, uu, xu) );
         return kvar.K@Psi;
 
-    x0 = np.array( [ randCirc(R=5) for i in range( N0 )] ).T;
+    x0 = np.array( [ randCirc(R=R) for i in range( N0 )] ).T;
     xu0 = np.vstack( (x0, np.zeros( (Nu,N0) )) );
     Psi0 = np.array( [
         obsX( xu[:,None] )[:,0] for xu in xu0.T
@@ -150,6 +147,10 @@ def animatedResults(kvar):
         for Psi in Psi0.T
     ];
     plotAnchors( figSim,axsSim );
+
+    guideCircle = patch.Circle((0,0), radius=R,
+        facecolor='None', edgecolor='r', linestyle='--', zorder=1);
+    axsSim.add_patch( guideCircle );
 
     # Animation loop.
     PsiList = Psi0;
