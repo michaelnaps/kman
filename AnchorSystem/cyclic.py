@@ -70,14 +70,14 @@ class Vehicle:
 # Assumption: Center points at origin.
 def randCirc(R=1):
     theta = 2*np.pi*np.random.rand();
-    x = [R*np.cos(theta), R*np.sin(theta)];
+    x = [R*np.cos( theta ), R*np.sin( theta )];
     return x;
 
 # cyclic control function
 def cyclicControl(x, v=5):
     u = v*np.array( [
-        -x[1]/np.linalg.norm(x),
-        x[0]/np.linalg.norm(x)
+        -x[1]/np.linalg.norm( x ),
+        x[0]/np.linalg.norm( x )
     ] );
     # th = np.arccos( x[0]/np.linalg.norm( x ) );
     # u = v*np.array( [
@@ -94,12 +94,12 @@ def obsXU(X=None):
         return meta;
 
     x = X[:Nx];
-    d = anchorMeasure(x);
+    d = anchorMeasure( x );
     u = X[Nx:];
 
-    xx = np.multiply(x,x);
-    uu = np.multiply(u,u);
-    xu = np.multiply(x,u);
+    xx = np.multiply( x,x );
+    uu = np.multiply( u,u );
+    xu = np.multiply( x,u );
 
     Psi = np.vstack( (x, d**2, xx, 1, u, uu, xu) );
 
@@ -165,23 +165,23 @@ def animatedResults(kvar):
     # Return instance of vehicle for plotting.
     return vhc;
 
-# main execution block
+# Main execution block.
 if __name__ == '__main__':
     # simulation data (for training)
-    T = 5;  Nt = round(T/dt)+1;
-    tList = [[i*dt for i in range(Nt)]];
+    T = 1;  Nt = round( T/dt )+1;
+    tList = [[i*dt for i in range( Nt )]];
 
     # generate data
     N0 = 10;
-    X0 = 10*np.random.rand(Nx,N0) - 5;
+    X0 = 10*np.random.rand( Nx,N0 ) - 5;
     # randControl = lambda x: np.random.rand(Nu,1);
-    xData, uData = generate_data(tList, model, X0,
-        control=cyclicControl, Nu=Nu);
+    xData, uData = generate_data( tList, model, X0,
+        control=cyclicControl, Nu=Nu );
 
     # stack data appropriately
-    uStack = stack_data(uData, N0, Nu, Nt-1);
-    xStack = stack_data(xData[:,:-1], N0, Nx, Nt-1);
-    yStack = stack_data(xData[:,1:], N0, Nx, Nt-1);
+    uStack = stack_data( uData, N0, Nu, Nt-1 );
+    xStack = stack_data( xData[:,:-1], N0, Nx, Nt-1 );
+    yStack = stack_data( xData[:,1:], N0, Nx, Nt-1 );
 
     # create data tuples for training
     XU0 = np.vstack( (X0, np.zeros( (Nu,N0) )) );
@@ -195,5 +195,5 @@ if __name__ == '__main__':
     # animated results
     # ans = input("See results? [a] ");
     # if ans == 'a':
-    animatedResults(kvar);
+    animatedResults( kvar );
     print("Animation finished...")
