@@ -111,7 +111,7 @@ class DataSet:
 #       - Flat with a single initial point.
 #   2). Data has a continuous solution.
 class FiniteDifferenceMethod( DataSet ):
-    def __init__(self, X, X0=None, h=1e-3, method=-1):
+    def __init__(self, X, X0=None, h=1e-3, method=2):
         # Initialize data set.
         DataSet.__init__(self, X, X0=X0);
 
@@ -126,23 +126,35 @@ class FiniteDifferenceMethod( DataSet ):
         self.method = method;
 
     @property
-    def denominator(self, h=None):
+    def denominator(self, method=None):
         # Return the denominator coefficient
         #   depending on the method of choice.
         if method is None:
             method = self.method;
         if method == 2:
-            return h;
+            return self.h;
         elif method == 3:
-            return 2*h;
+            return 2*self.h;
         elif method == 4:
-            return 12*h;
+            return 12*self.h;
 
-    def overhead(self):
+    def solve(self):
+        # Initialize data matrices.
         dX = np.empty( self.X.shape );
-        for x in X.T:
-            break;
-        pass;
+
+        # Primary execution loop.
+        n = self.method;
+        for i in range( self.N ):
+            if i < n:
+                dx = self.forward( X[:,i:i+n] );
+            elif i > (self.N-n):
+                dx = self.backward( X[:,i-n:i+n] );
+            else:
+                dx = self.central( X[:,i-n:i] );
+            dX[:,i] = dx[:,0];
+
+        # Return matrices with every point differentiated.
+        return dX;
 
     def forward(self, x):
         pass;
