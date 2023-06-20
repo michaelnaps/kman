@@ -2,23 +2,18 @@ import numpy as np
 from cyclic import *
 
 # hyper parameter(s)
-dt = 0.1;
+dt = 0.01;
 R  = 7.5;
 
 def model(x, u):
     return x + dt*u;
 
 def control(x, v=5.0):
-    r = np.linalg.norm( x );
-    th = np.arccos( x[0]/r );
     u = np.array( [
-        -v*np.sin( th ),
-        v*np.cos( th )
+        -v*np.sin( x[2] ),
+        v*np.cos( x[2] ),
+        [v/R]  # constant rate of change...
     ] );
-    print('-------------');
-    print(th);
-    print(np.sin(th));
-    print(np.cos(th));
     return u;
 
 if __name__ == '__main__':
@@ -26,7 +21,7 @@ if __name__ == '__main__':
     T = 10;  Nt = round( T/dt ) + 1;
 
     # initial position variables
-    x0 = np.array( [[-R],[0]] );
+    x0 = np.array( [[R],[0],[0]] );
 
     # vehicle and guide circle around origin
     fig, axs = plt.subplots();
@@ -41,4 +36,4 @@ if __name__ == '__main__':
     for i in range( Nt ):
         x = model( x,control(x) );
         vhc.update( i*dt,x );
-        plt.pause(0.5);
+        # plt.pause(0.01);
