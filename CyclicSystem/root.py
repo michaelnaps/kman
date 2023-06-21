@@ -113,6 +113,7 @@ def model(x, u):
     return xn;
 
 def control(x, v=5):
+    x = x.reshape(Nx,1);  # reshape x-variable row->col
     u = v*np.array( [
         -np.sin( x[2] ),
         np.cos( x[2] ),
@@ -177,7 +178,7 @@ def plotAnchors(fig, axs, radius=0.5):
     return fig, axs;
 
 # animate results
-def simulateModelWithControl(x0, f, g, N=250):
+def simulateModelWithControl(x0, f, g=None, N=250):
     # simulate results using vehicle class
     figSim, axsSim = plt.subplots();
     vhc = Vehicle( x0, None, fig=figSim, axs=axsSim,
@@ -188,9 +189,11 @@ def simulateModelWithControl(x0, f, g, N=250):
     axsSim.add_patch( guideCircle );
 
     # Animation loop.
+    u = None;
     x = x0;
     for k in range( N ):
-        u = g( x );
+        if not g is None:
+            u = g( x );
         x = f( x,u );
         vhc.update( k+1, x, update_title=0 )
 
