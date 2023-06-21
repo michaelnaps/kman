@@ -6,11 +6,11 @@ from root import *
 # observable identification: control
 def obs(X=None):
     if X is None:
-        meta = {'Nk':Nx+Nu+3};
+        meta = {'Nk':Nx+(Nu-1)+3};
         return meta;
 
     x = X[:Nx];
-    u = X[Nx:];
+    u = X[Nx:Nx+Nu-1];
 
     xTrig = np.array( [np.cos( x[2] ), np.sin( x[2] )] );
     Psi = np.vstack( (x, u, xTrig, [1]) );
@@ -31,7 +31,7 @@ if __name__ == '__main__':
         control=control, Nu=Nu)
 
     # format data for training
-    X = np.vstack( (xData[:,:-1], uData) );
+    X = np.vstack( (xData[:,:-1], np.zeros( (Nu,Nt-1) )) );
     Y = np.vstack( (xData[:,1:], uData) );
 
     # learn Koopman operator
@@ -42,5 +42,5 @@ if __name__ == '__main__':
 
     # simulate model
     kModel = lambda Psi, u: kvar.K@Psi;
-    simulateModelWithControl( obs( xu0 ), kModel, N=1000 );
+    simulateModelWithControl( obs( xu0 ), kModel, N=250 );
     print("Animation finished...");

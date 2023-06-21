@@ -83,6 +83,7 @@ class Vehicle:
             a.remove();
 
         dList = Psi[Nx:Nx+Na];
+        dList = anchorMeasure( Psi[:Nx] );
         self.body = patch.Circle(Psi[:Nx,0], self.body_radius,
             facecolor=self.color, edgecolor='k', zorder=zorder);
         self.aList = [patch.Circle(Psi[:Nx], np.sqrt(d),
@@ -183,6 +184,8 @@ def simulateModelWithControl(x0, f, g=None, N=250):
     figSim, axsSim = plt.subplots();
     vhc = Vehicle( x0, None, fig=figSim, axs=axsSim,
         record=0, color='yellowgreen', radius=0.5 );
+
+    # place static objects on plot
     plotAnchors( figSim,axsSim );
     guideCircle = patch.Circle((0,0), radius=R,
         facecolor='None', edgecolor='r', linestyle='--', zorder=1);
@@ -195,7 +198,8 @@ def simulateModelWithControl(x0, f, g=None, N=250):
         if not g is None:
             u = g( x );
         x = f( x,u );
-        vhc.update( k+1, x, update_title=0 )
+        print( x.T );
+        vhc.update( k+1, x, update_title=1 )
 
     # Return instance of vehicle for plotting.
     return vhc;
