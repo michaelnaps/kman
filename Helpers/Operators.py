@@ -215,7 +215,7 @@ class KoopmanOperator( Operator ):
 # Principle equation: (d/dt) Psi(x) = L Psi(x)
 class LieOperator( KoopmanOperator ):
 	def __init__(self, obsX, obsY=None, T=None, L=None):
-		KoopmanOperator.__init__(self, obsX, obsY=obsY, T=T, K=L);
+		KoopmanOperator.__init__( self, obsX, obsY=obsY, T=T, K=L );
 
 	@property
 	def L(self):
@@ -225,7 +225,7 @@ class LieOperator( KoopmanOperator ):
 	# Assumption: dt << 1, or the system is strongly linear.
 	def propagate(self, X, dt=1e-3):
 		PsiX = self.obsX.lift( X );
-		dPsiX = KoopmanOperator.propagate(self, X);
+		dPsiX = KoopmanOperator.propagate( self, X );
 		return PsiX + dt*dPsiX;
 
 	# Calculate the residual error of the operator compared to
@@ -239,10 +239,10 @@ class LieOperator( KoopmanOperator ):
 		PsiXp = self.propagate( X, dt=dt );
 
 		# Identity matrix used as operator since propagating in function.
-		I = np.eye( self.obsY.Nk,self.obsX.Nk );
+		I = np.eye( self.obsY.Nk, self.obsX.Nk );
 
 		# Calculate the residual error
-		Operator.resError(self, PsiY, PsiXp, C=I)
+		Operator.resError( self, PsiY, PsiXp, C=I )
 
 		# Return instance of self.
 		return self;
