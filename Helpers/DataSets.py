@@ -77,11 +77,11 @@ class DataSet:
 	def getDataDimn(self):
 		return self.N, self.P, self.M;
 
-	def flattenData(self, suppress=0):
+	def flattenData(self, verbose=0):
 		# Execute flatten if M > 1
 		if self.M > 1:
 			# Warning.
-			if not suppress:
+			if verbose:
 				print( "\nWARING: Flatten function cannot be undone...\n")
 
 			# Initialize flattened data matrix.
@@ -98,7 +98,7 @@ class DataSet:
 			# Set internal data to flattened data.
 			self.setNewData( Xflat, X0=None );
 		# otherwise,
-		elif not suppress:
+		elif verbose:
 			# print warning.
 			print( "\nWARNING: Data already flattened...\n" )
 
