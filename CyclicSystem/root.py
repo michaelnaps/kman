@@ -16,7 +16,7 @@ np.set_printoptions(precision=3, suppress=True);
 
 
 # hyper paramter(s)
-R = 7.5;
+R = 1;
 dt = 0.01;
 Nx = 3;
 Nu = 3;
@@ -113,7 +113,7 @@ def model(x, u):
     xn = A@x.reshape(Nx,1) + B@u.reshape(Nu,1);
     return xn;
 
-def control(x, v=5):
+def control(x, v=1):
     x = x.reshape(Nx,1);  # reshape x-variable row->col
     u = v*np.array( [
         -np.sin( x[2] ),
@@ -178,28 +178,36 @@ def plotAnchors(fig, axs, radius=0.5):
         axs.add_artist( circEntity );
     return fig, axs;
 
+# add static objects to environment plot
+def plotStaticObjects(fig=None, axs=None):
+    if fig is None and axs is None:
+        fig, axs = plt.subplots();
+
+    plotAnchors( fig, axs );
+    guideCircle = patch.Circle((0,0), radius=R,
+        facecolor='None', edgecolor='r', linestyle='--', zorder=1);
+    axs.add_patch( guideCircle );
+
+    return fig, axs;
+
 # animate results
-def simulateModelWithControl(x0, f, g=None, N=250):
+def simulateModelWithControl(x0, f, g=None, N=250, output=0):
     # simulate results using vehicle class
-    figSim, axsSim = plt.subplots();
+    figSim, axsSim = plotStaticObjects();
     vhc = Vehicle( x0, None, fig=figSim, axs=axsSim,
         record=0, color='yellowgreen', radius=0.5 );
 
-    # place static objects on plot
-    plotAnchors( figSim,axsSim );
-    guideCircle = patch.Circle((0,0), radius=R,
-        facecolor='None', edgecolor='r', linestyle='--', zorder=1);
-    axsSim.add_patch( guideCircle );
-
     # Animation loop.
-    u = None;
+    u = None;  # in case g(x)=None
     x = x0;
     for k in range( N ):
         if not g is None:
             u = g( x );
         x = f( x,u );
-        print( x.T );
+        if output:
+            print( x.T );
         vhc.update( k+1, x, update_title=1 )
+    print("Animation finished...");
 
     # Return instance of vehicle for plotting.
     return vhc;
