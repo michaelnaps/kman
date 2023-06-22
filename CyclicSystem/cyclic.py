@@ -11,10 +11,9 @@ def obs(X=None):
 
     x = X[:Nx];
     u = X[Nx:Nx+Nu-1];
-
     xTrig = np.array( [np.sin( x[2] ), np.cos( x[2] )] );
-    Psi = np.vstack( (x, u, xTrig, [1]) );
 
+    Psi = np.vstack( (x, u, xTrig, [1]) );
     return Psi;
 
 # Main execution block.
