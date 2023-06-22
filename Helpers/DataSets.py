@@ -125,7 +125,6 @@ class FiniteDifferenceMethod( DataSet ):
         #   4: Four-point resolution.
         self.method = method;
 
-    @property
     def denominator(self, method=None):
         # Return the denominator coefficient
         #   depending on the method of choice.
@@ -156,11 +155,32 @@ class FiniteDifferenceMethod( DataSet ):
         # Return matrices with every point differentiated.
         return dX;
 
-    def forward(self, x):
-        pass;
+    def forward(self, X):
+        den = self.denominator();
+
+        if self.method == 2:
+            num = -X[:,0] + X[:,1];
+        if self.method >= 3:
+            num = -3*X[:,0] + 4*X[:,1] - X[:,2];
+
+        return num/den;
 
     def central(self, x):
-        pass;
+        den = self.denominator(self.method+1);
+
+        if self.method == 2:
+            num = -X[:,0] + X[:,2]
+        if self.method >= 3:
+            num = X[:,0] - 8*X[:,1] + 8*X[:,3] - X[:,4];
+
+        return num/den;
 
     def backward(self, x):
-        pass;
+        den = self.denominator();
+
+        if self.method == 2:
+            num = X[:,1] - X[:,0];
+        if self.method >= 3:
+            num = X[:,0] - 4*X[:,1] + 3*X[:,2];
+
+        return num/den;
