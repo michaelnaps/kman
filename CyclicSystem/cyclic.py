@@ -6,7 +6,8 @@ from root import *
 # observable identification: control
 def obs(X=None):
     if X is None:
-        meta = {'Nk':Nx+(Nu-1)+3};
+        Ntr = 2;
+        meta = {'Nk':Nx+(Nu-1)+Ntr+1};
         return meta;
 
     x = X[:Nx];
