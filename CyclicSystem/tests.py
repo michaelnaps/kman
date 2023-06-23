@@ -1,5 +1,5 @@
 import numpy as np
-from cyclic import *
+from root import *
 
 # hyper parameter(s)
 dt = 0.01;
@@ -8,11 +8,12 @@ R  = 7.5;
 def model(x, u):
     return x + dt*u;
 
-def control(x, v=5.0):
-    u = np.array( [
-        -v*np.sin( x[2] ),
-        v*np.cos( x[2] ),
-        [v/R]  # constant rate of change...
+def control(x, v=5):
+    x = x.reshape(Nx,1);  # reshape x-variable row->col
+    u = v*np.array( [
+        -x[1]/R,
+        x[0]/R,
+        [1/R]
     ] );
     return u;
 
