@@ -28,8 +28,8 @@ class LearningStrategies:
 		self.Yset = DataSet( Y, X0=Y0 );
 
 		# Flatten data (suppress warning).
-		self.Xset.flattenData( suppress=1 );
-		self.Yset.flattenData( suppress=1 );
+		self.Xset.flattenData( verbose=0 );
+		self.Yset.flattenData( verbose=0 );
 		return self;
 
 	# Calculate the residual error of a given operator.

@@ -77,11 +77,11 @@ class DataSet:
 	def getDataDimn(self):
 		return self.N, self.P, self.M;
 
-	def flattenData(self, suppress=0):
+	def flattenData(self, verbose=0):
 		# Execute flatten if M > 1
 		if self.M > 1:
 			# Warning.
-			if not suppress:
+			if verbose:
 				print( "\nWARING: Flatten function cannot be undone...\n")
 
 			# Initialize flattened data matrix.
@@ -98,7 +98,7 @@ class DataSet:
 			# Set internal data to flattened data.
 			self.setNewData( Xflat, X0=None );
 		# otherwise,
-		elif not suppress:
+		elif verbose:
 			# print warning.
 			print( "\nWARNING: Data already flattened...\n" )
 
@@ -125,7 +125,6 @@ class FiniteDifferenceMethod( DataSet ):
         #   4: Four-point resolution.
         self.method = method;
 
-    @property
     def denominator(self, method=None):
         # Return the denominator coefficient
         #   depending on the method of choice.
@@ -156,11 +155,32 @@ class FiniteDifferenceMethod( DataSet ):
         # Return matrices with every point differentiated.
         return dX;
 
-    def forward(self, x):
-        pass;
+    def forward(self, X):
+        den = self.denominator();
+
+        if self.method == 2:
+            num = -X[:,0] + X[:,1];
+        if self.method >= 3:
+            num = -3*X[:,0] + 4*X[:,1] - X[:,2];
+
+        return num/den;
 
     def central(self, x):
-        pass;
+        den = self.denominator(self.method+1);
+
+        if self.method == 2:
+            num = -X[:,0] + X[:,2]
+        if self.method >= 3:
+            num = X[:,0] - 8*X[:,1] + 8*X[:,3] - X[:,4];
+
+        return num/den;
 
     def backward(self, x):
-        pass;
+        den = self.denominator();
+
+        if self.method == 2:
+            num = X[:,1] - X[:,0];
+        if self.method >= 3:
+            num = X[:,0] - 4*X[:,1] + 3*X[:,2];
+
+        return num/den;

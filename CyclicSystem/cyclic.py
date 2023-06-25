@@ -6,15 +6,15 @@ from root import *
 # observable identification: control
 def obs(X=None):
     if X is None:
-        meta = {'Nk':Nx+(Nu-1)+3};
+        Ntr = 2;
+        meta = {'Nk':Nx+(Nu-1)+Ntr+1};
         return meta;
 
     x = X[:Nx];
     u = X[Nx:Nx+Nu-1];
-
     xTrig = np.array( [np.sin( x[2] ), np.cos( x[2] )] );
-    Psi = np.vstack( (x, u, xTrig, [1]) );
 
+    Psi = np.vstack( (x, u, xTrig, [1]) );
     return Psi;
 
 # Main execution block.
