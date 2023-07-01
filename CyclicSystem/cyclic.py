@@ -32,9 +32,9 @@ if __name__ == '__main__':
     xData, uData = generate_data( tList, model, X0, control=control, Nu=Nu );
 
     # formatting training data from xData and uData
-    uStack = stack_data(uData, N0, Nu, Nt-1);
-    xStack = stack_data(xData[:,:-1], N0, Nx, Nt-1);
-    yStack = stack_data(xData[:,1:], N0, Nx, Nt-1);
+    uStack = stack_data( uData, N0, Nu, Nt-1 );
+    xStack = stack_data( xData[:,:-1], N0, Nx, Nt-1 );
+    yStack = stack_data( xData[:,1:], N0, Nx, Nt-1 );
 
     XU0 = np.vstack( (X0, np.zeros( (Nu,N0) )) );
     X = np.vstack( (xStack, np.zeros( (Nu,N0*(Nt-1)) )) );
@@ -48,3 +48,10 @@ if __name__ == '__main__':
 
     # simulate model
     kModel = lambda Psi, u: kvar.K@Psi;
+    # _, xList = simulateModelWithControl( obs( xu0 ), kModel,
+    #     N=1000, sim=0 );
+
+    # plot static results
+    fig, axs = plt.subplots();
+    axs.plot( xList[:Nx-1,:].T );
+    plt.show();

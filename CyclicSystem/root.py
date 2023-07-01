@@ -22,7 +22,7 @@ Nx = 3;
 Nu = 3;
 Na = 3;
 # aList = np.array( [[10, 12, -15],[10, -7, -13]] );
-aList = np.array( [[10, -10, 10], [10, 10, -10]] );
+aList = 1/2*np.array( [[10, -10, 10], [10, 10, -10]] );
 
 # Na = 5;
 # aList = np.array( [[10, 10, -10, -10, -5],[10, -10, -10, 10, -5]] );
@@ -191,11 +191,15 @@ def plotStaticObjects(fig=None, axs=None):
     return fig, axs;
 
 # animate results
-def simulateModelWithControl(x0, f, g=None, N=250, output=0):
+def simulateModelWithControl(x0, f, g=None, N=250, sim=1, output=0):
     # simulate results using vehicle class
     figSim, axsSim = plotStaticObjects();
     vhc = Vehicle( x0, None, fig=figSim, axs=axsSim,
         record=0, color='yellowgreen', radius=0.5 );
+
+    # simulation result list
+    Nx = len( x0 );
+    xList = np.empty( (Nx,N+1) );
 
     # Animation loop.
     u = None;  # in case g(x)=None
@@ -203,11 +207,17 @@ def simulateModelWithControl(x0, f, g=None, N=250, output=0):
     for k in range( N ):
         if not g is None:
             u = g( x );
+
         x = f( x,u );
+        xList[:,k+1] = x[:,0];
+
+        if sim:
+            vhc.update( k+1, x, update_title=1 );
+
         if output:
             print( x.T );
-        vhc.update( k+1, x, update_title=1 )
+
     print("Animation finished...");
 
     # Return instance of vehicle for plotting.
-    return vhc;
+    return vhc, xList;
