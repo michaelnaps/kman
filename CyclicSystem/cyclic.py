@@ -48,4 +48,3 @@ if __name__ == '__main__':
 
     # simulate model
     kModel = lambda Psi, u: kvar.K@Psi;
-    # simulateModelWithControl( obs( xu0 ), kModel, N=250 );
