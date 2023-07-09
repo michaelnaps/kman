@@ -13,7 +13,7 @@ from Helpers.DataSets import *
 #	represented (width) is different.
 #	In other words, the statement F: X -> Y is justifiable by
 #	the learning stategies presented.
-class LearningStrategies:
+class Regressor:
 	def __init__(self, X, Y, X0=None, Y0=None):
 		self.setDataLists( X, Y, X0=X0, Y0=Y0 );
 

@@ -1,5 +1,5 @@
 import numpy as np
-from Helpers.LearningStrategies import *
+from Helpers.Regressors import *
 
 # Cascade EDMD
 def cascade_edmd(Klist, Tlist, X, Y, X0=None):
@@ -82,7 +82,7 @@ class Operator:
 	def resError(self, X, Y, X0=None, C=None):
 		# If solver is not initialized...
 		if self.solver is None:
-			self.solver = LearningStrategies(X, Y);
+			self.solver = Regressor(X, Y);
 
 		# In the event an alternative operator should be tested.
 		if C is None:
@@ -96,8 +96,8 @@ class Operator:
 
 	# Extended Dynamic Mode Decomposition (EDMD)
 	def dmd(self, X, Y, X0=None, EPS=None):
-		# Initialize LearningStrategies class.
-		self.solver = LearningStrategies(X, Y);
+		# Initialize Regressor class.
+		self.solver = Regressor(X, Y);
 
 		# Compute Koopman operator through DMD.
 		self.C, self.USV = self.solver.dmd( EPS=EPS );
