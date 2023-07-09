@@ -18,9 +18,10 @@ np.set_printoptions(precision=3, suppress=True);
 
 
 # hyper paramter(s)
-R = 1;
+R = 2.5;
 dt = 0.01;
 Nx = 3;
+Ntr = 2;
 Nu = 3;
 Na = 3;
 # aList = np.array( [[10, 12, -15],[10, -7, -13]] );
@@ -193,28 +194,32 @@ def plotStaticObjects(fig=None, axs=None):
     return fig, axs;
 
 # animate results
-def simulateModelWithControl(x0, f, g=None, N=250, sim=1, output=0):
+def simulateModelWithControl(x0, F, g=None, N=250, sim=1, output=0):
+    # For 2D simulation.
+    N2 = 2;
+
     # simulate results using vehicle class
     figSim, axsSim = plotStaticObjects();
-    vhc = Vehicle2D( x0, None, fig=figSim, axs=axsSim,
-        record=0, color='yellowgreen', radius=0.5 );
+    vhc = Vehicle2D( F, x0[:N2],
+        fig=figSim, axs=axsSim, tail_length=250 );
 
     # simulation result list
     Nx = len( x0 );
     xList = np.empty( (Nx,N+1) );
 
     # Animation loop.
-    u = None;  # in case g(x)=None
+    u = None;
     x = x0;
     for k in range( N ):
-        if not g is None:
+        if g is not None:
             u = g( x );
 
-        x = f( x,u );
+        x = F( x,u );
         xList[:,k+1] = x[:,0];
 
         if sim:
-            vhc.update( k+1, x, update_title=1 );
+            vhc.update( x[:N2] );
+            vhc.draw();
 
         if output:
             print( x.T );
