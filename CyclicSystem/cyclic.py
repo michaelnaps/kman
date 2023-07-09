@@ -6,11 +6,11 @@ from root import *
 # observable identification: control
 def obs(X=None):
     if X is None:
-        meta = {'Nk':Nx+(Nu-1)+Ntr+1};
+        meta = {'Nk':Nx+(Nu-1)+1+1};
         return meta;
 
     x = X[:Nx];
-    xTrig = np.array( [np.sin( x[2] ), np.cos( x[2] )] );
+    xTrig = np.cos( x[2] );
     u = X[Nx:Nx+Nu-1];
 
     PsiX = np.vstack( (x, xTrig, u, [1]) );
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     # simulate model
     kModel = lambda Psi, u: kvar.K@Psi;
     vhc, xList = simulateModelWithControl( obs( xu0 ), kModel,
-        N=1000, sim=1 );
+        N=10000, sim=1 );
 
     # # plot static results
     # fig, axs = plt.subplots();
