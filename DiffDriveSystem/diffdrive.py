@@ -7,7 +7,7 @@ sys.path.insert(0, expanduser('~')+'/prog/kman');
 import mpc
 import numpy as np
 
-from Helpers.Operators import *
+from KMAN.Operators import *
 
 import math
 import matplotlib.pyplot as plt

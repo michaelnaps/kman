@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from Helpers.KoopmanFunctions import *
-from Helpers.DataFunctions import *
+from KMAN.DataFunctions import *
 
 
 def obsX(x=None):

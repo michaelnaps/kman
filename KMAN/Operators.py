@@ -1,5 +1,5 @@
 import numpy as np
-from Helpers.Regressors import *
+from KMAN.Regressors import *
 
 # Cascade EDMD
 def cascade_edmd(Klist, Tlist, X, Y, X0=None):

@@ -48,8 +48,8 @@ if __name__ == '__main__':
 
     # simulate model
     kModel = lambda Psi, u: kvar.K@Psi;
-    # _, xList = simulateModelWithControl( obs( xu0 ), kModel,
-    #     N=1000, sim=0 );
+    vhc, xList = simulateModelWithControl( obs( xu0 ), kModel,
+        N=1000, sim=0 );
 
     # plot static results
     fig, axs = plt.subplots();

@@ -1,11 +1,13 @@
 import sys
 from os.path import expanduser
 sys.path.insert(0, expanduser('~')+'/prog/kman')
+sys.path.insert(0, expanduser('~')+'/prog/mpc')
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Helpers.Operators import *
+from KMAN.Operators import *
+from MPC.Vehicle2D import *
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
@@ -194,7 +196,7 @@ def plotStaticObjects(fig=None, axs=None):
 def simulateModelWithControl(x0, f, g=None, N=250, sim=1, output=0):
     # simulate results using vehicle class
     figSim, axsSim = plotStaticObjects();
-    vhc = Vehicle( x0, None, fig=figSim, axs=axsSim,
+    vhc = Vehicle2D( x0, None, fig=figSim, axs=axsSim,
         record=0, color='yellowgreen', radius=0.5 );
 
     # simulation result list

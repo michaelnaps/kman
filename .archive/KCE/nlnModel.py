@@ -7,8 +7,8 @@ import matplotlib.patches as patch
 import matplotlib.path as path
 
 import ode
-import Helpers.KoopmanFunctions as kman
-import Helpers.DataFunctions as data
+import KMAN.KoopmanFunctions as kman
+import KMAN.DataFunctions as data
 
 
 # hyper parameter(s)

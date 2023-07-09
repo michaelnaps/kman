@@ -13,7 +13,7 @@ sys.path.insert(0, expanduser('~')+'/prog/kman')
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Helpers.Operators import *
+from KMAN.Operators import *
 
 # hyper paramters
 dt = 0.001;

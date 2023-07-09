@@ -8,7 +8,7 @@ import matplotlib.patches as patch
 import matplotlib.path as path
 
 import ode
-import Helpers.KoopmanFunctions as kman
+import KMAN.KoopmanFunctions as kman
 
 
 # create global "measurement" variables

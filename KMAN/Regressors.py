@@ -5,7 +5,7 @@
 # 	of state propagation data defined and inherited from the DataSet class.
 
 import numpy as np
-from Helpers.DataSets import *
+from KMAN.DataSets import *
 
 # Class: LearningStrategies
 # Assumptions: Y set is a forward snapshot of X; meaning

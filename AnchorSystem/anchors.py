@@ -5,7 +5,7 @@ sys.path.insert(0, expanduser('~')+'/prog/kman')
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Helpers.Operators import *
+from KMAN.Operators import *
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch

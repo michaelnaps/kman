@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Helpers.KoopmanFunctions import *
-import Helpers.DataFunctions as data
+from KMAN.KoopmanFunctions import *
+import KMAN.DataFunctions as data
 
 
 # set global output setting
@@ -65,7 +65,7 @@ def obs(X=None):
         meta = obsA();
         meta['Nk'] = Nx+Nu+0*Nx*Nx+0*Nu*Nu+0*Nx*Nu;
         return meta;
-    
+
     x = X[:Nx].reshape(Nx,1);
     u = X[Nx:].reshape(Nu,1);
 
@@ -95,7 +95,7 @@ def obsA(X=None):
     x = X[:Nx].reshape(Nx,1);
     u = X[Nx:].reshape(Nu,1);
 
-    da, xa, ua = anchorExpand(x, u);   
+    da, xa, ua = anchorExpand(x, u);
 
     PsiX = obs(X);
     PsiA = np.vstack( (PsiX, da, [1]) );
@@ -172,7 +172,7 @@ if __name__ == "__main__":
     N0n = 10;
     X0n = 20*np.random.rand(Nx,N0n) - 10;
     XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
-    
+
     Psi0 = np.empty( (Nk,N0n) );
     for i, xu in enumerate(XU0n.T):
         Psi0[:,i] = obs( xu.reshape(Nx+Nu,1) ).reshape(Nk,);
@@ -197,4 +197,3 @@ if __name__ == "__main__":
         j += Nk;
     figComp, axsComp = data.compare_data(xTest, xPsi, X0n);
     plt.show();
-

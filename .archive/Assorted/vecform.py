@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Helpers.KoopmanFunctions import *
-import Helpers.DataFunctions as data
+from KMAN.KoopmanFunctions import *
+import KMAN.DataFunctions as data
 
 
 # set global output setting

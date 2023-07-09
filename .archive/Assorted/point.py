@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import Helpers.KoopmanFunctions as kman
-import Helpers.DataFunctions as data
+import KMAN.KoopmanFunctions as kman
+import KMAN.DataFunctions as data
 
 
 # set global output setting
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     N0n = 25;
     X0n = 20*np.random.rand(Nx,N0n) - 10;
     XU0n = np.vstack( (X0n, np.zeros( (Nu,N0n) )) );
-    
+
     Psi0 = np.empty( (Nk,N0n) );
     for i, xu in enumerate(XU0n.T):
         Psi0[:,i] = obs( xu.reshape(Nx+Nu,1) ).reshape(Nk,);
@@ -144,4 +144,3 @@ if __name__ == "__main__":
         j += Nk;
     figComp, axsComp = data.compare_data(xTest, xPsi, X0n);
     plt.show();
-    
