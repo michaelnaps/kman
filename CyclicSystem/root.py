@@ -6,8 +6,8 @@ sys.path.insert(0, expanduser('~')+'/prog/mpc')
 import numpy as np
 import matplotlib.pyplot as plt
 
-from KMAN.Operators import *
 from MPC.Vehicle2D import *
+from KMAN.Operators import *
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
