@@ -161,7 +161,7 @@ class KoopmanOperator( Operator ):
 		if self.K is None:
 			print( "\nERROR: Operator is unset...\n" );
 			return None;
-		return self.K@self.obsX.lift( X );
+		return self.K@self.obsX.liftData( X );
 
 	# Redefine residual error from parent for lifted sets.
 	def resError(self, X, Y, X0=None):
