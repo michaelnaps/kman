@@ -10,8 +10,6 @@ from KMAN.Operators import *
 
 # Hyper parameter(s).
 N = 5;
-# N = 1000;
-# N = 10000;  # Near perfect...
 beta = 0.01;
 
 # Square wave initialization.
