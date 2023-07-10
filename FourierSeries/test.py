@@ -44,14 +44,13 @@ if __name__ == '__main__':
 
     # Solve using Koopman operator class.
     kvar = KoopmanOperator( obsX, obsY=obsY );
-    kvar.edmd( X, Y );
+    print( kvar.edmd( X, Y ) );
 
     # For final plot.
     Ytest = kvar.propagate( X );
-    print( Ytest );
 
     # Plot results.
     fig, axs = plt.subplots();
     axs.plot( X.T, Y.T, label='True' );
-    axs.plot( X.T, Ytest.T, label='Fourier' );
+    axs.plot( X.T, Ytest[0,:].T, label='Fourier' );
     plt.show();
