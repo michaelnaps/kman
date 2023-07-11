@@ -9,13 +9,13 @@ import matplotlib.pyplot as plt
 from KMAN.Operators import *
 
 # Hyper parameter(s).
-Nmax = 5;
-dN = 1;
+Nmax = 25;
+dN = 5;
 beta = 0.01;
 
 # Square wave initialization.
 def wave(x):
-    return 0.50*np.sin( x ) + 0.15*np.sin( x )**2 + 0.25*np.cos( x )**3;
+    return np.sign( x );
 
 # Observables
 def thetaN(X, N=1):
@@ -26,7 +26,7 @@ def thetaN(X, N=1):
 
 if __name__ == '__main__':
     # Generate x-data for square wave.
-    T = 10;  Nt = round( T/beta ) + 1;
+    T = 1;  Nt = round( T/beta ) + 1;
     X = np.array( [[beta*(i-Nt+1) for i in range( 2*Nt-1 )]] );
     Y = wave( X );
 
