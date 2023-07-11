@@ -9,10 +9,15 @@ from KMAN.DataSets import *
 
 # Class: LearningStrategies
 # Assumptions: Y set is a forward snapshot of X; meaning
-#	they share a common length, even if the number of states
-#	represented (width) is different.
-#	In other words, the statement F: X -> Y is justifiable by
-#	the learning stategies presented.
+#	they share a common width (m), even if the number of states
+#	represented (ny vs. nx) is different. The intent of this
+#	class is to solve for an operator C which accurately moves
+#	between these two sets. In other words, the statement
+#		F: X -> Y
+#	is justifiable by the operator
+#		Y = C X.
+#	Where the height of C is equal to (ny) and the width of C
+#	is equal to (nx).
 class Regressor:
 	def __init__(self, X, Y, X0=None, Y0=None):
 		self.setDataLists( X, Y, X0=X0, Y0=Y0 );
