@@ -9,7 +9,8 @@ import matplotlib.pyplot as plt
 from KMAN.Operators import *
 
 # Hyper parameter(s).
-N = 5;
+Nmax = 5;
+dN = 1;
 beta = 0.01;
 
 # Square wave initialization.
@@ -17,41 +18,37 @@ def wave(x):
     return 0.50*np.sin( x ) + 0.15*np.sin( x )**2 + 0.25*np.cos( x )**3;
 
 # Observables
-def obsX(x=None):
-    if x is None:
-        meta = {'Nk':2*N};
-        return meta;
-
+def theta(X, N=1):
     k = 0;
-    Psi = np.empty( (2*N,1) );
-    for i in range( N ):
-        Psi[k] = np.sin( i*x );
-        Psi[k+1] = np.cos( i*x );
+    THETA = np.empty( (2*(N+1), X.shape[1]) );
+    for i in range( N+1 ):
+        THETA[k,:] = np.sin( i*X );
+        THETA[k+1,:] = np.cos( i*X );
         k = k + 2;
-
-    return Psi;
-
-def obsY(x=None):
-    if x is None:
-        meta = {'Nk':1};
-        return meta;
-    return x;
+    return THETA;
 
 if __name__ == '__main__':
     # Generate x-data for square wave.
     T = 10;  Nt = round( T/beta ) + 1;
-    X = np.array( [[beta*(i-Nt) for i in range( 2*Nt )]] );
+    X = np.array( [[beta*(i-Nt+1) for i in range( 2*Nt-1 )]] );
     Y = wave( X );
-
-    # Solve using Koopman operator class.
-    kvar = KoopmanOperator( obsX, obsY=obsY );
-    print( kvar.edmd( X, Y ) );
-
-    # For final plot.
-    Ytest = kvar.propagate( X );
 
     # Plot results.
     fig, axs = plt.subplots();
-    axs.plot( X.T, Y.T, label='True' );
-    axs.plot( X.T, Ytest[0,:].T, linestyle='--', label='Fourier' );
+    axs.plot( X.T, Y.T, color='r', label='Model' );
+
+    for n in range( 0, Nmax+1, dN ):
+        thetaN = lambda x=None: theta( x, N=n );
+
+        solver = Regressor( thetaN( X ), Y );
+        C, _ = solver.dmd();
+
+        print( C );
+        print( '---------' );
+
+        Yf = C@thetaN( X );
+        axs.plot( X.T, Yf.T, linestyle='-.', label=('N=%i' % n) );
+
+    plt.grid( 1 );
+    plt.legend();
     plt.show();
