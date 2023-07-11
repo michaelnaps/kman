@@ -15,18 +15,19 @@ beta = 0.01;
 
 # Square wave initialization.
 def wave(x):
-    return np.sign( x );
+    return x**2;
 
 # Observables
 def thetaN(X, N=1):
     Theta = np.empty( (N+1, X.shape[1]) );
     for i in range( -N, N+1 ):
         Theta[i,:] = np.exp( i*X );
+    print( Theta );
     return Theta;
 
 if __name__ == '__main__':
     # Generate x-data for square wave.
-    T = 1;  Nt = round( T/beta ) + 1;
+    T = 1.0;  Nt = round( T/beta ) + 1;
     X = np.array( [[beta*(i-Nt+1) for i in range( 2*Nt-1 )]] );
     Y = wave( X );
 
