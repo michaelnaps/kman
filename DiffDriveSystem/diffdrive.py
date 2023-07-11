@@ -280,7 +280,6 @@ def obsXUH(X=None):
     PsiXUH = np.vstack( (PsiX, np.kron(PsiU, PsiH)) );
     return PsiXUH;
 
-
 def obsUG(X=None):
     if X is None:
         meta = {'Nk': 2*Nu*PH}
