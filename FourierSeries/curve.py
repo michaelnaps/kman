@@ -18,7 +18,7 @@ def wave(x):
     return 0.50*np.sin( x ) + 0.15*np.sin( x )**2 + 0.25*np.cos( x )**3;
 
 # Observables
-def theta(X, N=1):
+def thetaN(X, N=1):
     k = 0;
     Theta = np.empty( (2*(N+1), X.shape[1]) );
     for i in range( N+1 ):
@@ -38,15 +38,15 @@ if __name__ == '__main__':
     axs.plot( X.T, Y.T, color='r', label='Model' );
 
     for n in range( 0, Nmax+1, dN ):
-        thetaN = lambda x=None: theta( x, N=n );
+        theta = lambda x=None: thetaN( x, N=n );
 
-        solver = Regressor( thetaN( X ), Y );
+        solver = Regressor( theta( X ), Y );
         C, _ = solver.dmd();
 
         print( C );
         print( '---------' );
 
-        Yf = C@thetaN( X );
+        Yf = C@theta( X );
         axs.plot( X.T, Yf.T, linestyle='-.', label=('N=%i' % n) );
 
     plt.grid( 1 );
