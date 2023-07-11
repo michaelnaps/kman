@@ -20,12 +20,12 @@ def wave(x):
 # Observables
 def theta(X, N=1):
     k = 0;
-    THETA = np.empty( (2*(N+1), X.shape[1]) );
+    Theta = np.empty( (2*(N+1), X.shape[1]) );
     for i in range( N+1 ):
-        THETA[k,:] = np.sin( i*X );
-        THETA[k+1,:] = np.cos( i*X );
+        Theta[k,:] = np.sin( i*X );
+        Theta[k+1,:] = np.cos( i*X );
         k = k + 2;
-    return THETA;
+    return Theta;
 
 if __name__ == '__main__':
     # Generate x-data for square wave.
