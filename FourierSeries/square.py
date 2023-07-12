@@ -34,9 +34,6 @@ if __name__ == '__main__':
     X = np.array( [[beta*(i-Nt+1) for i in range( 2*Nt-1 )]] );
     Y = wave( X );
 
-    # Test Fourier method class.
-    fvar = FourierTransform( X, Y, N=Nmax );
-
     # Plot results.
     fig, axs = plt.subplots();
     axs.plot( X.T, Y.T, color='r', label='Model' );
