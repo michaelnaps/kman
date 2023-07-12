@@ -21,7 +21,7 @@ def wave(x):
 def thetaN(X, N=1):
     Theta = np.empty( (N+1, X.shape[1]) );
     for i in range( -N, N+1 ):
-        Theta[i,:] = np.exp( i*X );
+        Theta[i,:] = np.exp( i*X );  # not complex
     print( Theta );
     return Theta;
 
