@@ -41,7 +41,7 @@ if __name__ == '__main__':
         theta = lambda x=None: thetaN( x, N=n );
 
         solver = Regressor( theta( X ), Y );
-        C, _ = solver.dmd();
+        C, _ = solver.ls();
 
         print( C );
         print( '---------' );

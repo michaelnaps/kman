@@ -105,6 +105,7 @@ class DataSet:
 		# Return instance of self.
 		return self;
 
+# NOT CURRENTLY BEING USED/DEVELOPED
 # Class: FiniteDifferenceMethod
 # Assumption(s):
 #   1). Data set is isolated.

@@ -1,4 +1,4 @@
-# File: LearningStrategies.py
+# File: Regressors.py
 # Created by: Michael Napoli
 # Created on: May 26, 2023
 # Purpose: To create a class which executes various learning strategies over sets
@@ -47,9 +47,9 @@ class Regressor:
 		# Return residual error.
 		return err;
 
-	# Dynamic Mode Decomposition (DMD)
+	# Least Squares (LS)
 	# Assumption: Datasets are already flattened.
-	def dmd(self, EPS=None):
+	def ls(self, EPS=None):
 		# Get set dimensions.
 		# Assume Yset is similarly shaped.
 		TOL = 1E-12;
