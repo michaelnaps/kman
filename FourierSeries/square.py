@@ -44,16 +44,13 @@ if __name__ == '__main__':
     for n in range( 0, Nmax+1, dN ):
         theta = lambda x=None: thetaN( x, N=n );
 
-        # solver = Regressor( theta( X ), Y );
-        # C, _ = solver.ls();
+        solver = Regressor( theta( X ), Y );
+        C, _ = solver.ls();
 
-        fvar.setLimitNumber( n );
-        fvar.ls();
-
-        print( fvar.F );
+        print( C );
         print( '---------' );
 
-        Yf = fvar.F@fvar.liftData( X );
+        Yf = C@theta( X );
         axs.plot( X.T, Yf.T, linestyle=None, label=('N=%i' % n) );
 
     plt.grid( 1 );
