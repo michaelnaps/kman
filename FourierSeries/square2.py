@@ -10,23 +10,11 @@ from KMAN.Regressors import *
 from KMAN.FourierMethods import *
 
 # Hyper parameter(s).
-Nmax = 500;
-dN = 50;
 beta = 0.01;
 
 # Square wave initialization.
 def wave(x):
     return np.sign( x );
-
-# Observables
-def thetaN(X, N=1):
-    k = 0;
-    Theta = np.empty( (2*(N+1), X.shape[1]) );
-    for i in range( N+1 ):
-        Theta[k,:] = np.sin( i*X );
-        Theta[k+1,:] = np.cos( i*X );
-        k = k + 2;
-    return Theta;
 
 if __name__ == '__main__':
     # Generate x-data for square wave.
@@ -35,27 +23,22 @@ if __name__ == '__main__':
     Y = wave( X );
 
     # Test Fourier method class.
-    fvar = FourierTransform( X, Y, N=Nmax );
+    fvar = FourierTransform( X, Y );
+    fvar.dft();
 
-    # Plot results.
+    # Results data
+    print( fvar.A.shape );
+    print( fvar.B.shape );
+    xSinList, xCosList = fvar.liftData( X )[1];
+    Yf = fvar.A@xSinList+ fvar.B@xCosList;
+
+    print( X );
+    print( Y );
+    print( Yf );
+
+    # Plot results
     fig, axs = plt.subplots();
-    axs.plot( X.T, Y.T, color='r', label='Model' );
-
-    for n in range( 0, Nmax+1, dN ):
-        theta = lambda x=None: thetaN( x, N=n );
-
-        # solver = Regressor( theta( X ), Y );
-        # C, _ = solver.ls();
-
-        fvar.setLimitNumber( n );
-        fvar.ls();
-
-        print( fvar.F );
-        print( '---------' );
-
-        Yf = fvar.F@fvar.liftData( X );
-        axs.plot( X.T, Yf.T, linestyle=None, label=('N=%i' % n) );
-
-    plt.grid( 1 );
-    plt.legend();
+    axs.plot( X.T, Y.T );
+    axs.plot( X.T, Yf.T );
+    axs.grid( 1 );
     plt.show();

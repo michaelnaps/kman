@@ -9,11 +9,11 @@ class FourierTransform( Regressor ):
     def __init__(self, X, Y, h=1e-3):
         self.X = X;
         self.Y = Y;
-        self.N = X.shape[0];
-        self.A = np.empty( (1, self.N) );
-        self.B = np.empty( (1, self.N) );
+        self.N = X.shape[1];
+        self.A = np.zeros( (1, self.N) );
+        self.B = np.zeros( (1, self.N) );
         self.h = h;
-        Regressor.__init__( self, self.liftData( X ), Y );
+        # Regressor.__init__( self, self.liftData( X ), Y );
 
     def setLimitNumber( self, N ):
         self.N = N;
@@ -29,7 +29,7 @@ class FourierTransform( Regressor ):
             xSinList[k,:] = np.sin( k*X );
             xCosList[k,:] = np.cos( k*X );
         Theta = np.vstack( (xSinList, xCosList) );
-        return Theta;
+        return Theta, (xSinList, xCosList);
 
     def ls(self, EPS=None):
         # Solve using regressor function.
@@ -42,12 +42,16 @@ class FourierTransform( Regressor ):
         self.A[0][0] = 0;
         self.B[0][0] = 1/(2*self.N)*np.sum( self.Y );
 
-        for k in range( 1,self.N-1 ):
-            self.A[0][k] = 1/self.N*np.sum( [ self.Y[0][j]*np.sin( 2*np.pi*k*self.X[0][j]/self.h ) for j in range( self.N ) ] );
-            self.B[0][k] = 1/self.N*np.sum( [ self.Y[0][j]*np.cos( 2*np.pi*k*self.X[0][j]/self.h ) for j in range( self.N ) ] );
+        for k in range( 1, self.N-1 ):
+            for x, y in zip( self.X[0], self.Y[0] ):
+                self.A[0][k] += y*np.sin( 2*np.pi*k*x );
+                self.B[0][k] += y*np.cos( 2*np.pi*k*x );
 
         self.A[0][-1] = 0;
         self.B[0][-1] = 1/(2*self.N)*np.sum( [ self.Y[0][j]*np.cos( 2*np.pi*self.N*self.X[0][j]/self.h ) for j in range( self.N ) ] );
+
+        print( self.A );
+        print( self.B );
 
         # Return instance of self.
         return self;
