@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 # Personal classes.
 from KMAN.Regressors import *
+from KMAN.FourierMethods import *
 
 # Hyper parameter(s).
 Nmax = 500;
@@ -33,6 +34,9 @@ if __name__ == '__main__':
     X = np.array( [[beta*(i-Nt+1) for i in range( 2*Nt-1 )]] );
     Y = wave( X );
 
+    # Test Fourier method class.
+    fvar = FourierTransform( X, Y, N=Nmax );
+
     # Plot results.
     fig, axs = plt.subplots();
     axs.plot( X.T, Y.T, color='r', label='Model' );
@@ -40,13 +44,16 @@ if __name__ == '__main__':
     for n in range( 0, Nmax+1, dN ):
         theta = lambda x=None: thetaN( x, N=n );
 
-        solver = Regressor( theta( X ), Y );
-        C, _ = solver.ls();
+        # solver = Regressor( theta( X ), Y );
+        # C, _ = solver.ls();
 
-        print( C );
+        fvar.setLimitNumber( n );
+        fvar.ls();
+
+        print( fvar.F );
         print( '---------' );
 
-        Yf = C@theta( X );
+        Yf = fvar.F@fvar.liftData( X );
         axs.plot( X.T, Yf.T, linestyle=None, label=('N=%i' % n) );
 
     plt.grid( 1 );
