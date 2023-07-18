@@ -4,10 +4,10 @@ from os.path import expanduser
 sys.path.insert(0, expanduser('~')+'/prog/mpc');
 sys.path.insert(0, expanduser('~')+'/prog/kman');
 
-import mpc
 import numpy as np
 
 from KMAN.Operators import *
+import MPC.Optimizers as mpc
 
 import math
 import matplotlib.pyplot as plt
