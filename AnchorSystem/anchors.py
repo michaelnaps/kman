@@ -16,8 +16,8 @@ np.set_printoptions(precision=3, suppress=True);
 
 
 # hyper paramter(s)
-epsilon = 2;
-delta = 2;
+epsilon = 0.25;
+delta = 1.00;
 dt = 0.01;
 Nx = 2;
 Nu = 2;
