@@ -88,7 +88,7 @@ def plotcomp(tList, xTest, PsiTest, save=0):
     axs[0].legend()
 
     # evaluate error
-    Ne = len( tList[0] ) - 1
+    Ne = tList.shape[1] - 1
     axs[1].plot([tList[0][0], tList[0][Ne]], [0,0], color='r', linestyle='--')
     axs[1].plot(tList[0][:Ne], PsiTest[0,:Ne]-xTest[0,:Ne], label='$x_1$')
     axs[1].plot(tList[0][:Ne], PsiTest[1,:Ne]-xTest[1,:Ne], label='$x_2$')

@@ -30,8 +30,8 @@ def createDynamicSets(tList, X0):
 def createControlSets(iList, X0):
     # dimension variables
     NuPH = Nu*PH
-    N0 = len( X0[0] )
-    Ni = len( iList[0] )
+    N0 = X0.shape[1]
+    Ni = iList.shape[1]
 
     # use flow function at varying positions
     U0 = np.zeros( (NuPH, N0) )
@@ -103,4 +103,5 @@ if __name__ == "__main__":
     kuvar.edmd( U1, U2, UX0 )
 
     print( 'Ku:\n', kuvar )
-    print(  kuvar.K[:2*Nu,:].T )
+    # print( kuvar.propagate( UX0[:,0,None] )[:Nu].T )
+    # print( mvar.solve( UX0[Nu*PH:Nu*PH+Nx,0,None], UX0[:Nu*PH,0,None] ) )
