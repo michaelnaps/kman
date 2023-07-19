@@ -37,7 +37,7 @@ class Observables:
 			return None
 
 		# Number of steps and matrix initialization.
-		P = len( X[0] )
+		P = X.shape[1]
 		Psi = np.empty( (self.Nk, P) )
 
 		# Lift data set.
