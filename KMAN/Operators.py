@@ -131,7 +131,7 @@ class KoopmanOperator( Operator ):
 
 		# Koopman operator initialization.
 		if K is None:
-			K = np.eye( self.obsY.Nk,self.T.shape[0] )
+			K = np.eye( self.obsY.Nk, self.T.shape[0] )
 
 		# Initialize inhertied class variables.
 		Operator.__init__( self, C=K )
