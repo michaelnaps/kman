@@ -7,7 +7,8 @@ sys.path.insert(0, expanduser('~')+'/prog/kman')
 import numpy as np
 
 from KMAN.Operators import *
-import MPC.Optimizers as mpc
+import MPC.Optimizer as mpc
+import MPC.Vehicle2D as vhc
 
 import math
 import matplotlib.pyplot as plt
@@ -15,121 +16,31 @@ import matplotlib.patches as patch
 import matplotlib.path as path
 
 
-# callback function and parameters
-class Parameters:
-    def __init__(self, x0, xd,
-                 fig=None, axs=None,
-                 buffer_length=10, pause=1e-3,
-                 color='k'):
-        if axs is None and fig is None:
-            self.fig, self.axs = plt.subplots()
-        else:
-            self.fig = fig
-            self.axs = axs
-
-        # figure scaling
-        self.axs.set_xlim(-2,2)
-        self.axs.set_ylim(-2,2)
-        self.axs.axis('equal')
-        self.axs.grid()
-        self.fig.tight_layout()
-
-        # initialize buffer (trail)
-        self.PH = PH
-        self.color = color
-        self.width = 0.10
-        self.length = R/2
-
-        m1d = self.length*math.cos(xd[2])
-        m2d = self.length*math.sin(xd[2])
-        permanentPatch = patch.Arrow(xd[0], xd[1], m1d, m2d,
-            color='g',width=self.width)
-
-        self.buffer = [x0[:2] for i in range(buffer_length)]
-        self.trail_patch = patch.PathPatch(path.Path(self.buffer), color=self.color)
-
-        self.prediction = [x0[:2] for i in range(self.PH+1)]
-        self.future_patch = patch.PathPatch(path.Path(self.buffer), color='C1')
-
-        m1 = self.length*math.cos(x0[2])
-        m2 = self.length*math.sin(x0[2])
-        self.orientation = patch.Arrow(x0[0], x0[1], m1, m2,
-            color=self.color, width=self.width)
-
-        self.axs.add_patch(permanentPatch)
-        self.axs.add_patch(self.trail_patch)
-        self.axs.add_patch(self.future_patch)
-        self.axs.add_patch(self.orientation)
-
-        self.pause = pause
-        self.xd = xd
-
-        plt.close(self.fig)  # suppress figure from output till update is called
-
-    def update(self, t, x, xPH):
-        self.trail_patch.remove()
-        self.future_patch.remove()
-        self.orientation.remove()
-
-        self.buffer[:-1] = self.buffer[1:]
-        self.buffer[-1] = x[:2]
-
-        self.trail_patch = patch.PathPatch(path.Path(self.buffer),
-            color=self.color, fill=0)
-
-        self.prediction = [xPH[i][:2] for i in range(self.PH+1)]
-        self.future_patch = patch.PathPatch(path.Path(self.prediction),
-            color='C1', fill=0)
-
-        dx1 = self.length*math.cos(x[2])
-        dx2 = self.length*math.sin(x[2])
-        self.orientation = patch.Arrow(x[0], x[1], dx1, dx2,
-                                       width=self.width, color=self.color)
-
-        self.axs.add_patch(self.trail_patch)
-        self.axs.add_patch(self.future_patch)
-        self.axs.add_patch(self.orientation)
-
-        plt.show(block=0)
-        plt.pause(self.pause)
-
-        return self
-
-def callback(mvar, T, x, u):
-    xPH = mvar.simulate(x, u)
-    return mvar.params.update(T, x, xPH)
-
-
 # print precision
 np.set_printoptions(precision=5, suppress=True)
 
 
 # functions for MPC
-def model(x, u, _):
-    xn = [
+def model(x, u):
+    xn = np.array( [
         x[0] + dt*math.cos(x[2])*(u[0] + u[1]),
         x[1] + dt*math.sin(x[2])*(u[0] + u[1]),
         x[2] + dt*1/R*(u[0] - u[1])
-    ]
+    ] )
     return xn
 
-def cost(mvar, xlist, ulist):
-    # grab class variables
-    xd = mvar.params.xd
-    Nu = mvar.u_num
-    PH = mvar.PH
-
+def cost(xlist, ulist):
     # gain parameters
     TOL = 1e-6
     kx = 1
     ko = 1
 
     # calculate cost of current input and state
-    C = 0
+    C = np.array( [0] )
     for i, x in enumerate(xlist):
         gx = (x[0] - xd[0])**2 + (x[1] - xd[1])**2
         go = (x[2] - xd[2])**2
-        C += kx*gx + ko*go
+        C = C + kx*gx + ko*go
 
     return C
 
@@ -208,19 +119,18 @@ dt = 0.001
 alpha = 0.01
 
 # initialize states
-x0 = [0,0,0]
-xd = [0,0,0]
-uinit = [0 for i in range(Nu*PH)]
+x0 = np.zeros( (Nx, 1) )
+xd = np.zeros( (Nx, 1) )
+uinit = np.zeros( (Nu*PH, 1) )
 
 # create MPC class variable
 dt_mpc = 0.01
-model_type = 'discrete'
 max_iter = 100
-params = Parameters(x0, xd, buffer_length=25)
-mvar = mpc.ModelPredictiveControl('ngd', model, cost, params, Nu,
-    num_ssvar=Nx, PH_length=PH, knot_length=kl, time_step=dt_mpc,
-    max_iter=max_iter, model_type=model_type)
-mvar.setAlpha(alpha)
+simvar = vhc.Vehicle2D( x0[:2] )
+mvar = mpc.ModelPredictiveControl( model, cost,
+    P=PH, k=kl, Nx=Nx, Nu=Nu, dt=dt_mpc, cost_type='horizon' )
+mvar.setStepSize( alpha )
+mvar.setMaxIter( max_iter )
 
 
 # observable functions
@@ -260,7 +170,9 @@ def obsH(X=None):
 
     u = X[:Nu*PH].reshape(Nu*PH,)
     x = X[Nu*PH:].reshape(Nx,)
-    g = np.array( mvar.gradient(x, u) )
+
+    mvar.setObjectiveFunction( mvar.costFunctionGenerator( x0 ) )
+    g = mvar.grad( u )
 
     PsiH = np.vstack( (u[:,None], g[:,None], [1]) )
     return PsiH
@@ -287,9 +199,10 @@ def obsUG(X=None):
 
     x0  = X[Nu*PH:]
     uPH = X[:Nu*PH]
+    mvar.setObjectiveFunction( mvar.costFunctionGenerator( x0 ) )
 
     PsiU = uPH
-    PsiG = np.array( mvar.gradient( x0[:,0], uPH[:,0] ) )[:,None]
+    PsiG = mvar.grad( uPH )
     PsiUG = np.vstack( (PsiU, PsiG) )
 
     return PsiUG
