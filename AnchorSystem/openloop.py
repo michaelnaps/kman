@@ -13,12 +13,6 @@ class Vehicle:
             self.fig = fig
             self.axs = axs
 
-        # figure scaling
-        self.axs.set_xlim(-12,12)
-        self.axs.set_ylim(-12,12)
-        self.axs.axis('equal')
-        self.axs.grid(1)
-
         # initialize aesthetic parameters
         self.color = color
         self.body_radius = radius
@@ -26,13 +20,20 @@ class Vehicle:
         dList = Psi0[Nx:Nx+Na]
         self.body = patch.Circle(Psi0[:Nx,0], self.body_radius,
             facecolor=self.color, edgecolor='k', zorder=1)
-        self.aList = [patch.Circle(Psi0[:Nx], np.sqrt(d),
-            facecolor="None", edgecolor='k') for d in dList]
+        self.aList = [patch.Circle(a, np.sqrt(d),
+            facecolor="None", edgecolor='k') for a, d in zip(aList.T, dList)]
 
         self.axs.add_patch(self.body)
         for a in self.aList:
             self.axs.add_patch(a)
 
+        # Figure settings.
+        self.axs.axis('equal')
+        self.axs.set_xlim(-15,15)
+        self.axs.set_ylim(-15,15)
+        self.axs.grid(1)
+
+        # Member variables.
         self.pause = pause
         self.xd = xd
 
@@ -48,12 +49,15 @@ class Vehicle:
         dList = Psi[Nx:Nx+Na]
         self.body = patch.Circle(Psi[:Nx,0], self.body_radius,
             facecolor=self.color, edgecolor='k', zorder=zorder)
-        self.aList = [patch.Circle(Psi[:Nx], np.sqrt(d),
-            facecolor="None", edgecolor='k') for d in dList]
+        self.aList = [patch.Circle(a, np.sqrt(d),
+            facecolor="None", edgecolor='k') for a, d in zip(aList.T, dList)]
 
         self.axs.add_patch(self.body)
         for a in self.aList:
             self.axs.add_patch(a)
+
+        self.axs.set_xlim(-15,15)
+        self.axs.set_ylim(-15,15)
 
         plt.title('iteration: %i' % t)
         plt.pause(self.pause)
