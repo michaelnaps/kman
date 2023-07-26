@@ -3,19 +3,6 @@ sys.path.insert(0, '../')
 
 from root import *
 
-# observable identification: control
-def obs(X=None):
-    if X is None:
-        meta = {'Nk':Nx+(Nu-1)+1+1}
-        return meta
-
-    x = X[:Nx]
-    xTrig = np.cos( x[2] )
-    u = X[Nx:Nx+Nu-1]
-
-    PsiX = np.vstack( (x, xTrig, u, [1]) )
-    return PsiX
-
 # Main execution block.
 if __name__ == '__main__':
     x0 = np.array( [[R],[0],[0]] )
@@ -40,14 +27,14 @@ if __name__ == '__main__':
     Y = np.vstack( (yStack, uStack) )
 
     # learn Koopman operator
-    kvar = KoopmanOperator( obs )
+    kvar = KoopmanOperator( obsXU )
     kvar.edmd( X, Y, X0=XU0 )
 
     print( kvar )
 
     # simulate model
     kModel = lambda Psi, u: kvar.K@Psi
-    vhc, xList = simulateModelWithControl( obs( xu0 ), kModel,
+    vhc, xList = simulateModelWithControl( obsXU( xu0 ), kModel,
         N=10000, sim=1 )
 
     # # plot static results

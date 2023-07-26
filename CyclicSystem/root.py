@@ -18,17 +18,14 @@ np.set_printoptions(precision=3, suppress=True)
 
 
 # hyper paramter(s)
+eps = 0.01
 R = 2.5
 dt = 0.01
 Nx = 3
 Ntr = 2
 Nu = 3
 Na = 3
-# aList = np.array( [[10, 12, -15],[10, -7, -13]] )
 aList = 1/2*np.array( [[10, -10, 10], [10, 10, -10]] )
-
-# Na = 5
-# aList = np.array( [[10, 10, -10, -10, -5],[10, -10, -10, 10, -5]] )
 
 
 # for plotting
@@ -37,70 +34,6 @@ mColor = 'royalblue'
 kColor = 'yellowgreen'
 x1Color = 'indianred'
 x2Color = 'orange'
-
-
-# open-loop vehicle class
-class Vehicle:
-    def __init__(self, Psi0, xd,
-                 fig=None, axs=None,
-                 buffer_length=10, pause=1e-3,
-                 color='k', radius=1,
-                 record=0):
-        if axs is None and fig is None:
-            self.fig, self.axs = plt.subplots()
-        else:
-            self.fig = fig
-            self.axs = axs
-
-        # figure scaling
-        self.axs.set_xlim(-18,18)
-        self.axs.set_ylim(-18,18)
-        self.axs.axis('equal')
-        self.axs.grid(1)
-
-        # initialize aesthetic parameters
-        self.color = color
-        self.body_radius = radius
-
-        x0 = Psi0[:Nx]
-        dList = Psi0[Nx:Nx+Na]
-        self.body = patch.Circle(x0, self.body_radius,
-            facecolor=self.color, edgecolor='k', zorder=1)
-        self.aList = [patch.Circle(x0, np.sqrt(d),
-            facecolor="None", edgecolor='k') for d in dList]
-
-        self.axs.add_patch(self.body)
-        for a in self.aList:
-            self.axs.add_patch(a)
-
-        self.pause = pause
-        self.xd = xd
-
-        if record:
-            plt.show(block=0)
-            input("Press enter when ready...")
-
-    def update(self, t, Psi, update_title=1, zorder=1):
-        self.body.remove()
-        for a in self.aList:
-            a.remove()
-
-        dList = Psi[Nx:Nx+Na]
-        dList = anchorMeasure( Psi[:Nx] )
-        self.body = patch.Circle(Psi[:Nx,0], self.body_radius,
-            facecolor=self.color, edgecolor='k', zorder=zorder)
-        self.aList = [patch.Circle(Psi[:Nx], np.sqrt(d),
-            facecolor="None", edgecolor='k') for d in dList]
-
-        self.axs.add_patch(self.body)
-        for a in self.aList:
-            self.axs.add_patch(a)
-
-        if update_title:
-            plt.title('iteration: %i' % t)
-        plt.pause(self.pause)
-
-        return self
 
 
 # model and control functions
@@ -136,38 +69,54 @@ def randCirc(R=1):
     x = [R*np.cos( theta ), R*np.sin( theta )]
     return x
 
+# Noise function.
+def noise(alpha, shape):
+    return 2*alpha*np.random.rand(shape[0], shape[1]) - alpha
 
 # observation functions
-def obsXU(X=None):
-    if X is None:
-        meta = {'Nk': 3*Nx+2*Nu+Na+1}
-        return meta
-
-    x = X[:Nx]
-    d = anchorMeasure( x )
-    u = X[Nx:]
-
-    xx = np.multiply( x,x )
-    uu = np.multiply( u,u )
-    xu = np.multiply( x,u )
-
-    Psi = np.vstack( (x, d**2, xx, 1, u, uu, xu) )
-
-    return Psi
-
 def obsX(X=None):
     if X is None:
-        meta = {'Nk': 2*Nx+Na+1}
+        meta = {'Nk': Nx+Ntr+1}
+        return meta
+
+    x = X[:Nx]
+    xSin = np.cos( x[2] )
+    xCos = np.cos( x[2] )
+
+    PsiX = np.vstack( (x, xSin, xCos, [1]) )
+
+    return PsiX
+
+def obsU(X=None):
+    if X is None:
+        meta = {'Nk': Nu-1}
+        return meta
+
+    PsiU = X[Nx:Nx+Nu-1]
+
+    return PsiU
+
+def obsXU(X=None):
+    if X is None:
+        meta = {'Nk': obsX()['Nk']+obsU()['Nk']}
+        return meta
+
+    PsiX = obsX( X )
+    PsiU = obsU( X )
+    Psi = np.vstack( (PsiX, PsiU) )
+
+    return Psi
+
+def obsH(X=None):
+    if X is None:
+        meta = {'Nk': Na}
         return meta
 
     x = X[:Nx]
     d = anchorMeasure( x )
-    xx = np.multiply( x,x )
+    PsiH = d**2
 
-    Psi = np.vstack( (x, d**2, xx, 1) )
-
-    return Psi
-
+    return PsiH
 
 # plot functions
 def plotAnchors(fig, axs, radius=0.5):
@@ -200,8 +149,7 @@ def simulateModelWithControl(x0, F, g=None, N=250, sim=1, output=0):
 
     # simulate results using vehicle class
     figSim, axsSim = plotStaticObjects()
-    vhc = Vehicle2D( F, x0[:N2],
-        fig=figSim, axs=axsSim, tail_length=250 )
+    vhc = Vehicle2D( x0[:N2], fig=figSim, axs=axsSim, tail_length=250 )
 
     # simulation result list
     Nx = len( x0 )
@@ -215,6 +163,7 @@ def simulateModelWithControl(x0, F, g=None, N=250, sim=1, output=0):
             u = g( x )
 
         x = F( x,u )
+        x += noise( eps, (Nx,1) )  # not appropriate place for noise?
         xList[:,k+1] = x[:,0]
 
         if sim:
