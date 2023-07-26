@@ -34,8 +34,7 @@ if __name__ == '__main__':
 
     # simulate model
     kModel = lambda Psi, u: kvar.K@Psi
-    vhc, xList = simulateModelWithControl( obsXU( xu0 ), kModel,
-        N=10000, sim=1 )
+    vhc, xList = simulateModelWithControl( obsXU( xu0 ), kModel, N=10000 )
 
     # # plot static results
     # fig, axs = plt.subplots()

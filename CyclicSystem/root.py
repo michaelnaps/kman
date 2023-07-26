@@ -1,13 +1,14 @@
 import sys
 from os.path import expanduser
 sys.path.insert(0, expanduser('~')+'/prog/kman')
-sys.path.insert(0, expanduser('~')+'/prog/mpc')
+sys.path.insert(0, expanduser('~')+'/prog/geom')
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-from MPC.Vehicle2D import *
 from KMAN.Operators import *
+from GEOM.Vehicle2D import *
+from GEOM.Circle import *
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
@@ -61,7 +62,7 @@ def control(x, v=1):
 def anchorMeasure(x):
     da = np.empty( (Na,1) )
     for i, a in enumerate(aList.T):
-        da[i] = np.linalg.norm(x[:2] - a)
+        da[i] = np.linalg.norm(x[:2] - a[:,None])
     return da
 
 def randCirc(R=1):
@@ -143,15 +144,20 @@ def plotStaticObjects(fig=None, axs=None):
     return fig, axs
 
 # animate results
-def simulateModelWithControl(x0, F, g=None, N=250, sim=1, output=0):
+def simulateModelWithControl(x0, F, g=None, N=250, output=0):
     # For 2D simulation.
     N2 = 2
 
-    # simulate results using vehicle class
-    figSim, axsSim = plotStaticObjects()
+    # Simulate results using vehicle class.
+    figSim, axsSim = plotStaticObjects();  axsSim.axis( 'equal' )
     vhc = Vehicle2D( x0[:N2], fig=figSim, axs=axsSim, tail_length=250 )
 
-    # simulation result list
+    # Initialize anchors.
+    anchors = [ Circle( a[:,None], d, color='none' ) for a, d in zip( aList.T, anchorMeasure( x0[:2] ) ) ]
+    for a in anchors:
+        a.draw( fig=figSim, axs=axsSim )
+
+    # Simulation result list.
     Nx = len( x0 )
     xList = np.empty( (Nx,N+1) )
 
@@ -166,9 +172,11 @@ def simulateModelWithControl(x0, F, g=None, N=250, sim=1, output=0):
         x += noise( eps, (Nx,1) )  # not appropriate place for noise?
         xList[:,k+1] = x[:,0]
 
-        if sim:
-            vhc.update( x[:N2] )
-            vhc.draw()
+        # Update simulation entities.
+        vhc.update( x[:N2], pause=0 )
+        for a, d in zip( anchors, anchorMeasure( x ) ):
+            a.update( radius=d )
+        plt.pause( vhc.pause )
 
         if output:
             print( x.T )
