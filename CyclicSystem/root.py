@@ -81,7 +81,7 @@ def obsX(X=None):
         return meta
 
     x = X[:Nx]
-    xSin = np.cos( x[2] )
+    xSin = np.sin( x[2] )
     xCos = np.cos( x[2] )
 
     PsiX = np.vstack( (x, xSin, xCos, [1]) )
