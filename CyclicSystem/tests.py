@@ -1,8 +1,14 @@
+import sys
+from os.path import expanduser
+sys.path.insert( 0, expanduser( '~' )+'/prog/geom' )
+
 import numpy as np
-from root import *
+from GEOM.Vehicle2D import *
+
 
 # hyper parameter(s)
-dt = 0.01
+Nx = 3
+dt = 0.005
 R  = 7.5
 
 def model(x, u):
@@ -26,15 +32,17 @@ if __name__ == '__main__':
 
     # vehicle and guide circle around origin
     fig, axs = plt.subplots()
-    vhc = Vehicle( x0, None, fig=fig, axs=axs,
-        record=0, color='yellowgreen', radius=0.5 )
-    guideCircle = patch.Circle((0,0), radius=R,
+    vhc = Vehicle2D( x0[:2], fig=fig, axs=axs,
+        color='yellowgreen', radius=0.5 )
+    guideCircle = plt.Circle((0,0), radius=R,
         facecolor='None', edgecolor='r', linestyle='--', zorder=1)
     axs.add_patch( guideCircle )
+    axs.set_xlim( (-10, 10) )
+    axs.axis( 'equal' )
 
     # simulation loop
     x = x0
     for i in range( Nt ):
         x = model( x,control(x) )
-        vhc.update( i*dt,x )
+        vhc.update( x[:2] )
         # plt.pause(0.01)
