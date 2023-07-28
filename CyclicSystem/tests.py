@@ -32,10 +32,10 @@ if __name__ == '__main__':
 
     # vehicle and guide circle around origin
     fig, axs = plt.subplots()
-    vhc = Vehicle2D( x0[:2], fig=fig, axs=axs,
-        color='yellowgreen', radius=0.5 )
-    guideCircle = plt.Circle((0,0), radius=R,
-        facecolor='None', edgecolor='r', linestyle='--', zorder=1)
+    vhc = Vehicle2D( x0[:2], fig=fig, axs=axs, color='yellowgreen',
+        radius=0.5, zorder=5 )
+    guideCircle = plt.Circle((0,0), radius=R, facecolor='None',
+        edgecolor='r', linestyle='--', zorder=1)
     axs.add_patch( guideCircle )
     axs.set_xlim( (-10, 10) )
     axs.axis( 'equal' )
