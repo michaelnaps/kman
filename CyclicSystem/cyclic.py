@@ -52,15 +52,15 @@ if __name__ == '__main__':
     Kf = Klist[0].K @ Tu( Klist[1] )
     kvar = KoopmanOperator( obsXUH, obsXU, K=Kf )
     kvar.resError( X, Y, x0 )
-
     print( kvar )
 
-    # simulate model
+    # Simulate model using re-measurement function.
     def rmes( Psi ):
         x = Psi[:Nx]
+        d = anchorsMeasure( x )
         PsiX = Psi[:p]
         PsiU = np.array( [[1]] )
-        PsiH = anchorMeasure( x )**2
+        PsiH = d**2
         PsiXUH = np.vstack( (PsiX, np.kron( PsiU, PsiH )) )
         return PsiXUH
     kModel = lambda Psi, u: kvar.K@rmes( Psi )
