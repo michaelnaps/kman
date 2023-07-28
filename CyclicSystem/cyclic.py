@@ -57,7 +57,7 @@ if __name__ == '__main__':
     # Simulate model using re-measurement function.
     def rmes( Psi ):
         x = Psi[:Nx]
-        d = anchorsMeasure( x )
+        d = anchorMeasure( x )
         PsiX = Psi[:p]
         PsiU = np.array( [[1]] )
         PsiH = d**2
