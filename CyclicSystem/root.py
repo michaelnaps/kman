@@ -77,24 +77,16 @@ def noise(alpha, shape):
 # observation functions
 def obsX(X=None):
     if X is None:
-        meta = {'Nk': Nx+Ntr+1}
+        meta = {'Nk': Nx-1}
         return meta
-
-    x = X[:Nx]
-    xSin = np.sin( x[2] )
-    xCos = np.cos( x[2] )
-
-    PsiX = np.vstack( (x, xSin, xCos, [1]) )
-
+    PsiX = X[:Nx-1]
     return PsiX
 
 def obsU(X=None):
     if X is None:
         meta = {'Nk': Nu-1}
         return meta
-
     PsiU = X[Nx:Nx+Nu-1]
-
     return PsiU
 
 def obsXU(X=None):
@@ -113,11 +105,26 @@ def obsH(X=None):
         meta = {'Nk': Na}
         return meta
 
-    x = X[:Nx]
+    x = X[:Nx-1]
     d = anchorMeasure( x )
     PsiH = d**2
 
     return PsiH
+
+def obsXUH(X=None):
+    if X is None:
+        meta = {
+            'p': obsX()['Nk'],
+            'q': 1,
+            'b': obsH()['Nk'],
+            'Nk':obsX()['Nk']+1*obsH()['Nk']
+        }
+        return meta
+    PsiX = obsX( X )
+    PsiU = np.array( [[1]] )
+    PsiH = obsH( X )
+    PsiXUH = np.vstack( (PsiX, np.kron(PsiU, PsiH)) )
+    return PsiXUH
 
 # plot functions
 def plotAnchors(fig, axs, radius=0.5):

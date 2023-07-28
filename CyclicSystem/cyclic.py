@@ -5,6 +5,12 @@ from root import *
 
 # Main execution block.
 if __name__ == '__main__':
+    # Dimensions variables.
+    p = obsXUH()['p']
+    q = obsXUH()['q']
+    b = obsXUH()['b']
+
+    # Initial conditions.
     x0 = np.array( [[R],[0],[0]] )
     xu0 = np.vstack( (x0, [[0],[0],[0]]) )
 
@@ -13,27 +19,51 @@ if __name__ == '__main__':
     tList = [ [i*dt for i in range( Nt )] ]
 
     # generate training data
-    N0 = 10
-    X0 = np.vstack( (np.random.rand(Nx-2,N0), np.zeros( (Nx-1,N0) )) )
-    xData, uData = generate_data( tList, model, X0, control=control, Nu=Nu )
+    N0 = 1
+    # X0 = np.vstack( (np.random.rand(Nx-2,N0), np.zeros( (Nx-1,N0) )) )
+    xData, uData = generate_data( tList, model, x0, control=control, Nu=Nu )
 
     # formatting training data from xData and uData
     uStack = stack_data( uData, N0, Nu, Nt-1 )
     xStack = stack_data( xData[:,:-1], N0, Nx, Nt-1 )
     yStack = stack_data( xData[:,1:], N0, Nx, Nt-1 )
 
-    XU0 = np.vstack( (X0, np.zeros( (Nu,N0) )) )
+    XU0 = np.vstack( (x0, np.zeros( (Nu,N0) )) )
     X = np.vstack( (xStack, np.zeros( (Nu,N0*(Nt-1)) )) )
     Y = np.vstack( (yStack, uStack) )
 
     # learn Koopman operator
-    kvar = KoopmanOperator( obsXU )
-    kvar.edmd( X, Y, X0=XU0 )
+    def Tu(kuvar):
+        m = Nu - 1
+        Kblock = np.vstack(
+            (np.hstack( (np.eye( p,p ), np.zeros( (p,q*b) )) ),
+            np.hstack( (np.zeros( (q*m,p) ), np.kron( np.eye( q,q ), kuvar.K )) ))
+        )
+        return Kblock
+    kuvar = KoopmanOperator( obsH, obsU )
+    kxvar = KoopmanOperator( obsXUH, obsXU, T=Tu( kuvar ) )
+
+    # Form list and compute results of c-EDMD.
+    Klist = (kxvar, kuvar)
+    Tlist = (Tu, )
+    Klist = cascade_edmd( Klist, Tlist, X, Y, x0 )
+
+    # Form the cumulative operator.
+    Kf = Klist[0].K @ Tu( Klist[1] )
+    kvar = KoopmanOperator( obsXUH, obsXU, K=Kf )
+    kvar.resError( X, Y, x0 )
 
     print( kvar )
 
     # simulate model
-    kModel = lambda Psi, u: kvar.K@Psi
+    def rmes( Psi ):
+        x = Psi[:Nx]
+        PsiX = Psi[:p]
+        PsiU = np.array( [[1]] )
+        PsiH = anchorMeasure( x )**2
+        PsiXUH = np.vstack( (PsiX, np.kron( PsiU, PsiH )) )
+        return PsiXUH
+    kModel = lambda Psi, u: kvar.K@rmes( Psi )
     vhc, xList = simulateModelWithControl( obsXU( xu0 ), kModel, N=10000 )
 
     # # plot static results
