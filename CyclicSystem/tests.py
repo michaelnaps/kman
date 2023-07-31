@@ -34,6 +34,7 @@ if __name__ == '__main__':
     fig, axs = plt.subplots()
     vhc = Vehicle2D( x0[:2], fig=fig, axs=axs, color='yellowgreen',
         radius=0.5, zorder=5 )
+    vhc.draw()
     guideCircle = plt.Circle((0,0), radius=R, facecolor='None',
         edgecolor='r', linestyle='--', zorder=1)
     axs.add_patch( guideCircle )
@@ -45,4 +46,4 @@ if __name__ == '__main__':
     for i in range( Nt ):
         x = model( x,control(x) )
         vhc.update( x[:2] )
-        # plt.pause(0.01)
+        plt.pause( 0.01 )

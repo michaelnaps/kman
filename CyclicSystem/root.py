@@ -158,11 +158,13 @@ def simulateModelWithControl(x0, F, g=None, N=250, output=0):
     # Simulate results using vehicle class.
     figSim, axsSim = plotStaticObjects();  axsSim.axis( 'equal' )
     vhc = Vehicle2D( x0[:N2], fig=figSim, axs=axsSim, tail_length=250 )
+    vhc.draw()
 
     # Initialize anchors.
-    anchors = [ Circle( a[:,None], d, color='none' ) for a, d in zip( aList.T, anchorMeasure( x0[:2] ) ) ]
+    anchors = [ Circle( a[:,None], d, fig=figSim, axs=axsSim, color='none' )
+        for a, d in zip( aList.T, anchorMeasure( x0[:2] ) ) ]
     for a in anchors:
-        a.draw( fig=figSim, axs=axsSim )
+        a.draw()
 
     # Simulation result list.
     Nx = len( x0 )
@@ -180,7 +182,7 @@ def simulateModelWithControl(x0, F, g=None, N=250, output=0):
         xList[:,k+1] = x[:,0]
 
         # Update simulation entities.
-        vhc.update( x[:N2], pause=0 )
+        vhc.update( x[:N2] )
         for a, d in zip( anchors, anchorMeasure( x ) ):
             a.update( radius=d )
         plt.pause( vhc.pause )
