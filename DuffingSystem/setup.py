@@ -14,7 +14,7 @@ dt = 0.001
 Nx = 3
 
 # Duffing model.
-def model(x):
+def model(x) -> np.array:
     delta = 0.02
     alpha = 1
     theta = 5
@@ -29,10 +29,13 @@ def model(x):
 
 # Observation spaces of interest.
 def obsx(x=None):
+    Ntr = 2
     if x is None:
-        return {'Nk':Nx+1}
+        return {'Nk':3*Nx+Ntr+1}
     N = x.shape[1]
-    psi = np.vstack( (x, np.ones( (1,N) )) )
+    x2 = x**2
+    x3 = x**3
+    psi = np.vstack( (x, x2, x3, np.sin( x[2] ), np.cos( x[2] ), np.ones( (1,N) )) )
     return psi
 
 # Main execution block.
