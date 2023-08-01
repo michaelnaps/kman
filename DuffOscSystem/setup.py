@@ -10,17 +10,20 @@ from KMAN.Operators import *
 from GEOM.Vehicle2D import *
 
 # Hyper parameter(s).
-dt = 0.01
-Nx = 2
+dt = 0.001
+Nx = 3
 
 # Duffing model.
 def model(x):
-    delta = 1
+    delta = 0.02
     alpha = 1
-    gamma = 1
+    theta = 5
+    gamma = 8
+    omega = 0.5
     dx = np.array( [
         x[1],
-        -(delta*x[1] + alpha*x[0] + gamma*x[0]**3)
+        gamma*np.cos( omega*x[2] ) - (delta*x[1] + alpha*x[0] + theta*x[0]**3),
+        1
     ] )
     return x + dt*dx
 
@@ -54,25 +57,25 @@ if __name__ == '__main__':
 
     # Plot comparison results.
     fig, axs = plt.subplots()
-    trueSwm = Swarm2D( X0, fig=fig, axs=axs, zorder=5,
+    trueSwm = Swarm2D( X0[:2], fig=fig, axs=axs, zorder=5,
         radius=0.10, tail_length=100 )
-    kmanSwm = Swarm2D( X0, fig=fig, axs=axs, zorder=1,
+    kmanSwm = Swarm2D( X0[:2], fig=fig, axs=axs, zorder=1,
         radius=0.15, color='indianred', tail_length=100 )
-    kmanSwm.draw()
     trueSwm.draw()
+    kmanSwm.draw()
 
-    plt.axis( [-4, 4, -4, 4] )
+    plt.axis( [-10,10,-10,10] )
     plt.gca().set_aspect( 'equal', adjustable='box' )
     plt.show( block=0 )
 
     psi = obsx( X0 )
     for x in xList.T:
         # Update true swarm based on set.
-        trueSwm.update( x.reshape( N0, Nx ).T )
+        trueSwm.update( x.reshape( N0, Nx ).T[:2] )
 
         # Update Koopman operator apprx.
         psi = kman.K@psi
-        kmanSwm.update( psi[:Nx] )
+        kmanSwm.update( psi[:2] )
 
         # Pause sim.
         plt.pause( 1e-3 )
