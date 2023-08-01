@@ -2,9 +2,8 @@ import numpy as np
 
 # Helper data function for generating sets.
 def generate_data(tlist, model, X0, control=None, Nu=0):
-    Nx = len( X0 )
-    N0 = len( X0[0] )
-    Nt = len( tlist[0] )
+    Nx, N0 = X0.shape
+    Nt = tlist.shape[1]
 
     if control is not None:
         ulist = np.empty( (N0*Nu, Nt-1) )
