@@ -136,7 +136,7 @@ def animatedResults(kvar):
 if __name__ == '__main__':
     # simulation data (for training)
     T = 5;  Nt = round(T/dt)+1
-    tList = [[i*dt for i in range(Nt)]]
+    tList = np.array( [[i*dt for i in range(Nt)]] )
 
     # generate data
     N0 = 1
