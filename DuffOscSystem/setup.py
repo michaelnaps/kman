@@ -68,6 +68,7 @@ if __name__ == '__main__':
     plt.gca().set_aspect( 'equal', adjustable='box' )
     plt.show( block=0 )
 
+    input( "Press ENTER to begin simulation..." )
     psi = obsx( X0 )
     for x in xList.T:
         # Update true swarm based on set.
@@ -79,3 +80,4 @@ if __name__ == '__main__':
 
         # Pause sim.
         plt.pause( 1e-3 )
+    input( "Press ENTER to exit program..." )
