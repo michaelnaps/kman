@@ -26,7 +26,7 @@ def model(x):
 
 # Observation spaces of interest.
 def obsx(x=None):
-    P = 7
+    P = 3
     if x is None:
         return {'Nk':P*Nx+1}
     N = x.shape[1]
@@ -60,12 +60,12 @@ if __name__ == '__main__':
 
     # Plot comparison results.
     fig, axs = plt.subplots()
-    trueSwm = Swarm2D( X0[:2], fig=fig, axs=axs, zorder=5,
+    trueSwrm = Swarm2D( X0[:2], fig=fig, axs=axs, zorder=5,
         radius=0.10, tail_length=500 )
-    # kmanSwm = Swarm2D( X0[:2], fig=fig, axs=axs, zorder=1,
-    #     radius=0.15, color='indianred', tail_length=100 )
-    trueSwm.draw()
-    # kmanSwm.draw()
+    kmanSwrm = Swarm2D( X0[:2], fig=fig, axs=axs, zorder=1,
+        radius=0.15, color='indianred', tail_length=100 )
+    trueSwrm.draw()
+    kmanSwrm.draw()
 
     plt.axis( [-6, 6, -6, 6] )
     plt.gca().set_aspect( 'equal', adjustable='box' )
@@ -78,8 +78,8 @@ if __name__ == '__main__':
 
         # Update simulation based on sets.
         if i % 10 == 0:
-            trueSwm.update( x.reshape( N0, Nx ).T[:2] )
-            # kmanSwm.update( psi[:2] )
+            trueSwrm.update( x.reshape( N0, Nx ).T[:2] )
+            kmanSwrm.update( psi[:2] )
 
             # Pause sim. for visualization.
             plt.pause( 1e-3 )
