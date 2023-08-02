@@ -14,7 +14,7 @@ dt = 0.001
 Nx = 2
 
 # Duffing model.
-def model(x) -> np.array:
+def model(x):
     alpha = 5
     delta = 0.2
     gamma = 1
