@@ -10,8 +10,22 @@ from KMAN.Operators import *
 from GEOM.Vehicle2D import *
 
 # Hyper parameter(s).
+P = 3
 dt = 0.001
 Nx = 2
+
+# Anchor initializations.
+Na = 4
+aList = 5*np.array( [
+    [-1, 1, 0, 0],
+    [0, 0, -1, 1]
+] )
+
+def anchorMeasure(x):
+    da = np.empty( (Na,1) )
+    for i, a in enumerate(aList.T):
+        da[i] = np.linalg.norm(x - a[:,None])
+    return da
 
 # Duffing model.
 def model(x):
@@ -26,13 +40,14 @@ def model(x):
 
 # Observation spaces of interest.
 def obsx(x=None):
-    P = 3
     if x is None:
-        return {'Nk':P*Nx+1}
-    N = x.shape[1]
+        return {'Nk':P*Nx+P*Na+1}
+    d = anchorMeasure( x )
     x1P = [ x[0]**i for i in range( 2,P+1 ) ]
     x2P = [ x[1]**i for i in range( 2,P+1 ) ]
-    psi = np.vstack( (x, x1P, x2P, np.ones( (1,N) )) )
+    dP = np.hstack( [d**i for i in range(1,P+1)] )
+    dP = dP.reshape(P*Na,1)
+    psi = np.vstack( (x, x1P, x2P, dP, [1]) )
     return psi
 
 # Main execution block.
@@ -46,7 +61,7 @@ if __name__ == '__main__':
     ) )
 
     # Generate trajectory data.
-    T = 10;  Nt = round( T/dt ) + 1
+    T = 100;  Nt = round( T/dt ) + 1
     tList = np.array( [ [i*dt for i in range( Nt )] ] )
     xList, _ = generate_data( tList, model, X0 )
 
@@ -58,29 +73,53 @@ if __name__ == '__main__':
     kman = KoopmanOperator( obsx )
     print( 'K:\n ', kman.edmd( X, Y, X0 ) )
 
+    # Define remeasurement function.
+    def rmes(psi):
+        x = psi[:Nx]
+        d = anchorMeasure( x )
+        psix = psi[:P*Nx]
+        psid = np.hstack( [d**i for i in range(1,P+1)] ).reshape(P*Na,1)
+        return np.vstack( (psix, psid, [1]) )
+
     # Plot comparison results.
     fig, axs = plt.subplots()
+    anchors = [ Circle( a[:,None], fig=fig, axs=axs,
+        radius=0.25, color='cornflowerblue' ).draw() for a in aList.T ]
     trueSwrm = Swarm2D( X0[:2], fig=fig, axs=axs, zorder=5,
         radius=0.10, tail_length=500 )
     kmanSwrm = Swarm2D( X0[:2], fig=fig, axs=axs, zorder=1,
-        radius=0.15, color='indianred', tail_length=100 )
+        radius=0.15, color='indianred', tail_length=500 )
     trueSwrm.draw()
     kmanSwrm.draw()
 
+    # Final adjustments and show plot.
     plt.axis( [-6, 6, -6, 6] )
     plt.gca().set_aspect( 'equal', adjustable='box' )
     plt.show( block=0 )
 
-    input( "Press ENTER to begin simulation..." )
-    psi = obsx( X0 )
+    # Run sim?
+    ans = input( "Press ENTER to begin simulation... " )
+    if ans == 'n':
+        exit()
+
+    # Simulation step freq.
+    if dt < 0.01:
+        n = round( 0.1/dt )
+    else:
+        n = 1
+
+    # Simulation block.
+    psi = np.hstack( ([obsx( x0[:,None] ) for x0 in X0.T]) )
     for i, x in enumerate( xList.T ):
         psi = kman.K@psi
 
         # Update simulation based on sets.
-        if i % 10 == 0:
+        if i % n == 0:
             trueSwrm.update( x.reshape( N0, Nx ).T[:2] )
             kmanSwrm.update( psi[:2] )
 
             # Pause sim. for visualization.
             plt.pause( 1e-3 )
+
+    # Exit.
     input( "Press ENTER to exit program..." )
