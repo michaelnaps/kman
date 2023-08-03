@@ -12,7 +12,7 @@ The Koopman-feedback operator (KFO) is a preliminary application for our study o
  The KFO was first proposed as a solution to the problem where the user is given measurement data which is ambiguously correlated with the system state and control policy. The communication between the Koopman system w.r.t the true system is rendered in the diagram below.
 
 <p align="center">
-    <img src=.figures/anchors/kman_closedloop.png height=400/>
+    <img src=.figures/anchors/kman_closedloop.png width=600/>
 </p>
 
 In this system, two Koopman operators are used to independently generate the control policy from feedback-related measurements, as well as the state estimation using previous position data and the appropriate control. The noteworthy components are the model and control-related Koopman operators; $\mathcal{K}_x$ and $\mathcal{K}_u$, respectively, as well as the observation spaces; $\Psi_x$, $\Psi_u$ and $h$. In the following sections, the observation spaces will be indentified for the anchor system along with a simple set of trials.
@@ -78,7 +78,7 @@ $$
 A short sim which shows the vehicle's ability to keep track of the anchor distances is shown below. The radius of the black circles represents the distance the vehicle *estimates* it is from each of the reference anchors as time progresses. The distances are represented by circles because the vehicle is never given data corresponding to the direction of each of the anchors.
 
 <p align="center">
-    <img src=.figures/anchors/anim_openloop.gif height=325 />
+    <img src=.figures/anchors/anim_openloop.gif width=450 />
 </p>
 
 It should also be noted that the path taken by the vehicle is predetermined. I.e. the inputs given to the observation space $h$ are 'hard coded'.
