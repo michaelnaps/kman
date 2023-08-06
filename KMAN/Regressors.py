@@ -49,7 +49,7 @@ class Regressor:
 
 	# Least Squares (LS)
 	# Assumption: Datasets are already flattened.
-	def ls(self, EPS=None):
+	def dmd(self, EPS=None):
 		# Get set dimensions.
 		# Assume Yset is similarly shaped.
 		TOL = 1E-12

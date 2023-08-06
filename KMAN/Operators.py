@@ -100,7 +100,7 @@ class Operator:
 		self.solver = Regressor(X, Y)
 
 		# Compute Koopman operator through DMD.
-		self.C, self.USV = self.solver.ls( EPS=EPS )
+		self.C, self.USV = self.solver.dmd( EPS=EPS )
 		self.err = self.solver.resError( self.C )
 
 		# Return instance of self.

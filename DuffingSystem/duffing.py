@@ -61,7 +61,7 @@ if __name__ == '__main__':
     ) )
 
     # Generate trajectory data.
-    T = 100;  Nt = round( T/dt ) + 1
+    T = 25;  Nt = round( T/dt ) + 1
     tList = np.array( [ [i*dt for i in range( Nt )] ] )
     xList, _ = generate_data( tList, model, X0 )
 
