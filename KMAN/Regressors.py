@@ -83,3 +83,7 @@ class Regressor:
 
 		self.err = self.resError( C )
 		return C, (U,S,V)
+
+	# Proper Orthonal Decomposition (POD)
+	def pod(self):
+		pass
