@@ -10,7 +10,6 @@ from KMAN.Operators import *
 from GEOM.Vehicle2D import *
 
 # Hyper parameter(s).
-P = 3
 dt = 0.001
 Nx = 2
 
@@ -40,14 +39,20 @@ def model(x):
 
 # Observation spaces of interest.
 def obsx(x=None):
+    P = 3
     if x is None:
-        return {'Nk':P*Nx+P*Na+1}
+        return {'Nk':Nx+1}
+    psi = np.vstack( (x, x[0]**3) )
+    return psi
+
+def obsh(x=None):
+    P = 5
+    if x is None:
+        return {'Nk':Nx+P*Na+1}
     d = anchorMeasure( x )
-    x1P = [ x[0]**i for i in range( 2,P+1 ) ]
-    x2P = [ x[1]**i for i in range( 2,P+1 ) ]
     dP = np.hstack( [d**i for i in range(1,P+1)] )
     dP = dP.reshape(P*Na,1)
-    psi = np.vstack( (x, x1P, x2P, dP, [1]) )
+    psi = np.vstack( (x, dP, [1]) )
     return psi
 
 # Main execution block.
@@ -61,7 +66,7 @@ if __name__ == '__main__':
     ) )
 
     # Generate trajectory data.
-    T = 25;  Nt = round( T/dt ) + 1
+    T = 5;  Nt = round( T/dt ) + 1
     tList = np.array( [ [i*dt for i in range( Nt )] ] )
     xList, _ = generate_data( tList, model, X0 )
 
@@ -70,16 +75,15 @@ if __name__ == '__main__':
     Y = stack_data( xList[:,1:], N0, Nx, Nt-1 )
 
     # Koopman operator variaables.
-    kman = KoopmanOperator( obsx )
+    kman = KoopmanOperator( obsh, obsx )
     print( 'K:\n ', kman.edmd( X, Y, X0 ) )
 
     # Define remeasurement function.
-    def rmes(psi):
-        x = psi[:Nx]
-        d = anchorMeasure( x )
-        psix = psi[:P*Nx]
-        psid = np.hstack( [d**i for i in range(1,P+1)] ).reshape(P*Na,1)
-        return np.vstack( (psix, psid, [1]) )
+    def rmes(Psi):
+        Psin = np.empty( (obsh()['Nk'], Psi.shape[1]) )
+        for i, psi in enumerate( Psi.T ):
+            Psin[:,i] = obsh( psi[:Nx,None] )[:,0]
+        return Psin
 
     # Plot comparison results.
     fig, axs = plt.subplots()
@@ -103,15 +107,21 @@ if __name__ == '__main__':
         exit()
 
     # Simulation step freq.
-    if dt < 0.01:
-        n = round( 0.1/dt )
+    dtmin = 0.1
+    if dt < dtmin:
+        n = round( dtmin/dt )
     else:
         n = 1
 
+    # Simulation time frame.
+    Tsim = 25;  Ntsim = round( Tsim/dt ) + 1
+    tSim = np.array( [[i*dt for i in range( Ntsim )]] )
+
     # Simulation block.
+    xSim, _ = generate_data( tSim, model, X0 )
     psi = np.hstack( ([obsx( x0[:,None] ) for x0 in X0.T]) )
-    for i, x in enumerate( xList.T ):
-        psi = kman.K@psi
+    for i, x in enumerate( xSim.T ):
+        psi = kman.K@rmes( psi )
 
         # Update simulation based on sets.
         if i % n == 0:
