@@ -9,7 +9,7 @@ def generate_data(tlist, model, X0, control=None, Nu=0):
         ulist = np.empty( (N0*Nu, Nt-1) )
     else:
         ulist = None
-        Nu = Nx
+        Nu = 1
 
     xlist = np.empty( (N0*Nx, Nt) )
 
@@ -69,9 +69,8 @@ class DataSet:
 			self.M = 1
 		# otherwise, data has 3-D shape (M).
 		else:
-			self.N = len( X0 )			# Number of states
-			self.P = len( X[0] )		# Number of time-steps
-			self.M = len( X0[0] )		# Number of data sets
+			self.P = X0.shape[1]        # Number of time-steps
+			self.N, self.M = X0.shape   # Number of states/data sets
 
 	def getDataDimn(self):
 		return self.N, self.P, self.M

@@ -85,5 +85,9 @@ class Regressor:
 		return C, (U,S,V)
 
 	# Proper Orthonal Decomposition (POD)
-	def pod(self):
-		pass
+	# Assumption: Datasets are already flattened.
+	def pod(self, psi):
+		# Initialize coefficient matrix.
+		A = np.empty( (self.Xset.N, self.Xset.P) )
+
+		pass  # TODO: Write out steps in notes more thoroughly.
