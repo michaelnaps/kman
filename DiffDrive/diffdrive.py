@@ -1,14 +1,15 @@
 # script for model equation testing
 import sys
 from os.path import expanduser
-sys.path.insert(0, expanduser('~')+'/prog/mpc')
 sys.path.insert(0, expanduser('~')+'/prog/kman')
+sys.path.insert(0, expanduser('~')+'/prog/mpc')
+sys.path.insert(0, expanduser('~')+'/prog/geom')
 
 import numpy as np
 
 from KMAN.Operators import *
 import MPC.Optimizer as mpc
-import MPC.Vehicle2D as vhc
+import GEOM.Vehicle2D as vhc
 
 import math
 import matplotlib.pyplot as plt
@@ -174,7 +175,7 @@ def obsH(X=None):
     mvar.setObjectiveFunction( mvar.costFunctionGenerator( x0 ) )
     g = mvar.grad( u )
 
-    PsiH = np.vstack( (u[:,None], g[:,None], [1]) )
+    PsiH = np.vstack( (u[:,None], g, [1]) )
     return PsiH
 
 def obsXUH(X=None):

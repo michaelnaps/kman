@@ -99,9 +99,9 @@ if __name__ == "__main__":
     iList = np.array( [ [i for i in range( max_iter )] ] )
     U1, U2, UX0 = createControlSets( iList, X0 )
 
-    kuvar = KoopmanOperator( obsUGX )
+    kuvar = KoopmanOperator( obsUGX, obsH )
     kuvar.edmd( U1, U2, UX0 )
 
     print( 'Ku:\n', kuvar )
-    # print( kuvar.propagate( UX0[:,0,None] )[:Nu].T )
-    # print( mvar.solve( UX0[Nu*PH:Nu*PH+Nx,0,None], UX0[:Nu*PH,0,None] ) )
+    print( kuvar.propagate( UX0[:,0,None] ) )
+    print( mvar.solve( UX0[Nu*PH:Nu*PH+Nx,0,None], UX0[:Nu*PH,0,None] ).T )
