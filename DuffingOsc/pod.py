@@ -1,11 +1,13 @@
 import sys
 from os.path import expanduser
 sys.path.insert( 0, expanduser('~')+'/prog/kman' )
+sys.path.insert( 0, expanduser('~')+'/prog/four' )
 sys.path.insert( 0, expanduser('~')+'/prog/geom' )
 
 # Standard imports.
 import numpy as np
 from KMAN.Operators import *
+from FOUR.Transforms import *
 from GEOM.Vehicle2D import *
 
 # Hyper parameter(s).
@@ -13,7 +15,7 @@ dt = 0.001
 Nx = 3
 
 # Grid bounds.
-Ng = 3  # Density of grid.
+Ng = 100  # Density of grid.
 xBounds = (-2, 2)
 yBounds = (-2, 2)
 alph = xBounds[1] - xBounds[0]
@@ -52,7 +54,31 @@ def gridMap(X, Nt):
     for k, x in enumerate( X.T ):
         G[k][gridIndex( x )] = 1
 
+    # Return grip map.
     return G
+
+def gridStack(gmap):
+    # Stack grid.
+    N = round( alph/gamm )**2
+    gstack = np.empty( (N, Nt) )
+    for k, g in enumerate( gmap ):
+        gstack[:,k] = g.reshape( N, )
+
+    # Return grid stack.
+    return gstack
+
+def gridRemap(gstack):
+    # Dimensions
+    n = round( alpha/gamm )
+    Nt = gstack.shape[1]
+
+    # Reform grid map.
+    gmap = np.empty( (Nt, n, n) )
+    for k, g in enumerate( gstack ):
+        gmap[k] = g.reshape( n, n )
+
+    # Return map.
+    return gmap
 
 # Basis functions.
 def bas(x):
@@ -76,6 +102,12 @@ if __name__ == '__main__':
     T = 5;  Nt = round( T/dt ) + 1
     tList = np.array( [ [i*dt for i in range( Nt )] ] )
     xList, _ = generate_data( tList, model, X0 )
+    gList = gridMap( xList, Nt )
+
+    # # Fourier series approximation.
+    # gFour = gridStack( gList )
+    # fvar = RealFourier( tList, gFour )
+    # fvar.dmd( N=100 )
 
     # Start simulation?
     ans = input("Press ENTER to begin simulation... ")
