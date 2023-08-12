@@ -9,13 +9,14 @@ import numpy as np
 from KMAN.Operators import *
 from FOUR.Transforms import *
 from GEOM.Vehicle2D import *
+from GEOM.Polygon import *
 
 # Hyper parameter(s).
 dt = 0.001
 Nx = 3
 
 # Grid bounds.
-Ng = 100  # Density of grid.
+Ng = 3  # Density of grid.
 xBounds = (-2, 2)
 yBounds = (-2, 2)
 alph = xBounds[1] - xBounds[0]
@@ -59,6 +60,7 @@ def gridMap(X, Nt):
 
 def gridStack(gmap):
     # Stack grid.
+    Nt = gmap.shape[0]
     N = round( alph/gamm )**2
     gstack = np.empty( (N, Nt) )
     for k, g in enumerate( gmap ):
@@ -69,12 +71,12 @@ def gridStack(gmap):
 
 def gridRemap(gstack):
     # Dimensions
-    n = round( alpha/gamm )
+    n = round( alph/gamm )
     Nt = gstack.shape[1]
 
     # Reform grid map.
     gmap = np.empty( (Nt, n, n) )
-    for k, g in enumerate( gstack ):
+    for k, g in enumerate( gstack.T ):
         gmap[k] = g.reshape( n, n )
 
     # Return map.
@@ -99,15 +101,15 @@ if __name__ == '__main__':
     ) )
 
     # Generate trajectory data.
-    T = 5;  Nt = round( T/dt ) + 1
+    T = 100;  Nt = round( T/dt ) + 1
     tList = np.array( [ [i*dt for i in range( Nt )] ] )
     xList, _ = generate_data( tList, model, X0 )
     gList = gridMap( xList, Nt )
 
-    # # Fourier series approximation.
-    # gFour = gridStack( gList )
-    # fvar = RealFourier( tList, gFour )
-    # fvar.dmd( N=100 )
+    # Fourier series approximation.
+    gFour = gridStack( gList )
+    fvar = RealFourier( tList, gFour )
+    fvar.dmd( N=100 )
 
     # Start simulation?
     ans = input("Press ENTER to begin simulation... ")
@@ -122,13 +124,16 @@ if __name__ == '__main__':
         n = 1
 
     # Simulation time frame.
-    Tsim = 100;  Ntsim = round( Tsim/dt ) + 1
+    Tsim = T;  Ntsim = round( Tsim/dt ) + 1
     tSim = np.array( [[i*dt for i in range( Ntsim )]] )
 
     # Simulation entities.
     fig, axs = plt.subplots()
+    gridvar = Grid( gamm, xBounds, yBounds,
+        fig=fig, axs=axs, color='grey', zorder=1 )
     trueSwrm = Swarm2D( X0[:2], fig=fig, axs=axs, zorder=5,
         radius=0.001, tail_length=round( Ntsim/n ) )
+    gridvar.draw()
     trueSwrm.draw()
 
     # Final adjustments and show plot.
@@ -138,12 +143,23 @@ if __name__ == '__main__':
 
     # Simulation block.
     xSim, _ = generate_data( tSim, model, X0 )
-    for i, x in enumerate( xSim.T ):
+    xFour = fvar.solve( tSim )
+    gSim = gridRemap( xFour )
+    for t, x, g in zip( tSim.T, xSim.T, gSim ):
         # Every minimum time step.
-        if i % n == 0:
-            # Update frame.
+        if round( t[0]/dt ) % n == 0:
+            for i in range( g.shape[0] ):
+                for j in range( g.shape[1] ):
+                    if g[i,j] > 1:
+                        a = 1
+                    elif g[i,j] < 0:
+                        a = 0
+                    else:
+                        a = g[i,j]
+                    color = (0.5, 0.5, 0.5, a)
+                    gridvar.setCellColor( j, i, color )
+            gridvar.update()
             trueSwrm.update( x.reshape( N0, Nx ).T[:2] )
-            # Pause sim. for visualization.
             plt.pause( 1e-3 )
 
     # Exit program.
