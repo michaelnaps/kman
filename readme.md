@@ -105,7 +105,7 @@ We show that these results can give high fidelity w.r.t the ideal system results
     <img src=.figures/anchors/singlePathTrajectories.png height=325 />
 </p>
 
-As can be seen, the state estimation is slightly erratic due to the large degree of noise incorporated into the feedbaack terms, but overall the path construcated by the operator is smooth. Finally, we show that for many trials, with varying degrees of feedback error, the vehicle is consistently able to generate smooth paths.
+As can be seen, the state estimation is slightly erratic due to the large degree of noise incorporated into the feedback terms, but overall the path construcated by the operator is smooth. Finally, we show that for many trials, with varying degrees of feedback error, the vehicle is consistently able to generate smooth paths.
 
 <p align="center">
     <img src=.figures/anchors/multiplePathEnvironment_e0.000.png height=250 />

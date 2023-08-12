@@ -16,7 +16,7 @@ dt = 0.001
 Nx = 3
 
 # Grid bounds.
-Ng = 3  # Density of grid.
+Ng = 10  # Density of grid.
 xBounds = (-2, 2)
 yBounds = (-2, 2)
 alph = xBounds[1] - xBounds[0]
@@ -25,14 +25,10 @@ beta = 1
 
 # Duffing model function.
 def model(x):
-    alpha = 1
-    delta = 1
-    gamma = 0.05
-    epsil = 0.20
-    omega = 1.10
+    c = [ 1, 1, 0.07, 0.20, 1.10 ]
     dx = np.array( [
         x[1],
-        alpha*x[0] - delta*x[0]**3 - gamma*x[1] - epsil*np.cos( omega*x[2] ),
+        c[0]*x[0] - c[1]*x[0]**3 - c[2]*x[1] - c[3]*np.cos( c[4]*x[2] ),
         1
     ] )
     return x + dt*dx
@@ -82,19 +78,11 @@ def gridRemap(gstack):
     # Return map.
     return gmap
 
-# Basis functions.
-def bas(x):
-    pass
-
 # Main execution block.
 if __name__ == '__main__':
     # Initial positions.
     A = 1.5
     N0 = 1
-    # X0 = np.vstack( (
-    #     np.linspace( -A, A, N0 ),
-    #     np.zeros( (Nx-1, N0) )
-    # ) )
     X0 = np.vstack( (
         2*A*np.random.rand( Nx-1, N0 ) - A,
         np.zeros( (Nx-2, N0) )
@@ -104,11 +92,11 @@ if __name__ == '__main__':
     T = 100;  Nt = round( T/dt ) + 1
     tList = np.array( [ [i*dt for i in range( Nt )] ] )
     xList, _ = generate_data( tList, model, X0 )
-    gList = gridMap( xList, Nt )
+    gData = gridMap( xList, Nt )
 
     # Fourier series approximation.
-    gFour = gridStack( gList )
-    fvar = RealFourier( tList, gFour )
+    gTrain = gridStack( gData )
+    fvar = RealFourier( tList, gTrain )
     fvar.dmd( N=100 )
 
     # Start simulation?
@@ -123,16 +111,12 @@ if __name__ == '__main__':
     else:
         n = 1
 
-    # Simulation time frame.
-    Tsim = T;  Ntsim = round( Tsim/dt ) + 1
-    tSim = np.array( [[i*dt for i in range( Ntsim )]] )
-
     # Simulation entities.
     fig, axs = plt.subplots()
     gridvar = Grid( gamm, xBounds, yBounds,
         fig=fig, axs=axs, color='grey', zorder=1 )
     trueSwrm = Swarm2D( X0[:2], fig=fig, axs=axs, zorder=5,
-        radius=0.001, tail_length=round( Ntsim/n ) )
+        radius=0.001, tail_length=round( Nt/n ) )
     gridvar.draw()
     trueSwrm.draw()
 
@@ -142,10 +126,9 @@ if __name__ == '__main__':
     plt.show( block=0 )
 
     # Simulation block.
-    xSim, _ = generate_data( tSim, model, X0 )
-    xFour = fvar.solve( tSim )
-    gSim = gridRemap( xFour )
-    for t, x, g in zip( tSim.T, xSim.T, gSim ):
+    gFour = fvar.solve( tList )
+    gSim = gridRemap( gFour )
+    for t, x, g in zip( tList.T, xList.T, gSim ):
         # Every minimum time step.
         if round( t[0]/dt ) % n == 0:
             for i in range( g.shape[0] ):
@@ -157,7 +140,7 @@ if __name__ == '__main__':
                     else:
                         a = g[i,j]
                     color = (0.5, 0.5, 0.5, a)
-                    gridvar.setCellColor( j, i, color )
+                    gridvar.setCellColor( i, j, color )
             gridvar.update()
             trueSwrm.update( x.reshape( N0, Nx ).T[:2] )
             plt.pause( 1e-3 )
