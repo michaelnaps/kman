@@ -58,6 +58,8 @@ def gridStack(gmap):
     # Stack grid.
     Nt = gmap.shape[0]
     N = round( alph/gamm )**2
+
+    # Main execution loop.
     gstack = np.empty( (N, Nt) )
     for k, g in enumerate( gmap ):
         gstack[:,k] = g.reshape( N, )
@@ -99,11 +101,6 @@ if __name__ == '__main__':
     fvar = RealFourier( tList, gTrain )
     fvar.dmd( N=100 )
 
-    # Start simulation?
-    ans = input("Press ENTER to begin simulation... ")
-    if ans == 'n':
-        exit()
-
     # Simulation step freq.
     dtmin = 0.1
     if dt < dtmin:
@@ -124,6 +121,11 @@ if __name__ == '__main__':
     plt.axis( [-2, 2, -2, 2] )
     plt.gca().set_aspect( 'equal', adjustable='box' )
     plt.show( block=0 )
+
+    # Start simulation?
+    ans = input("Press ENTER to begin simulation... ")
+    if ans == 'n':
+        exit()
 
     # Simulation block.
     gFour = fvar.solve( tList )
