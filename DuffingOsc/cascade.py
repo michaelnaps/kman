@@ -14,7 +14,6 @@ from GEOM.Vehicle2D import *
 dt = 0.001
 Nx = 3
 Nf = 10
-fvar = RealFourier
 
 
 # Duffing model function.
