@@ -12,7 +12,7 @@ def learnOperators(X, Y, X0):
         b = obsH()['Nk']
         Kblock = np.vstack( (
             np.hstack( (np.eye(p), np.zeros( (p,b*q) )) ),
-            np.hstack( (np.zeros( (m,p) ), np.kron( np.eye(q), kvar.K)) )
+            np.hstack( (np.zeros( (m,p) ), np.kron( np.eye(q), kvar.K )) )
         ) )
         return Kblock
 
