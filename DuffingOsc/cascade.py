@@ -17,12 +17,7 @@ from GEOM.Vehicle2D import *
 # Hyper parameters.
 dt = 0.001
 Nx = 3
-Nf = 10
-
-
-# Initialize Fourier class with data place-holder.
-f0 = np.array( [[0]] )
-fvar = RealFourier( f0, f0, N=Nf, dt=dt )
+Nf = 10  # Fourier expansion number.
 
 
 # Model function.
