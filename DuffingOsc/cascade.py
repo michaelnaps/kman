@@ -33,23 +33,23 @@ def obs1(X=None):
 
 def obs2(X=None):
     if X is None:
-        return {'Nk': 2*(Nf+1)}
-    xSin = [ np.sin( k*X[0] ) for k in range( Nf+1 ) ]
-    xCos = [ np.cos( k*X[0] ) for k in range( Nf+1 ) ]
-    psi2 = np.vstack( (xSin, xCos) )
-    return psi2
-
-def obs2p(X=None):
-    if X is None:
-        return {'Nk': 1}
-    psi2p = X[0,None]**3
-    return psi2p
-
-def obs3(X=None):
-    if X is None:
         return {'Nk': 2}
     psi3 = np.vstack( (np.sin( X[2] ), np.cos( X[2] )) )
     return psi3
+
+def obs3(X=None):
+    if X is None:
+        return {'Nk': 2*(Nf+1)}
+    xSin = [ np.sin( k*X[0] ) for k in range( Nf+1 ) ]
+    xCos = [ np.cos( k*X[0] ) for k in range( Nf+1 ) ]
+    psi3 = np.vstack( (xSin, xCos) )
+    return psi3
+
+def obs3p(X=None):
+    if X is None:
+        return {'Nk': 1}
+    psi3p = X[0,None]**3
+    return psi3p
 
 def obs23(X=None):
     if X is None:
@@ -61,10 +61,10 @@ def obs23(X=None):
 
 def obs23p(X=None):
     if X is None:
-        return {'Nk': obs2p()['Nk']+obs3()['Nk']}
-    psi2p = obs2p( X )
-    psi3 = obs3( X )
-    psi23p = np.vstack( (psi2p, psi3) )
+        return {'Nk': obs2()['Nk']+obs3p()['Nk']}
+    psi2 = obs2( X )
+    psi3p = obs3p( X )
+    psi23p = np.vstack( (psi2, psi3p) )
     return psi23p
 
 def obs(X=None):
@@ -78,11 +78,11 @@ def obs(X=None):
 
 def obsp(X=None):
     if X is None:
-        return {'Nk': obs1()['Nk']+obs2p()['Nk']+obs3()['Nk']}
+        return {'Nk': obs1()['Nk']+obs2()['Nk']+obs3p()['Nk']}
     psi1 = obs1( X )
-    psi2p = obs2p( X )
-    psi3 = obs3( X )
-    psip = np.vstack( (psi1, psi2p, psi3) )
+    psi2 = obs2( X )
+    psi3p = obs3p( X )
+    psip = np.vstack( (psi1, psi2, psi3p) )
     return psip
 
 
@@ -106,28 +106,36 @@ if __name__ == '__main__':
     yTrain = stack_data( xData[:,1:], N0t, Nx, Ntt-1 )
 
     # Initialize shift functions.
-    p1 = obs1()['Nk'];  q1 = obs1()['Nk']
-    p2 = obs2p()['Nk'];  q2 = obs2()['Nk']
-    p3 = obs3()['Nk'];  q3 = obs3()['Nk']
-    def shift3(k2var):
-        T2 = np.eye( p1+p2+p3, q1+q2+q3 )
-        T2[p1:p1+p2,q1:q1+q2] = k2var.K
-        return T2
-    def shift2(k3var):
-        T3 = np.eye( p1+p2+p3, q1+q2+q3 )
-        T3[p1+p2:,q1+q2:] = k3var.K
+    p1 = obs1()['Nk'];   q1 = obs1()['Nk']
+    p2 = obs2()['Nk'];   q2 = obs2()['Nk']
+    p3 = obs3p()['Nk'];  q3 = obs3()['Nk']
+    def shift3(k3var):
+        T3 = np.eye( p2+p3, q2+q3 )
+        T3[p2:,q2:] = k3var.K
         return T3
+    def shift2(k2var):
+        T2 = np.eye( p1+p2+p3, q1+q2+q3 )
+        T2[p1:,q1:] = k2var.K@k2var.T
+        return T2
 
     # Initialize operator variables and solve.
-    k3var = KoopmanOperator( obs2, obs2p )
+    k3var = KoopmanOperator( obs3, obs3p )
     k2var = KoopmanOperator( obs23, obs23p, T=shift3(k3var) )
-    print( k2var )
     k1var = KoopmanOperator( obs, obsp, T=shift2(k2var) )
 
     Klist = (k1var, k2var, k3var)
-    Tlist = (shift3, shift2)
-    Klist = cascade_edmd(Klist, Tlist, xTrain, yTrain, X0)
+    Tlist = (shift2, shift3)
+    Klist = cascade_edmd(Klist, Tlist, xTrain, yTrain, X0t)
     print('Cascade EDMD Complete.')
+
+    for K in Klist:
+        print( '-----' )
+        print( K.T.shape )
+        print( K )
+
+    # Calculate cumulative operator.
+    kvar = KoopmanOperator( obs, obsp )
+    kvar.setOperator( k1var.K@shift2( k2var )@shift3( k3var ) )
 
     # # Initialize and solve for Koopman operators.
     # k2var = KoopmanOperator( obs2, obs2p )
