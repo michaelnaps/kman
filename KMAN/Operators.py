@@ -80,19 +80,18 @@ class Operator:
 	# Calculate error over data set.
 	# Assumption: C has been set manually or solved for...
 	def resError(self, X, Y, X0=None, C=None):
-		# If solver is not initialized...
-		if self.solver is None:
-			self.solver = Regressor(X, Y)
+		# Temporary solver for calculating error.
+		solver = Regressor(X, Y)
 
 		# In the event an alternative operator should be tested.
 		if C is None:
 			C = self.C
 
-		# Calculate residual error.
-		self.err = self.solver.resError( C )
+		# Calculate and return residual error.
+		err = solver.resError( C )
 
 		# Return instance of self.
-		return self
+		return err
 
 	# Extended Dynamic Mode Decomposition (EDMD)
 	def dmd(self, X, Y, X0=None, EPS=None):
@@ -169,10 +168,10 @@ class KoopmanOperator( Operator ):
 		TPsiX, PsiY, Psi0 = self.liftData( X, Y, X0=X0 )
 
 		# Calculate residual error from parent class.
-		Operator.resError( self, TPsiX, PsiY, X0=Psi0 )
+		err = Operator.resError( self, TPsiX, PsiY, X0=Psi0 )
 
 		# Return instance of self.
-		return self
+		return err
 
 	# Extended Dynamic Mode Decomposition (EDMD)
 	def edmd(self, X, Y, X0=None, EPS=None):

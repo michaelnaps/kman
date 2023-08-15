@@ -39,13 +39,16 @@ class Regressor:
 
 	# Calculate the residual error of a given operator.
 	def resError(self, C):
+		# Number of points in data.
+		P = self.Xset.P
+
 		# Calculate residual error in between sets.
 		err = 0
 		for n in range( self.Xset.P ):
 			err += np.linalg.norm( self.Yset.X[:,n,None] - C@self.Xset.X[:,n,None] )**2
 
 		# Return residual error.
-		return err
+		return 1/P*err
 
 	# Least Squares (LS)
 	# Assumption: Datasets are already flattened.
