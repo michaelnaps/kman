@@ -67,7 +67,7 @@ def obs23p(X=None):
     psi23p = np.vstack( (psi2, psi3p) )
     return psi23p
 
-def obs(X=None):
+def obs123(X=None):
     if X is None:
         return {'Nk': obs1()['Nk']+obs2()['Nk']+obs3()['Nk']}
     psi1 = obs1( X )
@@ -76,7 +76,7 @@ def obs(X=None):
     psi = np.vstack( (psi1, psi2, psi3) )
     return psi
 
-def obsp(X=None):
+def obs123p(X=None):
     if X is None:
         return {'Nk': obs1()['Nk']+obs2()['Nk']+obs3p()['Nk']}
     psi1 = obs1( X )
@@ -120,12 +120,12 @@ if __name__ == '__main__':
 
     # Initialize operator variables and solve.
     k3var = KoopmanOperator( obs3, obs3p )
-    k2var = KoopmanOperator( obs2, T=shift3(k3var) )
-    k1var = KoopmanOperator( obs, obsp, T=shift2(k2var) )
+    k2var = KoopmanOperator( obs23, obs23p, T=shift3(k3var) )
+    k1var = KoopmanOperator( obs123, obs123p, T=shift2(k2var) )
 
     Klist = (k1var, k2var, k3var)
     Tlist = (shift2, shift3)
-    Klist = cascade_edmd(Klist, Tlist, xTrain, yTrain, X0t)
+    Klist = cascade_edmd(Tlist, Klist, xTrain, yTrain, X0t)
     print('Cascade EDMD Complete.')
 
     for K in Klist:
