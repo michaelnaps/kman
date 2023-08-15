@@ -33,7 +33,7 @@ def obs1(X=None):
 
 def obs2(X=None):
     if X is None:
-        return {'Nk': 2*(fvar.N+1)}
+        return {'Nk': 2*(Nf+1)}
     xSin = [ np.sin( k*X[0] ) for k in range( Nf+1 ) ]
     xCos = [ np.cos( k*X[0] ) for k in range( Nf+1 ) ]
     psi2 = np.vstack( (xSin, xCos) )
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     tTrain = np.array( [ [i*dt for i in range( Ntt )] ] )
 
     # State initialization for training.
-    A = 2.0
+    A = 1.0
     N0t = 10
     X0t = np.vstack( (
         2*A*np.random.rand( Nx-1, N0t ) - A,  # position init
@@ -95,8 +95,9 @@ if __name__ == '__main__':
 
     # Initialize and solve for Koopman operators.
     kvar = KoopmanOperator( obs2, obs2p )
-    print( 'K:\n', kvar.edmd( xTrain, xTrain ) )
-    print( 'Residual error for range [%.1f,' % -Ar, '%.1f]:' % Ar,
+    print( 'K: x0(10) in [%.1f,' % -A, '%.1f]' % A )
+    print( kvar.edmd( xTrain, xTrain ) )
+    print( 'Error for x0 in [%.1f,' % -Ar, '%.1f]:' % Ar,
            '%.5e' % kvar.resError( xTest, xTest**2 ) )
 
     # Plotting results.
