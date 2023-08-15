@@ -2,18 +2,22 @@ import numpy as np
 from KMAN.Regressors import *
 
 # Cascade EDMD
-def cascade_edmd(Klist, Tlist, X, Y, X0=None):
+def cascade_edmd(Tlist, Klist, X, Y, X0=None):
 	# If number of operators is 1, solve EDMD
 	if len( Klist ) == 1:
-		knvar = Klist[0].edmd(X, Y, X0=X0)
-		return (knvar,)
+		Klist[0].edmd( X, Y, X0=X0 )
+		return Klist
 
 	# Otherwise, cut front operator and re-eneter function
-	K = cascade_edmd(Klist[1:], Tlist[1:], X, Y, X0)
+	K = cascade_edmd( Tlist[1:], Klist[1:], X, Y, X0 )
 
 	# Give resulting operator list to shift function and solve.
-	Klist[0].setShiftFunction( Tlist[0](K) )
-	Klist[0].edmd(X, Y, X0)
+	Tn = np.eye( Klist[-1].obsX.Nk )
+	for T, K in zip( reversed( Tlist ), reversed( Klist ) ):
+		Tn = T(K)@Tn
+
+	Klist[0].setShiftFunction( Tn )
+	Klist[0].edmd( X, Y, X0 )
 
 	# Return solved list of Koopman operators.
 	return Klist
