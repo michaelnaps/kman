@@ -12,7 +12,7 @@ def cascade_edmd(Klist, Tlist, X, Y, X0=None):
 	K = cascade_edmd(Klist[1:], Tlist[1:], X, Y, X0)
 
 	# Give resulting operator list to shift function and solve.
-	Klist[0].setShiftFunction( Tlist[0](K[0]) )
+	Klist[0].setShiftFunction( Tlist[0](K) )
 	Klist[0].edmd(X, Y, X0)
 
 	# Return solved list of Koopman operators.

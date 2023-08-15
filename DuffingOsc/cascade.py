@@ -115,12 +115,12 @@ if __name__ == '__main__':
         return T3
     def shift2(k2var):
         T2 = np.eye( p1+p2+p3, q1+q2+q3 )
-        T2[p1:,q1:] = k2var.K@k2var.T
+        T2[p1:p1+p2,q1:q1+q2] = k2var.K
         return T2
 
     # Initialize operator variables and solve.
     k3var = KoopmanOperator( obs3, obs3p )
-    k2var = KoopmanOperator( obs23, obs23p, T=shift3(k3var) )
+    k2var = KoopmanOperator( obs2, T=shift3(k3var) )
     k1var = KoopmanOperator( obs, obsp, T=shift2(k2var) )
 
     Klist = (k1var, k2var, k3var)
