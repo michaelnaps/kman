@@ -25,10 +25,10 @@ def generate_data(tlist, model, X0, control=None, Nu=0):
 
         for t in range(Nt-1):
             if control is not None:
-                u[:,t] = control( x[:Nx,t] ).reshape(Nu,)
-                x[:,t+1] = model( x[:Nx,t], u[:,t] ).reshape(Nx,)
+                u[:,t] = control( x[:Nx,t].reshape(Nx,1) ).reshape(Nu,)
+                x[:,t+1] = model( x[:Nx,t].reshape(Nx,1), u[:,t].reshape(Nu,1) ).reshape(Nx,)
             else:
-                x[:,t+1] = model( x[:Nx,t] ).reshape(Nx,)
+                x[:,t+1] = model( x[:Nx,t].reshape(Nx,1) ).reshape(Nx,)
 
         if control is not None:
             ulist[k:k+Nu,:] = u
