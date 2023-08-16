@@ -12,23 +12,23 @@ def learnOperators(X, Y, X0):
         b = obsH()['Nk']
         Kblock = np.vstack( (
             np.hstack( (np.eye(p), np.zeros( (p,b*q) )) ),
-            np.hstack( (np.zeros( (m,p) ), np.kron( np.eye(q), kvar.K )) )
+            np.hstack( (np.zeros( (m,p) ), np.kron( np.eye(q), kvar[0].K )) )
         ) )
         return Kblock
 
     # Initialize operator variables and solve.
     kuvar = KoopmanOperator(obsH, obsU)
-    kxvar = KoopmanOperator(obsXUH, obsXU, T=Tu(kuvar))
+    kxvar = KoopmanOperator(obsXUH, obsXU, T=Tu( (kuvar,) ))
 
     Klist = (kxvar, kuvar)
     Tlist = (Tu, )
-    Klist = cascade_edmd(Klist, Tlist, X, Y, X0)
+    Klist = cascade_edmd(Tlist, Klist, X, Y, X0)
     print('Cascade EDMD Complete.')
 
     # Form the cumulative operator.
-    Kf = Klist[0].K @ Tu( Klist[1] )
+    Kf = Klist[0].K @ Tu( Klist[1:] )
     kvar = KoopmanOperator(obsXUH, obsXU, K=Kf)
-    kvar.resError(X, Y, X0)
+    kvar.resError(X[0], Y[0], X0)
 
     # Return the individual operators and cumulative.
     return kxvar, kuvar, kvar
@@ -37,11 +37,12 @@ def learnOperators(X, Y, X0):
 if __name__ == "__main__":
     # simulation variables
     T = 1;  Nt = round(T/dt) + 1
-    tList = [ [i*dt for i in range(Nt)] ]
+    tList = np.array( [ [i*dt for i in range(Nt)] ] )
 
     # create data for learning operators
     N0 = 2
-    X, Y, XU0 = createData(tList, N0, Nt)
+    xTrain, yTrain, XU0 = createData(tList, N0, Nt)
+    X = (xTrain, xTrain);  Y = (yTrain, yTrain)
     kList = learnOperators(X, Y, XU0)
 
     # print results
