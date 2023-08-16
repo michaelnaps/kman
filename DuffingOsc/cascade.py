@@ -2,7 +2,6 @@
 import sys
 from os.path import expanduser
 sys.path.insert( 0, expanduser('~')+'/prog/kman' )  # Koopman operator classes.
-sys.path.insert( 0, expanduser('~')+'/prog/four' )  # Fourier series classes.
 sys.path.insert( 0, expanduser('~')+'/prog/geom' )  # Plotting and sim classes.
 
 # Standard imports.
@@ -10,18 +9,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from duffing import *
 from KMAN.Operators import *
-from FOUR.Transforms import *
 from GEOM.Vehicle2D import *
 
 
 # Hyper parameters.
 dt = 0.001
 Nx = 3
-Nf = 20  # Fourier expansion number.
+Nf = 100  # Fourier expansion number.
 
 
 # Model function.
-model = lambda x: model3(x, dt=dt)
+model = lambda x: model3(x, c=[1,1,1,1,1], dt=dt)
 
 
 # Observation functions.
@@ -36,6 +34,14 @@ def obs2(X=None):
         return {'Nk': 2}
     psi3 = np.vstack( (np.sin( X[2] ), np.cos( X[2] )) )
     return psi3
+
+def obs12(X=None):
+    if X is None:
+        return {'Nk': obs1()['Nk']+obs2()['Nk']}
+    psi1 = obs1( X )
+    psi2 = obs2( X )
+    psi12 = np.vstack( (psi1, psi2) )
+    return psi12
 
 def obs3(X=None):
     if X is None:
@@ -57,22 +63,23 @@ def obs123(X=None):
     psi1 = obs1( X )
     psi2 = obs2( X )
     psi3 = obs3( X )
-    psi = np.vstack( (psi1, psi2, psi3) )
-    return psi
+    psi123 = np.vstack( (psi1, psi2, psi3) )
+    return psi123
 
-def obs12(X=None):
+def obs123p(X=None):
     if X is None:
-        return {'Nk': obs1()['Nk']+obs2()['Nk']}
+        return {'Nk': obs1()['Nk']+obs2()['Nk']+obs3p()['Nk']}
     psi1 = obs1( X )
     psi2 = obs2( X )
-    psip = np.vstack( (psi1, psi2) )
-    return psip
+    psi3p = obs3p( X )
+    psi123p = np.vstack( (psi1, psi2, psi3p) )
+    return psi123p
 
 
 # Main execution block.
 if __name__ == '__main__':
     # Initialize time-series data.
-    T = 1;  Ntt = round( T/dt ) + 1
+    T = 10;  Ntt = round( T/dt ) + 1
     tTrain = np.array( [ [i*dt for i in range( Ntt )] ] )
 
     # State initialization for training.
@@ -110,8 +117,8 @@ if __name__ == '__main__':
     Klist = (k1var, k2var, k3var)
     Tlist = (shift, None)
     Klist = cascade_edmd(Tlist, Klist, X, Y, X0t)
-    print('Cascade EDMD Complete.')
 
+    print('Cascade EDMD Complete.')
     for K in Klist:
         print( K )
 
@@ -119,7 +126,7 @@ if __name__ == '__main__':
     kvar = KoopmanOperator( obs123, obs12 )
     kvar.setOperator( Klist[0].K@shift( Klist[1:] ) )
     kvar.resError( xTrain, yTrain, save=1 )
-    print( 'Cumulative operator:\n', kvar )
+    print( '\n\nCumulative operator:\n', kvar )
 
     # Start simulation?
     ans = input("\n\nPress ENTER to begin simulation... ")
@@ -154,9 +161,9 @@ if __name__ == '__main__':
     plt.show( block=0 )
 
     # Simulation step freq.
-    dtmin = 0.1
-    if dt < dtmin:
-        n = round( dtmin/dt )
+    dts = 0.1
+    if dt < dts:
+        n = round( dts/dt )
     else:
         n = 1
 
