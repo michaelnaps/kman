@@ -2,22 +2,25 @@ import numpy as np
 from KMAN.Regressors import *
 
 # Cascade EDMD
+# Inputs:
+#	Tlist: 	tuple of shift functions.
+#	Klist: 	tuple of Koopman operators.
+# 	X: 		tuple of data sets.
+#	Y: 		tuple of data sets (propagation of X).
+#	X0: 	array of initial positions. (optional)
 def cascade_edmd(Tlist, Klist, X, Y, X0=None):
-	# If number of operators is 1, solve EDMD
+	# If number of operators is 1, solve EDMD.
 	if len( Klist ) == 1:
-		Klist[0].edmd( X, Y, X0=X0 )
-		return Klist
+		Klist[0].edmd( X[0], Y[0], X0=X0 )
+		return (Klist,)
 
-	# Otherwise, cut front operator and re-eneter function
-	K = cascade_edmd( Tlist[1:], Klist[1:], X, Y, X0 )
+	# Otherwise, cut front operator and re-eneter function.
+	cascade_edmd( Tlist[1:], Klist[1:], X[1:], Y[1:], X0 )
 
-	# Give resulting operator list to shift function and solve.
-	Tn = np.eye( Klist[-1].obsX.Nk )
-	for T, K in zip( reversed( Tlist ), reversed( Klist ) ):
-		Tn = T(K)@Tn
-
-	Klist[0].setShiftFunction( Tn )
-	Klist[0].edmd( X, Y, X0 )
+	# Solve for shift function and compute operator.
+	if Tlist[0] is not None:
+		Klist[0].setShiftFunction( Tlist[0]( Klist[1:] ) )
+	Klist[0].edmd( X[0], Y[0], X0 )
 
 	# Return solved list of Koopman operators.
 	return Klist
@@ -83,7 +86,7 @@ class Operator:
 
 	# Calculate error over data set.
 	# Assumption: C has been set manually or solved for...
-	def resError(self, X, Y, X0=None, C=None):
+	def resError(self, X, Y, X0=None, C=None, save=0):
 		# Temporary solver for calculating error.
 		solver = Regressor(X, Y)
 
@@ -94,7 +97,9 @@ class Operator:
 		# Calculate and return residual error.
 		err = solver.resError( C )
 
-		# Return instance of self.
+		# Save if requested and return.
+		if save:
+			self.err = err
 		return err
 
 	# Extended Dynamic Mode Decomposition (EDMD)
@@ -167,12 +172,12 @@ class KoopmanOperator( Operator ):
 		return self.K@self.obsX.liftData( X )
 
 	# Redefine residual error from parent for lifted sets.
-	def resError(self, X, Y, X0=None):
+	def resError(self, X, Y, X0=None, save=0):
 		# Lift data insto observation space.
 		TPsiX, PsiY, Psi0 = self.liftData( X, Y, X0=X0 )
 
 		# Calculate residual error from parent class.
-		err = Operator.resError( self, TPsiX, PsiY, X0=Psi0 )
+		err = Operator.resError( self, TPsiX, PsiY, X0=Psi0, save=save )
 
 		# Return instance of self.
 		return err
@@ -234,7 +239,7 @@ class LieOperator( KoopmanOperator ):
 	# Calculate the residual error of the operator compared to
 	#	some given data set, X and Y.
 	# Note: Uses the class elementary IVP solver.
-	def resError(self, X, Y, dt=1e-3):
+	def resError(self, X, Y, dt=1e-3, save=0):
 		# Lift the Y data set
 		PsiY = self.obsY.liftData( Y )
 
@@ -245,7 +250,7 @@ class LieOperator( KoopmanOperator ):
 		I = np.eye( self.obsY.Nk, self.obsX.Nk )
 
 		# Calculate the residual error
-		Operator.resError( self, PsiY, PsiXp, C=I )
+		Operator.resError( self, PsiY, PsiXp, C=I, save=save )
 
 		# Return instance of self.
 		return self
