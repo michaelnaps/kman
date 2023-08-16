@@ -125,7 +125,7 @@ if __name__ == '__main__':
     # Calculate cumulative operator.
     kvar = KoopmanOperator( obs123, obs12 )
     kvar.setOperator( Klist[0].K@shift( Klist[1:] ) )
-    kvar.resError( xTrain, yTrain, save=1 )
+    # kvar.resError( xTrain, yTrain, save=1 )
     print( '\n\nCumulative operator:\n', kvar )
 
     # Start simulation?
@@ -134,15 +134,18 @@ if __name__ == '__main__':
         exit()
 
     # Simulate results.
-    def rmes(psi):
-        x = psi[:Nx-1]
-        psi3 = obs3( x )
-        psi = np.vstack( (psi, psi3) )
-        return psi
+    def rmes(PSI):
+        N = PSI.shape[1]
+        PSIn = np.empty( (obs123()['Nk'], N) )
+        for i, psi in enumerate( PSI.T ):
+            x = psi[:Nx-1,None]
+            psi3 = obs3( x )
+            PSIn[:,i] = np.vstack( (psi[:,None], psi3) )[:,0]
+        return PSIn
 
     # Position Initializations.
     As = 1.5
-    N0s = 1
+    N0s = 10
     Xs = 2*As*np.random.rand( Nx, N0s ) - As
     PSIs = obs12( Xs )
 
@@ -171,7 +174,7 @@ if __name__ == '__main__':
     T = 100;  Nt = round( T/dt ) + 1
     for i in range( Nt ):
         # Get new positions.
-        Xs = model( Xs[:,0] )[:,None]
+        Xs = model( Xs )
         PSIs = kvar.K@rmes( PSIs )
 
         # Update plots for appropriate time-steps.
