@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
     Klist = (k1var, k2var, k3var)
     Tlist = (shift, None)
-    Klist = cascade_edmd(Tlist, Klist, X, Y, X0t)
+    Klist = cascade_edmd( Tlist, Klist, X, Y, X0t )
 
     print('Cascade EDMD Complete.')
     for K in Klist:
