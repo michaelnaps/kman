@@ -19,7 +19,7 @@ Nf = 25  # Fourier expansion number.
 
 
 # Model function.
-model = lambda x: model3(x, c=[1,1,1,1,1], dt=dt)
+model = lambda x: model3(x, c=[1,1,1,1,1,0], dt=dt)
 
 
 # Observation functions.
@@ -54,7 +54,8 @@ def obs3(X=None):
 def obs3p(X=None):
     if X is None:
         return {'Nk': 1}
-    psi3p = X[0,None]**3
+    x1 = X[0,None]
+    psi3p = x1**3
     return psi3p
 
 def obs123(X=None):
