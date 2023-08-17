@@ -63,9 +63,9 @@ if __name__=="__main__":
 	# Learn operators.
 	kvar.edmd( X,Y )
 	lvar.K2L( kvar )
-	lvar.resError( X,Y )
-	print( 'L:\n', lvar )
+	lvar.resError( X,Y,save=1 )
 	print( 'K:\n', kvar )
+	print( 'L:\n', lvar )
 
 	# Initial condition comparison.
 	x0 = np.array( [[0.1], [0.1]] )
