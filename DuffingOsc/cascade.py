@@ -15,7 +15,7 @@ from GEOM.Vehicle2D import *
 # Hyper parameters.
 dt = 0.001
 Nx = 3
-Nf = 100  # Fourier expansion number.
+Nf = 25  # Fourier expansion number.
 
 
 # Model function.
@@ -150,11 +150,13 @@ if __name__ == '__main__':
     PSIs = obs12( Xs )
 
     # Vehicle/plot initializations.
+    R = 0.10;  Ntail = 150
     fig, axs = plt.subplots()
     trueSwrm = Swarm2D( Xs[:2], fig=fig, axs=axs, zorder=5,
-        radius=0.10, tail_length=500 )
+        radius=R/2, tail_length=Ntail )
     kmanSwrm = Swarm2D( PSIs[:2], fig=fig, axs=axs, zorder=1,
-        radius=0.15, color='indianred', tail_length=500 )
+        radius=R, color='cornflowerblue', tail_length=Ntail )
+    trueSwrm.setLineStyle( ':' )
     trueSwrm.draw()
     kmanSwrm.draw()
 
