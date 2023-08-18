@@ -15,7 +15,7 @@ from GEOM.Vehicle2D import *
 # Hyper parameters.
 dt = 0.001
 Nx = 3
-Nf = 25  # Fourier expansion number.
+Nf = 100  # Fourier expansion number.
 
 
 # Model function.
