@@ -45,10 +45,10 @@ def obs12(X=None):
 
 def obs3(X=None):
     if X is None:
-        return {'Nk': 2*Nf+1+1}
+        return {'Nk': 2*Nf+1}
     xSin = [ np.sin( k*X[0] ) for k in range( 1,Nf+1 ) ]
     xCos = [ np.cos( k*X[0] ) for k in range( Nf+1 ) ]
-    psi3 = np.vstack( (X[0]**3, xSin, xCos) )
+    psi3 = np.vstack( (xSin, xCos) )
     return psi3
 
 def obs3p(X=None):
@@ -80,12 +80,12 @@ def obs123p(X=None):
 # Main execution block.
 if __name__ == '__main__':
     # Initialize time-series data.
-    T = 10;  Ntt = round( T/dt ) + 1
+    T = 1;  Ntt = round( T/dt ) + 1
     tTrain = np.array( [ [i*dt for i in range( Ntt )] ] )
 
     # State initialization for training.
     A = 3.0
-    N0t = 10
+    N0t = 100
     X0t = np.vstack( (
         2*A*np.random.rand( Nx-1, N0t ) - A,  # position init
         np.zeros( (Nx-2, N0t ) )              # time-series init
@@ -101,8 +101,8 @@ if __name__ == '__main__':
     Y = (yTrain, yTrain, xTrain)
 
     # Initialize shift functions.
-    p1 = obs1()['Nk'];   q1 = obs1()['Nk']
-    p2 = obs2()['Nk'];   q2 = obs2()['Nk']
+    p1 = obs1()['Nk'];  q1 = obs1()['Nk']
+    p2 = obs2()['Nk'];  q2 = obs2()['Nk']
     p3 = obs3()['Nk'];  q3 = obs3()['Nk']
     def shift( Klist ):
         T = np.eye( p1+p2+p3, q1+q2+q3 )
@@ -133,16 +133,6 @@ if __name__ == '__main__':
     ans = input("\n\nPress ENTER to begin simulation... ")
     if ans == 'n':
         exit()
-
-    # Simulate results.
-    def rmes(PSI):
-        N = PSI.shape[1]
-        PSIn = np.empty( (obs123()['Nk'], N) )
-        for i, psi in enumerate( PSI.T ):
-            x = psi[:Nx-1,None]
-            psi3 = obs3( x )
-            PSIn[:,i] = np.vstack( (psi[:,None], psi3) )[:,0]
-        return PSIn
 
     # Position Initializations.
     As = 1.5
@@ -178,7 +168,6 @@ if __name__ == '__main__':
     for i in range( Nt ):
         # Get new positions.
         Xs = model( Xs )
-        # PSIs = kvar.K@rmes( PSIs )
         PSIs = kvar.K@PSIs
 
         # Update plots for appropriate time-steps.
