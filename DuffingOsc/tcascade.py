@@ -15,7 +15,7 @@ from GEOM.Vehicle2D import *
 # Hyper parameters.
 dt = 0.001
 Nx = 3
-Nf = 100  # Fourier expansion number.
+Nf = 25  # Fourier expansion number.
 
 
 # Model function.
@@ -45,10 +45,10 @@ def obs12(X=None):
 
 def obs3(X=None):
     if X is None:
-        return {'Nk': 2*Nf+1}
-    xSin = [ np.sin( k*X[0] ) for k in range( 1,Nf+1 ) ]
-    xCos = [ np.cos( k*X[0] ) for k in range( Nf+1 ) ]
-    psi3 = np.vstack( (xSin, xCos) )
+        return {'Nk': Nf}
+    xSin = np.array( [ np.sin( k*X[0] ) for k in range( 1,Nf+1 ) ] )
+    # xCos = [ np.cos( k*X[0] ) for k in range( Nf+1 ) ]
+    psi3 = xSin
     return psi3
 
 def obs3p(X=None):
@@ -80,7 +80,7 @@ def obs123p(X=None):
 # Main execution block.
 if __name__ == '__main__':
     # Initialize time-series data.
-    T = 10;  Ntt = round( T/dt ) + 1
+    T = 1;  Ntt = round( T/dt ) + 1
     tTrain = np.array( [ [i*dt for i in range( Ntt )] ] )
 
     # State initialization for training.
