@@ -1,11 +1,13 @@
 import sys
 from os.path import expanduser
 sys.path.insert(0, expanduser('~')+'/prog/kman')
+sys.path.insert(0, expanduser('~')+'/prog/geom')
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 from KMAN.Operators import *
+from GEOM.Vehicle2D import *
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patch
@@ -21,9 +23,10 @@ delta = 1.00
 dt = 0.01
 Nx = 2
 Nu = 2
-Na = 3
+Na = 4
 # aList = np.array( [[10, 12, -15],[10, -7, -13]] )
 aList = np.array( [[10, -10, 10], [10, 10, -10]] )
+# aList = np.array( [[10, 15, -10, 10], [15, 10, 10, -10]] )
 
 # Na = 5
 # aList = np.array( [[10, 10, -10, -10, -5],[10, -10, -10, 10, -5]] )
@@ -34,98 +37,6 @@ mColor = 'royalblue'
 kColor = 'yellowgreen'
 x1Color = 'indianred'
 x2Color = 'orange'
-
-
-# vehicle entity for simulation
-class Vehicle:
-    def __init__(self, x0, xd,
-                 fig=None, axs=None, zorder=1,
-                 buffer_length=10, pause=1e-3,
-                 color='k', radius=1, label=None,
-                 linestyle=None, linewidth=2,
-                 record=0):
-        if axs is None and fig is None:
-            self.fig, self.axs = plt.subplots()
-        else:
-            self.fig = fig
-            self.axs = axs
-
-        # figure scaling
-        self.axs.set_xlim(-12,12)
-        self.axs.set_ylim(-12,12)
-        self.axs.axis('equal')
-        self.axs.set_xlabel('$x_1$')
-        self.axs.set_ylabel('$x_2$')
-        self.axs.grid(1)
-
-        # initialize buffer (trail)
-        self.color = color
-        self.linewidth = linewidth
-        self.linestyle = linestyle
-        self.body_radius = radius
-        self.zorder = zorder
-
-        self.body = patch.Circle(x0[:Nx,0], self.body_radius,
-            facecolor=self.color, edgecolor='k', zorder=self.zorder)
-        self.axs.add_patch(self.body)
-
-        self.buffer = [x0[:Nx,0] for i in range(buffer_length)]
-        self.trail_patch = patch.PathPatch(path.Path(self.buffer),
-            color=self.color, linewidth=self.linewidth, linestyle=self.linestyle,
-            zorder=self.zorder)
-        self.axs.add_patch(self.trail_patch)
-
-        self.pause = pause
-        self.xd = xd
-
-        if record:
-            plt.show(block=0)
-            input("Press enter when ready...")
-
-    def update(self):
-        self.body.remove()
-        self.trail_patch.remove()
-
-        self.body = patch.Circle(self.buffer[-1], self.body_radius,
-            facecolor=self.color, edgecolor='k', zorder=self.zorder)
-        self.axs.add_patch(self.body)
-
-        self.trail_patch = patch.PathPatch(path.Path(self.buffer),
-            color=self.color, linewidth=self.linewidth, linestyle=self.linestyle,
-            fill=0, zorder=self.zorder)
-        self.axs.add_patch(self.trail_patch)
-
-        # plt.show(block=0)
-        plt.pause(self.pause)
-
-        return self
-
-    def update_buffer(self, x):
-        self.buffer[:-1] = self.buffer[1:]
-        self.buffer[-1] = x[:2,0]
-        return self
-
-    def update_title(self, string):
-        plt.title(string)
-        return self
-
-    def add_legend(self, label):
-        self.axs.plot(self.buffer[0][0], self.buffer[0][1],
-            color=self.color, marker='x',
-            linestyle=self.linestyle, label=label)
-        return self
-
-    def hard_plot(self):
-        self.body.remove()
-        self.trail_patch.remove()
-        trail = np.array( self.buffer )
-        self.axs.plot(self.buffer[0][0], self.buffer[0][1],
-            color=self.color, marker='x',
-            linestyle=self.linestyle)
-        self.axs.plot(trail[:,0], trail[:,1],
-            color=self.color,
-            linestyle=self.linestyle, linewidth=self.linewidth)
-        return self
 
 
 # plot functions
@@ -143,27 +54,11 @@ def plotAnchors(fig, axs, radius=0.5):
 
 # model and control functions
 def model(x, u):
-    A = np.array( [
-        [1, 0],
-        [0, 1] ] )
-    B = np.array( [
-        [dt, 0],
-        [0, dt] ] )
-
-    xn = A@x.reshape(Nx,1) + B@u.reshape(Nu,1)
-
-    return xn
+    return x + dt*u
 
 def control(x):
-    C = np.array( [
-        [1, 0],
-        [0, 1]
-    ] )
-    xg = np.zeros( (Nx,1) )
-
-    u = C@(xg - x.reshape(Nx,1))
-
-    return u
+    xg = [ [-3], [4] ]
+    return xg - x
 
 def noise(alpha, shape):
     return 2*alpha*np.random.rand(shape[0], shape[1]) - alpha
@@ -202,11 +97,11 @@ def obsXU(X=None):
 
 def obsH(X=None):
     if X is None:
-        meta = {'Nk':Na}
+        meta = {'Nk':Na+1}
         return meta
 
     x = X[:Nx].reshape(Nx,1)
-    PsiH = anchorMeasure(x)**2
+    PsiH = np.vstack( (anchorMeasure(x)**2, [1]) )
 
     return PsiH
 
@@ -228,7 +123,10 @@ def rmes(x, Psi, eps=epsilon):
 
     PsiX = Psi[:NkX].reshape(NkX,1)
     PsiU = [1]
-    PsiH = ( anchorMeasure(x) + noise(eps,(Na,1)) )**2
+    PsiH = np.vstack( (
+        ( anchorMeasure(x) + noise(eps,(Na,1)) )**2,
+        [1]
+    ) )
 
     Psin = np.vstack( (PsiX, np.kron(PsiU, PsiH)) )
     return Psin
@@ -266,7 +164,7 @@ def generateIdealData(sim_time, x0):
 # plotting results helper functions
 def stationaryResults(kvar, sim_time, N0n):
     # initial positions
-    bounds = 40
+    bounds = 20
     X0n = 2*bounds*np.random.rand(Nx,N0n) - bounds
     U0n = np.zeros( (Nu,N0n) )
     XU0n = np.vstack( (X0n, U0n) )
@@ -395,40 +293,39 @@ def animatedResults(tList, xList, PsiList, fig=None, axs=None, rush=0, legend=1)
 
     # vehicle variables
     xd = np.zeros( (Nx,1) )
-    xvhc = Vehicle(xList[:,0,None], xd,
+    xvhc = Vehicle2D(xList[:,0,None],
         fig=fig, axs=axs,
-        zorder=20, label='Model',
+        zorder=10,
         radius=0.70, color=mColor,
-        linewidth=2,
-        buffer_length=10000)
-    kvhc = Vehicle(PsiList[:,0,None], xd,
+        tail_length=1000)
+    kvhc = Vehicle2D(PsiList[:2,0,None],
         fig=fig, axs=axs,
-        zorder=10, label='KFO',
+        zorder=20,
         radius=0.50, color=kColor,
-        linewidth=1.25, linestyle='--',
-        buffer_length=10000)
-    plotAnchors(xvhc.fig, xvhc.axs)
+        tail_length=1000)
+    xvhc.tail.setLineWidth( 2.00 )
+    kvhc.tail.setLineStyle( '--' )
+    kvhc.tail.setLineWidth( 1.25 )
+    plotAnchors(fig, axs)
+
+    # Axis setup.
+    plt.axis( [-20, 20, -20, 20] )
+    plt.gca().set_aspect( 'equal', adjustable='box' )
+    plt.show( block=0 )
 
     # propagation function
     NkX = obsX()['Nk']
     Nt = len(tList[0])
 
+    xvhc.draw()
+    kvhc.draw()
     for i in range(Nt):
-        xvhc.update_buffer(xList[:,i,None])
-        kvhc.update_buffer(PsiList[:,i,None])
+        xvhc.update(xList[:2,i,None])
+        kvhc.update(PsiList[:2,i,None])
 
         if not rush:
-            xvhc.update()
-            kvhc.update()
+            plt.pause( 1e-3 )
             # kvhc.update_title('time: %.3f' % float(i*dt))
-
-    if rush:
-        xvhc.hard_plot()
-        kvhc.hard_plot()
-        if legend:
-            xvhc.add_legend('$x_0$ (True)')
-            kvhc.add_legend('$\hat \Psi_0$ (Koopman)')
-            axs.legend(loc='lower right')
 
     # xvhc.fig.tight_layout()
     return xvhc, kvhc
