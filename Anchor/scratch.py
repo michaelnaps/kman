@@ -19,7 +19,7 @@ q = np.random.rand( 2,1 )
 
 
 # Anchor set.
-A = 10
+A = 2
 aList = 2*A*np.random.rand( 2,Na ) - A
 # aList = np.array( [
 #     [1, 1, -1, -1],
@@ -29,6 +29,31 @@ aList = 2*A*np.random.rand( 2,Na ) - A
 # Reflection set.
 rxList = [[0],[1]]*aList
 ryList = [[1],[0]]*aList
+
+
+# Anchor measurement functions.
+def anchorMeasure(x):
+    d = np.empty( (1,Na) )
+    for i, a in enumerate( aList.T ):
+        d[:,i] = (x - a[:,None]).T@(x - a[:,None])
+
+    print( d )
+
+    return np.sqrt( d )
+
+def reflectionMeasure(x, axis=0):
+    if axis:
+        rList = rxList
+    else:
+        rList = ryList
+
+    dr = np.empty( (1,Na) )
+    for i, r in enumerate( rList.T ):
+        dr[:,i] = (x - r[:,None]).T@(x - r[:,None])
+
+    print( dr )
+
+    return np.sqrt( dr )
 
 
 # Model function.
@@ -42,9 +67,10 @@ def control(x):
 
 def anchorControl(x):
     # Calculate squared terms.
-    a2 = sum( alternate( aList**2 ) )
-    d2 = alternate( anchorMeasure( x )**2 )
-    qTa = alternate( q.T@aList )
+    arList = np.hstack( (aList, -rxList) )
+    a2 = np.sum( arList**2, axis=0 )
+    d2 = np.hstack( (anchorMeasure( x )**2, -reflectionMeasure( x )**2) )
+    qTa = q.T@arList
 
     # Return control.
     return np.sum( (d2 - a2 + 2*qTa), axis=1 )[:,None]
@@ -59,29 +85,11 @@ def alternate(a):
     return na
 
 
-# Anchor measurement function.
-def anchorMeasure(x):
-    d = np.empty( (1,Na) )
-    for i, a in enumerate( aList.T ):
-        d[:,i] = (x - a[:,None]).T@(x - a[:,None])
-    return np.sqrt( d )
-
-def reflectionMeasure(x, axis=0):
-    if axis:
-        rList = rxList
-    else:
-        rList = ryList
-
-    dr = np.empty( (1,Na) )
-    for i, r in enumerate( rList.T ):
-        dr[:,i] = (x - r[:,None]).T@(x - r[:,None])
-
-    return np.sqrt( dr )
-
-
 # Main execution block.
 if __name__ == '__main__':
     x0 = np.random.rand( 2,1 )
 
-    print( 'uTa:\n', 2*control( x0 ).T@np.sum( alternate( aList ), axis=1 ) )
+    arList = np.hstack( (aList, -rxList) )
+
+    print( 'uTa:\n', 2*control( x0 ).T@np.sum( arList, axis=1 ) )
     print( 'c:\n', anchorControl( x0 ) )
