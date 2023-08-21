@@ -8,6 +8,7 @@ import numpy as np
 from KMAN.DataSets import *
 from GEOM.Vehicle2D import *
 
+
 # Hyper parameter(s)
 dt = 0.01
 Nx = 2
@@ -16,13 +17,18 @@ Na = 4
 # q = np.array( [ [10], [-2.5] ] )
 q = np.random.rand( 2,1 )
 
-# Anchor list
+
+# Anchor set.
 A = 10
 aList = 2*A*np.random.rand( 2,Na ) - A
 # aList = np.array( [
 #     [1, 1, -1, -1],
 #     [1, -1, 1, -1]
 # ] )
+
+# Reflection set.
+rxList = [[0],[1]]*aList
+ryList = [[1],[0]]*aList
 
 
 # Model function.
@@ -59,6 +65,18 @@ def anchorMeasure(x):
     for i, a in enumerate( aList.T ):
         d[:,i] = (x - a[:,None]).T@(x - a[:,None])
     return np.sqrt( d )
+
+def reflectionMeasure(x, axis=0):
+    if axis:
+        rList = rxList
+    else:
+        rList = ryList
+
+    dr = np.empty( (1,Na) )
+    for i, r in enumerate( rList.T ):
+        dr[:,i] = (x - r[:,None]).T@(x - r[:,None])
+
+    return np.sqrt( dr )
 
 
 # Main execution block.
