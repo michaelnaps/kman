@@ -56,7 +56,7 @@ def alternate(a):
 # Anchor measurement function.
 def anchorMeasure(x):
     d = np.empty( (1,Na) )
-    for i, a in enumerate(aList.T):
+    for i, a in enumerate( aList.T ):
         d[:,i] = (x - a[:,None]).T@(x - a[:,None])
     return np.sqrt( d )
 
@@ -65,5 +65,5 @@ def anchorMeasure(x):
 if __name__ == '__main__':
     x0 = np.random.rand( 2,1 )
 
-    print( 'uTa:\n', np.sum( alternate( 2*control( x0 ).T@aList ), axis=1 ) )
+    print( 'uTa:\n', 2*control( x0 ).T@np.sum( alternate( aList ), axis=1 ) )
     print( 'c:\n', anchorControl( x0 ) )
