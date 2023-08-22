@@ -67,10 +67,11 @@ def anchorControl(x, axis=0):
     dr2 = reflectionMeasure( x, rList )**2
     d2 = anchorMeasure( x )**2
     a2 = aList[axis,None]**2
+    qa = q[axis,None]*aList[axis,None]
     asum = np.sum( aList[axis,None], axis=1 )
 
     # Return control.
-    return np.sum( (d2 - dr2 - a2)/(2*asum) + q[axis,None]*aList[axis,None]/asum, axis=1 )
+    return np.sum( (d2 - dr2 - a2 + 2*qa)/(2*asum), axis=1 )
 
 
 # Signed columns helper.
@@ -86,5 +87,5 @@ def alternate(a):
 if __name__ == '__main__':
     x0 = np.random.rand( 2,1 )
 
-    print( 'uTa:\n', control( x0 )[0] )
-    print( 'c:\n', anchorControl( x0 ) )
+    print( 'ideal control: ', control( x0 ).T )
+    print( 'anchor control:', np.vstack( (anchorControl( x0, axis=0 ), anchorControl( x0, axis=1 )) ).T )
