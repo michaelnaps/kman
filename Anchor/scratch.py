@@ -27,8 +27,13 @@ aList = 2*A*np.random.rand( 2,Na ) - A
 # ] )
 
 # Reflection set.
-rxList = [[0],[1]]*aList
-ryList = [[1],[0]]*aList
+def getReflectionSet( axis=0 ):
+    rList = np.zeros( (2,Na) )
+    rList[1*(not axis),:] = aList[1*(not axis)]
+    return rList
+
+print( aList.T )
+print( getReflectionSet().T )
 
 
 # Anchor measurement functions.
@@ -36,23 +41,12 @@ def anchorMeasure(x):
     d = np.empty( (1,Na) )
     for i, a in enumerate( aList.T ):
         d[:,i] = (x - a[:,None]).T@(x - a[:,None])
-
-    print( d )
-
     return np.sqrt( d )
 
-def reflectionMeasure(x, axis=0):
-    if axis:
-        rList = rxList
-    else:
-        rList = ryList
-
+def reflectionMeasure(x, rList):
     dr = np.empty( (1,Na) )
     for i, r in enumerate( rList.T ):
         dr[:,i] = (x - r[:,None]).T@(x - r[:,None])
-
-    print( dr )
-
     return np.sqrt( dr )
 
 
@@ -65,15 +59,18 @@ def model(x, u):
 def control(x):
     return q - x
 
-def anchorControl(x):
+def anchorControl(x, axis=0):
+    # Get reflection set values.
+    rList = getReflectionSet( axis=axis )
+
     # Calculate squared terms.
-    arList = np.hstack( (aList, -rxList) )
-    a2 = np.sum( arList**2, axis=0 )
-    d2 = np.hstack( (anchorMeasure( x )**2, -reflectionMeasure( x )**2) )
-    qTa = q.T@arList
+    dr2 = reflectionMeasure( x, rList )**2
+    d2 = anchorMeasure( x )**2
+    a2 = aList[axis,None]**2
+    asum = np.sum( aList[axis,None], axis=1 )
 
     # Return control.
-    return np.sum( (d2 - a2 + 2*qTa), axis=1 )[:,None]
+    return np.sum( (d2 - dr2 - a2)/(2*asum) + q[axis,None]*aList[axis,None]/asum, axis=1 )
 
 
 # Signed columns helper.
@@ -89,7 +86,5 @@ def alternate(a):
 if __name__ == '__main__':
     x0 = np.random.rand( 2,1 )
 
-    arList = np.hstack( (aList, -rxList) )
-
-    print( 'uTa:\n', 2*control( x0 ).T@np.sum( arList, axis=1 ) )
+    print( 'uTa:\n', control( x0 )[0] )
     print( 'c:\n', anchorControl( x0 ) )
