@@ -26,14 +26,17 @@ aList = 2*A*np.random.rand( 2,Na ) - A
 #     [1, -1, 1, -1]
 # ] )
 
+# Anchor control constants.
+D = 1/2*np.diag( np.sum( aList, axis=1 ) )
+Q = D@np.sum( 2*q*aList + aList**2, axis=1 )[:,None]
+
+print( 'D', D )
+
 # Reflection set.
 def getReflectionSet( axis=0 ):
     rList = np.zeros( (2,Na) )
     rList[1*(not axis),:] = aList[1*(not axis)]
     return rList
-
-print( aList.T )
-print( getReflectionSet().T )
 
 
 # Anchor measurement functions.
@@ -59,28 +62,24 @@ def model(x, u):
 def control(x):
     return q - x
 
-def anchorControl(x, axis=0):
-    # Get reflection set values.
-    rList = getReflectionSet( axis=axis )
+def anchorControl(x):
+    # Reflection set.
+    rxList = getReflectionSet( 0 )
+    ryList = getReflectionSet( 1 )
 
     # Calculate squared terms.
-    dr2 = reflectionMeasure( x, rList )**2
     d2 = anchorMeasure( x )**2
-    a2 = aList[axis,None]**2
-    qa = q[axis,None]*aList[axis,None]
-    asum = np.sum( aList[axis,None], axis=1 )
+    d = np.vstack( (
+        np.sum( d2 + reflectionMeasure( x, rxList )**2 ),
+        np.sum( d2 + reflectionMeasure( x, ryList )**2 )
+    ) )
+
+    print( 'd', d )
+    print( 'Dd', D@d )
+    print( 'Q', Q )
 
     # Return control.
-    return np.sum( (d2 - dr2 - a2 + 2*qa)/(2*asum), axis=1 )
-
-
-# Signed columns helper.
-def alternate(a):
-    na = np.empty( a.shape )
-    for i in range( 1,Na+1 ):
-        sgn = 1*(i%2!=0) - 1*(i%2==0)
-        na[:,i-1] = sgn*a[:,i-1]
-    return na
+    return D@d + Q
 
 
 # Main execution block.
@@ -88,4 +87,4 @@ if __name__ == '__main__':
     x0 = np.random.rand( 2,1 )
 
     print( 'ideal control: ', control( x0 ).T )
-    print( 'anchor control:', np.vstack( (anchorControl( x0, axis=0 ), anchorControl( x0, axis=1 )) ).T )
+    print( 'anchor control:', anchorControl( x0 ).T )
