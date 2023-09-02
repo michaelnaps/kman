@@ -8,26 +8,35 @@ from GEOM.Vehicle2D import *
 # Main execution block.
 if __name__ == '__main__':
     # Simulation length.
-    T = 1000;  dt = 0.001
+    T = 100;  dt = 0.001
     Nt = round( T/dt ) + 1
     tList = np.array( [ [i*dt for i in range( Nt )] ] )
 
     # Initial condtions.
-    N0 = 1
-    X0 = np.array( [[-1.5],[1.5],[0]] )
+    N0 = 2
+    dX = np.array( [
+        [0, 4],
+        [0, 0]
+    ] )
+    X0 = np.array( [
+        [-1.5, np.pi/2],
+        [1.5, np.pi/2],
+        [0 for i in range( N0 )]
+    ] )
 
     # Plot vehicles.
+    Ntail = round( Nt )
     fig, axs = plt.subplots()
-    swrm = Swarm2D( X0[:2], fig=fig, axs=axs, color='k',
-        radius=0.05, tail_length=250 ).draw()
+    swrm = Swarm2D( X0[:2]+dX, fig=fig, axs=axs, color='k',
+        radius=0.05, tail_length=Ntail ).draw()
 
     # Final adjustments and show plot.
-    plt.axis( [-2, 2, -2, 2] )
+    plt.axis( np.array( [min(dX[0]-3), max(dX[0]+3), min(dX[1]-3), max(dX[1]+3)] ) )
     plt.gca().set_aspect( 'equal', adjustable='box' )
     plt.show( block=0 )
 
     # Simulation step freq.
-    dts = 0.1
+    dts = 0.05
     if dt < dts:
         n = round( dts/dt )
     else:
@@ -38,5 +47,5 @@ if __name__ == '__main__':
     for i in range( Nt ):
         X = model3( X, c=[1,1,1,1,1,0], dt=dt )
         if i % n == 0:
-            swrm.update( X[:2] )
-            plt.pause(1e-3)
+            swrm.update( X[:2]+dX )
+            plt.pause( 1e-3 )
