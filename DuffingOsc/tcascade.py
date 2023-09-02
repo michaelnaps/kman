@@ -15,7 +15,7 @@ from GEOM.Vehicle2D import *
 # Hyper parameters.
 dt = 0.001
 Nx = 3
-Nf = 25  # Fourier expansion number.
+Nf = 15  # Fourier expansion number.
 
 
 # Model function.
@@ -45,10 +45,10 @@ def obs12(X=None):
 
 def obs3(X=None):
     if X is None:
-        return {'Nk': Nf}
-    xSin = np.array( [ np.sin( k*X[0] ) for k in range( 1,Nf+1 ) ] )
-    # xCos = [ np.cos( k*X[0] ) for k in range( Nf+1 ) ]
-    psi3 = xSin
+        return {'Nk': 2*Nf+1}
+    xSin = [ np.sin( k*X[0] ) for k in range( 1,Nf+1 ) ]
+    xCos = [ np.cos( k*X[0] ) for k in range( Nf+1 ) ]
+    psi3 = np.vstack( (xSin, xCos) )
     return psi3
 
 def obs3p(X=None):
