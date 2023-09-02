@@ -13,19 +13,19 @@ if __name__ == '__main__':
     tList = np.array( [ [i*dt for i in range( Nt )] ] )
 
     # Initial condtions.
-    N0 = 2
-    dX = np.array( [
-        [0, 4],
-        [0, 0]
+    N0 = 5
+    dX = 4*np.array( [
+        [0, 1, 0, -1, 0],
+        [0, 0, 1, 0, -1]
     ] )
-    X0 = np.array( [
-        [-1.5, np.pi/2],
-        [1.5, np.pi/2],
+    X0 = np.pi/2*np.array( [
+        [0, 1, 1, -1, -1],
+        [0, 1, -1, 1, -1],
         [0 for i in range( N0 )]
     ] )
 
     # Plot vehicles.
-    Ntail = round( Nt )
+    Ntail = round( Nt/25 )
     fig, axs = plt.subplots()
     swrm = Swarm2D( X0[:2]+dX, fig=fig, axs=axs, color='k',
         radius=0.05, tail_length=Ntail ).draw()
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     plt.show( block=0 )
 
     # Simulation step freq.
-    dts = 0.05
+    dts = 0.1
     if dt < dts:
         n = round( dts/dt )
     else:
