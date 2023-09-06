@@ -60,8 +60,8 @@ class Regressor:
 
 		# Perform DMD on data sets.
 		# Create least-squares regression matrices for
-		# 	F = inv(G)*A,
-		# where O is operator of interest.
+		# 	C = inv(G)*A,
+		# where C is operator of interest.
 		G = 1/K * (self.Xset.X @ self.Xset.X.T)
 		A = 1/K * (self.Xset.X @ self.Yset.X.T)
 
