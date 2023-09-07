@@ -18,3 +18,8 @@ def model3(X, c=[ 1, 1, 0.07, 0.20, 1.10, 0 ], dt=0.001):
             1  # state variable for tracking time.
         ] )
     return X + dt*dX
+
+
+# Example execution block.
+if __name__ == '__main__':
+    pass  # Put example code here.
