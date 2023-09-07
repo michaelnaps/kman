@@ -15,7 +15,7 @@ from GEOM.Vehicle2D import *
 # Hyper parameters.
 dt = 0.001
 Nx = 3
-Nf = 15  # Fourier expansion number.
+Nf = 25  # Fourier expansion number.
 
 
 # Model function.
@@ -175,3 +175,6 @@ if __name__ == '__main__':
             trueSwrm.update( Xs[:2] )
             kmanSwrm.update( PSIs[:2] )
             plt.pause( 1e-3 )
+
+    # Exit program.
+    input( "Press ENTER to exit program..." )

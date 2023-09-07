@@ -150,6 +150,8 @@ if __name__ == '__main__':
     Xs = 2*As*np.random.rand( Nx, N0s ) - As
     PSIs = obs12( Xs )
 
+    print( 'Initial States:\n', Xs )
+
     # Vehicle/plot initializations.
     R = 0.10;  Ntail = 150
     fig, axs = plt.subplots()
@@ -185,3 +187,6 @@ if __name__ == '__main__':
             trueSwrm.update( Xs[:2] )
             kmanSwrm.update( PSIs[:2] )
             plt.pause( 1e-3 )
+
+    # Exit program.
+    input( "Press ENTER to exit program..." )
