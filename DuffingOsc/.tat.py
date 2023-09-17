@@ -1,9 +1,15 @@
 import sys
 from os.path import expanduser
-sys.path.insert( 0, expanduser('~')+'/prog/geom' )  # Plotting and sim classes.
+sys.path.insert( 0, expanduser('~')+'/prog/geom' )
 
+import argparse
 from duffing import *
 from GEOM.Vehicle2D import *
+
+parser = argparse.ArgumentParser()
+parser.add_argument( '--save' )
+args = parser.parse_args()
+save = bool( args.save )
 
 # Main execution block.
 if __name__ == '__main__':
@@ -61,3 +67,7 @@ if __name__ == '__main__':
             swrm.update( X[:2]+dX )
             # plt.pause( 1e-3 )
     input( "Press ENTER to exit program... " )
+
+    if save:
+        fig.savefig( expanduser('~')+'/prog/kman/.figures/.tat.png',
+            dpi=800 )
