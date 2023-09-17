@@ -12,6 +12,13 @@ if __name__ == '__main__':
     Nt = round( T/dt ) + 1
     tList = np.array( [ [i*dt for i in range( Nt )] ] )
 
+    # Simulation step freq.
+    dts = 0.01
+    if dt < dts:
+        n = round( dts/dt )
+    else:
+        n = 1
+
     # Initial condtions.
     N0 = 9
     dX = 4*np.array( [
@@ -28,24 +35,22 @@ if __name__ == '__main__':
         ) ) ) )
 
     # Plot vehicles.
-    Ntail = round( Nt/25 )
+    Ntail = round( Nt/n ) + 1
     fig, axs = plt.subplots()
-    axs.scatter( X0[0]+dX[0], X0[1]+dX[1], marker='o', edgecolor='k', facecolor='none' )
-    swrm = Swarm2D( X0[:2]+dX, fig=fig, axs=axs, color='k', radius=0.01, tail_length=Ntail )
+    axs.scatter( X0[0]+dX[0], X0[1]+dX[1],
+        marker='o', edgecolor='k', facecolor='none' )
+    swrm = Swarm2D( X0[:2]+dX, fig=fig, axs=axs,
+        color='k', radius=0.01, tail_length=Ntail )
     swrm.setLineWidth( 1.5 ).draw()
 
     # Final adjustments and show plot.
     delta = 2
-    plt.axis( np.array( [min(dX[0]-delta), max(dX[0]+delta), min(dX[1]-delta), max(dX[1]+delta)] ) )
+    plt.axis(
+        np.array( [
+            min(dX[0]-delta), max(dX[0]+delta),
+            min(dX[1]-delta), max(dX[1]+delta) ] ) )
     plt.gca().set_aspect( 'equal', adjustable='box' )
     plt.show( block=0 )
-
-    # Simulation step freq.
-    dts = 0.1
-    if dt < dts:
-        n = round( dts/dt )
-    else:
-        n = 1
 
     # Simulation loop.
     X = X0
