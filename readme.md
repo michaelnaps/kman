@@ -2,7 +2,7 @@
 
 This repository serves as the testing ground for my research at Boston University (being performed with the intent of being published). This readme currently discusses some preliminary results using serialized Koopman operators and their application in the Koopman-feedback operator (KFO).
 
-The discussion here will be brief, but as the project moves towards publication, more data and theory will be developed in increments. Furthermore, the primary novelties of the project will be withheld for the time being.
+**Note:** This repository description has become somewhat outdated. The system developed is currently moved to a private repo, and eventually I will rewrite this *readme.md* to be closer to a general discussion of Koopman operators.
 
 ___
 ### **The Koopman-feedback Operator**
