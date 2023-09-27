@@ -5,11 +5,24 @@ This repository serves as the testing ground for my research at Boston Universit
 **Note:** This repository description has become somewhat outdated. The system developed is currently moved to a private repo, and eventually I will rewrite this *readme.md* to be closer to a general discussion of Koopman operators.
 
 ___
+### **The Koopman Operator**
+
+General Koopman operator theory contains an assortment of methods for studying dynamical systems, whether that be through data-driven or analytical approaches. A system represented by the state space $x \in \mathbb{X} \subset \mathbb{R}^n$ can ordinarily be defined by the differential equation
+
+$$
+\dot x = f(x,t).
+$$
+
+Where $\dot x$ is the time-derivative of $x$ w.r.t the input $t$ which represents time. Here, $f: \mathbb{X} \rightarrow \mathbb{Y}$ where $\mathbb{Y} \subset \mathbb{R}^n$. In many cases (if not most), $f$ is a nonlinear function of the input terms, and can be difficult to evaluate as determined on a case-by-case basis.
+
+**tbc...**
+
+___
 ### **The Koopman-feedback Operator**
 
 The Koopman-feedback operator (KFO) is a preliminary application for our study of using Koopman operators in series to model systems which can be broken into sub-operators via **shift functions**. The definition of a shift function, and a more in-depth discussion of them is forthcoming, but an outline of the KFO will be given here to explain the notation used in the **anchor system** application.
 
- The KFO was first proposed as a solution to the problem where the user is given measurement data which is ambiguously correlated with the system state and control policy. The communication between the Koopman system w.r.t the true system is rendered in the diagram below.
+The KFO was first proposed as a solution to the problem where the user is given measurement data which is ambiguously correlated with the system state and control policy. The communication between the Koopman system w.r.t the true system is rendered in the diagram below.
 
 <p align="center">
     <img src=.figures/anchors/kman_closedloop.png width=600/>
