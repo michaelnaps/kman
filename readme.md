@@ -1,8 +1,6 @@
 ### **Koopman Operator Notes**
 
-This repository serves as the testing ground for my research at Boston University (being performed with the intent of being published). This readme currently discusses some preliminary results using serialized Koopman operators and their application in the Koopman-feedback operator (KFO).
-
-**Note:** This repository description has become somewhat outdated. The system developed is currently moved to a private repo, and eventually I will rewrite this *readme.md* to be closer to a general discussion of Koopman operators. *Update:* some sections commented out and began rewrite...
+This repository serves as the testing ground for my research at Boston University. This *readme.md* is in the process of being rewritten as a brief introduction to Koopman operator theory. Some notes on my research into the Koopman-feedback operator, and using operators in series are in the folder titled *.archive*.
 
 ___
 ### **The Koopman Operator**
@@ -23,25 +21,25 @@ $$
 
 where $g : \mathbb{X} \rightarrow \mathbb{G}(\mathbb{X})$ is a Hilbert space of observation functions over $x$ (and subsequently $\dot x$). In this space, the Koopman operator is linear such that $\mathcal{K} : \mathbb{G}(\mathbb{X}) \rightarrow \mathbb{G}(\mathbb{Y})$; thus describing the full dynamics of $f$.
 
-In practice, the Koopman operator is truncated so that it can be used in modern computers in real time, and, because or even deriving them through data. The truncated operator is usually denoted by
+In practice, the Koopman operator is truncated so that it can be used in real time and on modern computers. The truncated operator also allows for the solution to be derived from data. The truncated operator is usually denoted by
 
 $$
     \begin{aligned}
         \Psi(\dot x) & = K \Psi(x) \\
-        \text{where } \Psi(x) & = [\psi_1(x) \cdots \psi_n(x)]^\intercal
+        \text{where } \Psi(x) & = [\psi_1(x) \cdots \psi_n(x)]^\intercal \subset g(x)
     \end{aligned}
 $$
 
-Where $\psi_1 \cdots \psi_n$ is the list of selected observation functions by the user. This implies that the Koopman operator problem is now a two-step process s.t.
+Where $\psi_1 \cdots \psi_n$ is the list of observation functions selected by the user. This implies that the Koopman operator problem is now a two-step process:
 
 $$
     \begin{aligned}
-        1). & \text{ the user selects the observation functions of interest, and} \\
+        1). & \text{ the user selects the observation functions of interest, and } \\
         2). & \text{ the Koopman operator, $K$, is derived. }
     \end{aligned}
 $$
 
-There has been extensive research into the solutions to $(1)$ and $(2)$, some of which will be discussed in the next sections.
+There has been extensive research into the solutions to $(1)$ and $(2)$, some of which will be discussed in later sections.
 
 **TBC...**
 
