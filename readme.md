@@ -5,7 +5,7 @@ This repository serves as the testing ground for my research at Boston Universit
 ___
 ### **The Koopman Operator**
 
-General Koopman operator theory contains an assortment of methods for studying dynamical systems, whether that be through data-driven or analytical approaches. A system represented by the state space $x \in \mathbb{X} \subset \mathbb{R}^n$ can ordinarily be defined by the differential equation
+General Koopman operator theory contains an assortment of methods for studying dynamical systems, whether that be through data-driven or analytical approaches. A reference system represented by the state space $x \in \mathbb{X} \subset \mathbb{R}^n$ can ordinarily be defined by the differential equation
 
 $$
     \dot x = f(x,t).
@@ -41,11 +41,28 @@ $$
 
 There has been extensive research into the solutions to $(1)$ and $(2)$, some of which will be discussed in later sections.
 
-**TBC...**
+___
+
+### **Observation Selection**
+
+The process for selecting appropriate observation functions can vary dramatically depending on the system of interest. Here, an example for the analytical approach will be given in an attempt to clarify the notation used above. Let us define our reference system to the Duffing oscillator such that the dynamics become
+
+$$
+    \begin{aligned}
+        &\ x = \begin{bmatrix} x_1 \\ x_2 \end{bmatrix} \\
+        f(x,t) = &\ \dot x = \begin{bmatrix} \dot x_1 \\ \dot x_2 \end{bmatrix} = \begin{bmatrix}
+            x_2 \\
+            \alpha x_1 + \beta x_1^3 + \delta x_2 - \gamma \cos( \omega t )
+        \end{bmatrix}.
+    \end{aligned}
+$$
+
+For simplicity, we will define the coefficients of $\dot x_2$ to $\alpha = \beta = \delta = \gamma = \omega = 1$. This choice will allow for easier identification of observable functions, and will not affect the solution to $K$ that we define later as it will be data-driven.
+
+*IN PROGRESS...*
+
 
 <!--
-
-
 ___
 ### **The Koopman-feedback Operator**
 
