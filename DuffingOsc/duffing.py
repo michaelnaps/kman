@@ -40,7 +40,7 @@ def model3(X, U=None, c=[ 1, 1, 0.07, 0.20, 1.10, 0 ], dt=0.001):
 # Main execution block.
 if __name__ == '__main__':
     # Simulation length.
-    T = 10.0;  dt = 1e-3
+    T = 25.0;  dt = 1e-3
     Nt = round( T/dt ) + 1
     tList = np.array( [ [i*dt for i in range( Nt )] ] )
 
@@ -91,9 +91,9 @@ if __name__ == '__main__':
         X = model3( X, c=[1,1,1,1,1,0], dt=dt )
         if i % n == 0:
             swrm.update( X[:2]+dX )
-            # plt.pause( 1e-3 )
+            plt.pause( 1e-6 )
     input( "Press ENTER to exit program... " )
 
     if save:
-        fig.savefig( expanduser('~')+'/prog/kman/.figures/.tat.png',
+        fig.savefig( expanduser('~')+'/prog/kman/.figures/.duffing.png',
             dpi=800 )
