@@ -49,15 +49,21 @@ The process for selecting appropriate observation functions can vary dramaticall
 
 $$
     \begin{aligned}
-        &\ x = \begin{bmatrix} x_1 \\ x_2 \end{bmatrix} \\
-        f(x,t) = &\ \dot x = \begin{bmatrix} \dot x_1 \\ \dot x_2 \end{bmatrix} = \begin{bmatrix}
+        &\ x = \begin{bmatrix}
+            x_1 \\
+            x_2
+        \end{bmatrix} \\
+        f(x,t) = &\ \dot x = \begin{bmatrix}
+            \dot x_1 \\ 
+            \dot x_2
+        \end{bmatrix} = \begin{bmatrix}
             x_2 \\
             \alpha x_1 + \beta x_1^3 + \delta x_2 - \gamma \cos( \omega t )
         \end{bmatrix}.
     \end{aligned}
 $$
 
-For simplicity, we will define the coefficients of $\dot x_2$ to $\alpha = \beta = \delta = \gamma = \omega = 1$. This choice will allow for easier identification of observable functions, and will not affect the solution to $K$ that we define later as it will be data-driven.
+For simplicity, we will define the coefficients of $\dot x_2$ to $\alpha = \beta = \delta = \gamma = \omega = 1$. This choice will allow for easier identification of observable functions, and will not affect the solution to $K$ that we define later.
 
 *IN PROGRESS...*
 
