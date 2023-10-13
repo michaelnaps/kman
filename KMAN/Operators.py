@@ -259,7 +259,7 @@ class LieOperator( KoopmanOperator ):
 	# Assumption(s):
 	#	1). Koopman operator is diagonalizable.
 	#	2). Eigenvectors of K create an invertible matrix.
-	def K2L(self, kvar, dt=1e-3):
+	def K2L(self, kvar, dt=1e-3, real=1):
 		# Grab eignvalues and invert for transition.
 		_, V = np.linalg.eig( kvar.K )
 		Vinv = np.linalg.solve( V,np.eye( self.obsX.Nk ) )
@@ -271,6 +271,8 @@ class LieOperator( KoopmanOperator ):
 
 		# Calculate the Lie operator.
 		self.C = 1/dt*logK
+		if real:
+			self.C = np.real( self.C )
 
 		# Return instance of self.
 		return self
