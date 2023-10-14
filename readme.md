@@ -39,7 +39,7 @@ $$
     \end{aligned}
 $$
 
-There has been extensive research into the solution to $(2)$, some of which will be discussed in later sections. Example for the method of selecting observation terms, $(1)$, will be completed on a case-by-case basis in the subfolders to this repository.
+There has been extensive research into the solution to $(2)$, some of which will be discussed in later sections. Examples for the method of selecting observation terms, $(1)$, will be completed on a case-by-case basis in the subfolders to this repository.
 
     Primary references:
         M. Budišić, R. Mohr, and I. Mezić, “Applied Koopmanism,” Chaos: An Interdisciplinary Journal
