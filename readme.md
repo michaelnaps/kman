@@ -41,125 +41,87 @@ $$
 
 There has been extensive research into the solution to $(2)$, some of which will be discussed in later sections. Example for the method of selecting observation terms, $(1)$, will be completed on a case-by-case basis in the subfolders to this repository.
 
+    Primary references:
+        [1] M. Budišić, R. Mohr, and I. Mezić, “Applied Koopmanism,” Chaos: An Interdisciplinary Journal
+            of Nonlinear Science, vol. 22, no. 4, p. 047510, Dec. 2012, doi: 10.1063/1.4772195.
+        [2] S. L. Brunton, B. W. Brunton, J. L. Proctor, and J. N. Kutz, “Koopman Invariant Subspaces and
+            Finite Linear Representations of Nonlinear Dynamical Systems for Control,” PLOS ONE, vol. 11, no.
+            2, p. e0150171, Feb. 2016, doi: 10.1371/journal.pone.0150171.
+
 ___
 
 ### **Extended Dynamic Mode Decomposition**
 
 Here, we will discuss the most popular method for approximate $K$ using the data-driven least-squares approach, *extended dynamic mode decomposition* (EDMD).
 
-
-<!--
-___
-### **The Koopman-feedback Operator**
-
-The Koopman-feedback operator (KFO) is a preliminary application for our study of using Koopman operators in series to model systems which can be broken into sub-operators via **shift functions**. The definition of a shift function, and a more in-depth discussion of them is forthcoming, but an outline of the KFO will be given here to explain the notation used in the **anchor system** application.
-
-The KFO was first proposed as a solution to the problem where the user is given measurement data which is ambiguously correlated with the system state and control policy. The communication between the Koopman system w.r.t the true system is rendered in the diagram below.
-
-<p align="center">
-    <img src=.figures/anchors/kman_closedloop.png width=600/>
-</p>
-
-In this system, two Koopman operators are used to independently generate the control policy from feedback-related measurements, as well as the state estimation using previous position data and the appropriate control. The noteworthy components are the model and control-related Koopman operators; $\mathcal{K}_x$ and $\mathcal{K}_u$, respectively, as well as the observation spaces; $\Psi_x$, $\Psi_u$ and $h$. In the following sections, the observation spaces will be indentified for the anchor system along with a simple set of trials.
-
-___
-### **Anchor System:**
-**State/model equations:** linear/holonomic/first-order/discrete
+In order to solve for the Koopman operator, the dimensionality of the function space must first be addressed. Being an infinitely-dimensioned space is not realistic when put in terms of real world applications so [REF] is redefined as a subset of the original space.
 
 $$
-x = \begin{bmatrix}
-    x \\
-    y
-\end{bmatrix}
-= \begin{bmatrix}
-    x_1 \\
-    x_2
-\end{bmatrix}
+    z = \Psi(x) \in g(x)
 $$
 
-and the system is modeled as...
+Where $\Psi \in \mathbb{G}^{N} \subset \mathbb{G}$ is some observation function with dimension $N$ which approximates its infinitely dimensioned counterpart and is dependent on the accuracy desired by the user. More specifically, $\Psi$ can be written as the list of chosen observation functions.
 
 $$
-\begin{matrix}
-    x^+ = x + (\Delta t) u \\
-    \textrm{where } u = C(x_g - x) \leftarrow \text{ideal policy}
-\end{matrix}
+    \Psi(x) =\{ \psi_i(x) : \forall i \leq N, i \in \mathbb{N} \}.
 $$
 
-The important component introduced here is the idea that the state is not observed directly, but instead observed through **anchors**. For practical purposes we assume there are $N_a=3$ anchors which, when called, give the object its respective $L_2$ distance norm. The position of the anchors can be chosen by the user and are defined by the set
+Where $\mathbb{N}$ is the set of natural numbers and each $\psi_i$ term is a scalar-valued function of the state variable. Combining this approach with [REF] yields the following.
 
 $$
-    d(x) = \\{ \sqrt{ (x - a_i)^\intercal (x - a_i) } : \forall i \leq N_a, i \in \mathbb{N} \\}.
+    \Psi(x^+) = K_N \Psi(x) + r(x,x^+)
 $$
 
-Where $d$ represents the set of anchor distances, each defined by the anchor position $a_i$, or the $i$-th anchor in the system.
-
-To make the system more realistic and general, we also assume there is some unknown level of noise acting on the measurement terms. In other words, for any position, $x$, given to the system we receive noise in the range space defined by $p(\delta) \in [-\delta, \delta]$, and for any measurement reading from the anchors we receive noise in the range space $p(\varepsilon) \in [-\varepsilon, \varepsilon]$.
-
-
-| **Open-loop Observation Space:** |
-
-We demonstrate elseware that the necessary observation functions to propagate the state space while also keeping track of the anchor distances are
+Where $r(x,x^+)$ is the residual error moving from $x$ to $x^+$ through the truncated function space, $\Psi$. Likewise, the Koopman operator is now represented as $K_N \in \R^{N \times N} \subset \R^{\infty \times \infty}$. Next, a series of data (found through data collection or simulation) is defined for use in finding $K_N$.
 
 $$
-\begin{aligned}
-    \Psi_x = \begin{bmatrix}
-        x \\
-        x^\intercal x \\
-        d^2(x) \\
-        1
-    \end{bmatrix}
-    &&
-    \Psi_u = 1
-    &&
-    h = \begin{bmatrix}
-        u \\
-        u^\intercal u \\
-        x^\intercal u
-    \end{bmatrix}
-\end{aligned}
+    X = \{ x_i : x_i \in \mathbb{M},\ \forall i < P,\ i \in \mathbb{N} \}
 $$
 
-A short sim which shows the vehicle's ability to keep track of the anchor distances is shown below. The radius of the black circles represents the distance the vehicle *estimates* it is from each of the reference anchors as time progresses. The distances are represented by circles because the vehicle is never given data corresponding to the direction of each of the anchors.
-
-<p align="center">
-    <img src=.figures/anchors/anim_openloop.gif width=450 />
-</p>
-
-It should also be noted that the path taken by the vehicle is predetermined. I.e. the inputs given to the observation space $h$ are 'hard coded'.
-
-
-| **Closed-loop Observation Space:** |
-
-Derived elsewhere, the observation space for the closed-loop control and state estimation can be defined as
+Where $X$ is a tuple of ($P$-$1$)-evenly spaced snapshots of the state. The forward snapshot of $X$ will also be defined to make notation clear.
 
 $$
-\begin{aligned}
-    \Psi_x = x
-    &&
-    \Psi_u = 1
-    &&
-    h =d^2(x)
-\end{aligned}
+    X^+ = \{ x_{i+1} : x_{i+1} = F(x_i),\ \forall x_i \in X \}
 $$
 
-We show that these results can give high fidelity w.r.t the ideal system results. Below is an isolated trial for a non-zero initial position, with a Koopman operator-based controller that guides the vehicle to the origin using solely measurement data.
+Using this data, the solution for the Koopman operator can be defined as the minimization of the residual error over the entire data set.
 
-<p align="center">
-    <img src=.figures/anchors/singlePathEnvironment.png height=325 />
-    <img src=.figures/anchors/singlePathTrajectories.png height=325 />
-</p>
+$$
+    J = \frac{1}{2} || r(X,X^+) ||^2
+$$
 
-As can be seen, the state estimation is slightly erratic due to the large degree of noise incorporated into the feedback terms, but overall the path construcated by the operator is smooth. Finally, we show that for many trials, with varying degrees of feedback error, the vehicle is consistently able to generate smooth paths.
+Which can be restated in terms of the Koopman operator approximation.
 
-<p align="center">
-    <img src=.figures/anchors/multiplePathEnvironment_e0.000.png height=250 />
-    <img src=.figures/anchors/multiplePathEnvironment_e0.500.png height=250 />
-</p>
-<p align="center">
-    <img src=.figures/anchors/multiplePathEnvironment_e1.000.png height=250 />
-    <img src=.figures/anchors/multiplePathEnvironment_e2.000.png height=250 />
-</p>
+$$
+    J = \frac{1}{2} ||\Psi(X^+) - K_N \Psi(X) ||^2
+$$
 
+In this form, the solution for $J$ is a simple least-squares regression such that $K_N = G^\dagger A$ where $G^\dagger$ is the pseudo-inverse of $G$. More specifically, the matrices $G$ and $A$ are composed of the observation functions for the current state and its propagation forward in time.
 
-!-->
+$$
+    G = \frac{1}{P} \Psi(X) \Psi^\intercal(X),
+$$
+
+$$
+    A = \frac{1}{P} \Psi(X) \Psi^\intercal(X^+).
+$$
+
+It is important to note that not all observation functions may be necessary in the final representation of the model. For this reason, single value decomposition (SVD) will be used to prioritize the higher impact terms when computing $G^\dagger$. The single value decomposition equation is restated here for completeness.
+
+$$
+    G = U S V^\intercal
+$$
+
+Where $U, V \in \R^{N \times s}$ and $S \in \R^{s \times s}$ such that the matrices represent the $s$-most prominent terms in the observation space. The pseudo-inverse can be found by exploiting the nature of the SVD results.
+
+$$
+    G^\dagger = V S^{-1} U^\intercal
+$$
+
+Note that for use in pseudocode, the calculation for $G^\dagger$ will be referred to by a call to the \Call{SVD}{G} function. This form can then be used to calculate a minimum-error Koopman operator.
+
+$$
+    K_N = \left( V S^{-1} U^\intercal \right) A
+$$
+
+Where $K_N$ is a learned approximation of the Koopman operator from data.
