@@ -13,7 +13,7 @@ $$
 
 Where $\dot x$ is the derivative of $x$ w.r.t to time, $t$. Here, $f: \mathbb{X} \rightarrow \mathbb{Y}$ where $\mathbb{Y} \subset \mathbb{R}^n$. In many cases (if not most), $f$ is a nonlinear function of the input terms, and can be difficult to evaluate.
 
-Koopman theory dictates that for every dynamical system $f$
+Koopman theory dictates that for every dynamical system $f:$
 
 $$
     \exists g \text{ s.t. } g(\dot x) = \mathcal{K} g(x)
@@ -21,7 +21,7 @@ $$
 
 where $g : \mathbb{X} \rightarrow \mathbb{G}(\mathbb{X})$ is a Hilbert space of observation functions over $x$ (and subsequently $\dot x$). In this space, the Koopman operator is linear such that $\mathcal{K} : \mathbb{G}(\mathbb{X}) \rightarrow \mathbb{G}(\mathbb{Y})$; thus describing the full dynamics of $f$.
 
-In practice, the Koopman operator is truncated so that it can be used in real time and on modern computers. The truncated operator also allows for the solution to be derived from data. The truncated operator is usually denoted by
+In practice, the Koopman operator is approximated to be finite so that it can be used in real time and on modern computers. The truncated operator also allows for the solution to be derived from data and is usually denoted by
 
 $$
     \begin{aligned}
@@ -39,65 +39,14 @@ $$
     \end{aligned}
 $$
 
-There has been extensive research into the solutions to $(1)$ and $(2)$, some of which will be discussed in later sections.
+There has been extensive research into the solution to $(2)$, some of which will be discussed in later sections. Example for the method of selecting observation terms, $(1)$, will be completed on a case-by-case basis in the subfolders to this repository.
 
 ___
 
-### **Observation Selection**
+### **Extended Dynamic Mode Decomposition**
 
-The process for selecting appropriate observation functions can vary dramatically depending on the system of interest. Here, an example for the analytical approach will be given in an attempt to clarify the notation used above. Let us define our reference system to the Duffing oscillator such that the dynamics become
+Here, we will discuss the most popular method for approximate $K$ using the data-driven least-squares approach, *extended dynamic mode decomposition* (EDMD).
 
-$$
-    \begin{aligned}
-        &\ x = \begin{bmatrix}
-            x_1 \\
-            x_2
-        \end{bmatrix} \\
-        f(x,t) = &\ \dot x = \begin{bmatrix}
-            \dot x_1 \\
-            \dot x_2
-        \end{bmatrix} = \begin{bmatrix}
-            x_2 \\
-            \alpha x_1 + \beta x_1^3 + \delta x_2 - \gamma \cos( \omega t )
-        \end{bmatrix}.
-    \end{aligned}
-$$
-
-For simplicity, we will define the coefficients of $\dot x_2$ to $\alpha = \beta = \delta = \gamma = \omega = 1$. This choice will allow for easier identification of observable functions, and will not affect the solution to $K$ that we define later.
-
-Using our knowledge of the model, we can construct an initial observation space by including the functions of $x$ and $t$ which are in the ODE of interest
-
-$$
-    \Psi(x,t) = [x_1, x_2, x_1^3, \cos(t),...]^\intercal.
-$$
-
-Now, the operator will attempt to linearly represent the derivative of the terms included. We can find those by taking the derivative of each element s.t.
-
-$$
-    \begin{aligned}
-        & \dot x_1 & = &\ x_2 && \text{(included)} \\
-        & \dot x_2 & = &\ x_1 + x_1^3 + x_2 - \cos(t) && \text{(included)} \\
-        & \dot x_1^3 & = &\ 3 x_1^2 \dot x_1 = 3 x_1^2 x_2 && \text{(not included)} \\
-        & \frac{d}{dt}\cos(t) & = &\ -\sin(t) && \text{(not included)}
-    \end{aligned}
-$$
-
-We can now incorporate the new terms into the observation space s.t.
-
-$$
-    \Psi(x,t) = [x_1, x_2, x_1^3, x_1^2 x_2, \cos(t), \sin(t), \cdots]^\intercal
-$$
-
-Similar to before, we take the derivative of the new terms and follow each tree until all terms are included in the observation space
-
-$$
-    \begin{aligned}
-        & \frac{d}{dt}\sin(t) & = &\ \cos(t) && \text{(included)} \\
-        & \frac{d}{dt} x_1^2 x_3 & = &\ 2 x_1 x_2^2 + x_1^2(x_1 + x_1^3 + x_2 - \cos(t)) && \text{(not included)}
-    \end{aligned}
-$$
-
-As is clear by the second line, the derivative of the system diverges with each inclusion of new terms into the operator. For this reason, it is more efficient to bound the system within some range, and utilize some alternative to the true function.
 
 <!--
 ___
