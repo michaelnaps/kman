@@ -11,9 +11,9 @@ $$
     \dot x = f(x,t).
 $$
 
-Where $\dot x$ is the derivative of $x$ w.r.t to time, $t$. Here, $f: \mathbb{X} \rightarrow \mathbb{Y}$ where $\mathbb{Y} \subset \mathbb{R}^n$. In many cases (if not most), $f$ is a nonlinear function of the input terms, and can be difficult to evaluate.
+Where $\dot x$ is the derivative of $x$ w.r.t to time, $t$. Here, $f: \mathbb{X} \rightarrow \mathbb{Y}$ where $\mathbb{Y} \subset \mathbb{R}^n$. In many cases (if not most), $f$ is a nonlinear function of the input terms, and can be difficult to evaluate. Without loss of generality the term $t$ will be excluded in future notation.
 
-Koopman theory dictates that for every dynamical system $f:$
+Koopman theory dictates that for every dynamical system, $f$, we have that
 
 $$
     \exists g \text{ s.t. } g(\dot x) = \mathcal{K} g(x)
@@ -26,7 +26,7 @@ In practice, the Koopman operator is approximated to be finite so that it can be
 $$
     \begin{aligned}
         \Psi(\dot x) & = K \Psi(x) \\
-        \text{where } \Psi(x) & = [\psi_1(x) \cdots \psi_n(x)]^\intercal \subset g(x)
+        \text{where } \Psi(x) & = \{ \psi_i(x) : \forall i \leq n \} \subset g(x)
     \end{aligned}
 $$
 
@@ -42,9 +42,9 @@ $$
 There has been extensive research into the solution to $(2)$, some of which will be discussed in later sections. Example for the method of selecting observation terms, $(1)$, will be completed on a case-by-case basis in the subfolders to this repository.
 
     Primary references:
-        [1] M. Budišić, R. Mohr, and I. Mezić, “Applied Koopmanism,” Chaos: An Interdisciplinary Journal
+        M. Budišić, R. Mohr, and I. Mezić, “Applied Koopmanism,” Chaos: An Interdisciplinary Journal
             of Nonlinear Science, vol. 22, no. 4, p. 047510, Dec. 2012, doi: 10.1063/1.4772195.
-        [2] S. L. Brunton, B. W. Brunton, J. L. Proctor, and J. N. Kutz, “Koopman Invariant Subspaces and
+        S. L. Brunton, B. W. Brunton, J. L. Proctor, and J. N. Kutz, “Koopman Invariant Subspaces and
             Finite Linear Representations of Nonlinear Dynamical Systems for Control,” PLOS ONE, vol. 11, no.
             2, p. e0150171, Feb. 2016, doi: 10.1371/journal.pone.0150171.
 
@@ -52,58 +52,45 @@ ___
 
 ### **Extended Dynamic Mode Decomposition**
 
-Here, we will discuss the most popular method for approximate $K$ using the data-driven least-squares approach, *extended dynamic mode decomposition* (EDMD).
+Here, we will discuss the most popular method for approximate $K$ using the data-driven, least-squares approach referred to as *extended dynamic mode decomposition* (EDMD). We will define the process in terms
 
-In order to solve for the Koopman operator, the dimensionality of the function space must first be addressed. Being an infinitely-dimensioned space is not realistic when put in terms of real world applications so [REF] is redefined as a subset of the original space.
-
-$$
-    z = \Psi(x) \in g(x)
-$$
-
-Where $\Psi \in \mathbb{G}^{N} \subset \mathbb{G}$ is some observation function with dimension $N$ which approximates its infinitely dimensioned counterpart and is dependent on the accuracy desired by the user. More specifically, $\Psi$ can be written as the list of chosen observation functions.
+With the understanding that we have identified the observation space of interest, we can write the truncated Koopman operator as
 
 $$
-    \Psi(x) =\{ \psi_i(x) : \forall i \leq N, i \in \mathbb{N} \}.
+    \Psi(\dot x) = K \Psi(x) + r(x,\dot x).
 $$
 
-Where $\mathbb{N}$ is the set of natural numbers and each $\psi_i$ term is a scalar-valued function of the state variable. Combining this approach with [REF] yields the following.
+Where $r(x,\dot x)$ is the residual error moving from $x$ to $\dot x$ through $\Psi$. Next, a series of data (found through data collection, etc.) is defined$.
 
 $$
-    \Psi(x^+) = K_N \Psi(x) + r(x,x^+)
+    X = \{ x_i : x_i \in \mathbb{M},\ \forall i \leq P\}
 $$
 
-Where $r(x,x^+)$ is the residual error moving from $x$ to $x^+$ through the truncated function space, $\Psi$. Likewise, the Koopman operator is now represented as $K_N \in \R^{N \times N} \subset \R^{\infty \times \infty}$. Next, a series of data (found through data collection or simulation) is defined for use in finding $K_N$.
+Where $X$ is a tuple of P-evenly spaced snapshots of the state. The derivative at each snapshot can thus be calculated using a finite-difference approach, etc. to get
 
 $$
-    X = \{ x_i : x_i \in \mathbb{M},\ \forall i < P,\ i \in \mathbb{N} \}
-$$
-
-Where $X$ is a tuple of ($P$-$1$)-evenly spaced snapshots of the state. The forward snapshot of $X$ will also be defined to make notation clear.
-
-$$
-    X^+ = \{ x_{i+1} : x_{i+1} = F(x_i),\ \forall x_i \in X \}
+    \dot X = \{ \dot x_i = f(x_i) : \forall x_i \in X \}.
 $$
 
 Using this data, the solution for the Koopman operator can be defined as the minimization of the residual error over the entire data set.
 
 $$
-    J = \frac{1}{2} || r(X,X^+) ||^2
+    J = \frac{1}{2} || r(X,\dot X) ||^2
 $$
 
 Which can be restated in terms of the Koopman operator approximation.
 
 $$
-    J = \frac{1}{2} ||\Psi(X^+) - K_N \Psi(X) ||^2
+    J = \frac{1}{2} ||\Psi(\dot X) - K \Psi(X) ||^2
 $$
 
-In this form, the solution for $J$ is a simple least-squares regression such that $K_N = G^\dagger A$ where $G^\dagger$ is the pseudo-inverse of $G$. More specifically, the matrices $G$ and $A$ are composed of the observation functions for the current state and its propagation forward in time.
+In this form, the solution for $J$ is a simple least-squares regression such that $K = G^\dagger A$ where $G^\dagger$ is the pseudo-inverse of $G$. More specifically, the matrices $G$ and $A$ are composed of the observation functions for the current state and its derivative such that
 
 $$
-    G = \frac{1}{P} \Psi(X) \Psi^\intercal(X),
-$$
-
-$$
-    A = \frac{1}{P} \Psi(X) \Psi^\intercal(X^+).
+    \begin{aligned}
+        G & = \frac{1}{P} \Psi(X) \Psi^\intercal(X), \text{ and} \\
+        A & = \frac{1}{P} \Psi(X) \Psi^\intercal(\dot X).
+    \end{aligned}
 $$
 
 It is important to note that not all observation functions may be necessary in the final representation of the model. For this reason, single value decomposition (SVD) will be used to prioritize the higher impact terms when computing $G^\dagger$. The single value decomposition equation is restated here for completeness.
@@ -112,16 +99,21 @@ $$
     G = U S V^\intercal
 $$
 
-Where $U, V \in \R^{N \times s}$ and $S \in \R^{s \times s}$ such that the matrices represent the $s$-most prominent terms in the observation space. The pseudo-inverse can be found by exploiting the nature of the SVD results.
+Where $U, V \in \mathbb{R}^{N \times s}$ and $S \in \mathbb{R}^{s \times s}$ such that $G$ represents the $s$-most prominent terms in the observation space. The pseudo-inverse can be found by exploiting the nature of the SVD results.
 
 $$
     G^\dagger = V S^{-1} U^\intercal
 $$
 
-Note that for use in pseudocode, the calculation for $G^\dagger$ will be referred to by a call to the \Call{SVD}{G} function. This form can then be used to calculate a minimum-error Koopman operator.
+This form can then be used to calculate a minimum-error Koopman operator such that
 
 $$
-    K_N = \left( V S^{-1} U^\intercal \right) A
+    K = \left( V S^{-1} U^\intercal \right) A.
 $$
 
-Where $K_N$ is a learned approximation of the Koopman operator from data.
+Where $K$ is a learned approximation of the Koopman operator from data.
+
+    Primary references:
+        M. O. Williams, I. G. Kevrekidis, and C. W. Rowley, “A Data–Driven Approximation of the
+            Koopman Operator: Extending Dynamic Mode Decomposition,” J Nonlinear Sci, vol. 25, no. 6, pp.
+            1307–1346, Dec. 2015, doi: 10.1007/s00332-015-9258-5.
