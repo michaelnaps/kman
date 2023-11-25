@@ -1,6 +1,6 @@
 ### **Koopman Operator Notes**
 
-This repository serves as the testing ground for my research at Boston University. This *readme.md* is in the process of being rewritten as a brief introduction to Koopman operator theory. Some notes on my research into the Koopman-feedback operator and using operators in series are in the folder titled *.archive*.
+This repository serves as the testing ground for my research at Boston University. This *readme.md* is in the process of being rewritten as a brief introduction to Koopman operator theory. Some notes on my research into the Koopman-feedback operator and using operators in series are in the folder titled *kman/Anchor*.
 
 ___
 ### **The Koopman Operator**
@@ -26,7 +26,7 @@ In practice, the Koopman operator is approximated to be finite so that it can be
 $$
     \begin{aligned}
         \Psi(\dot x) & = K \Psi(x) \\
-        \text{where } \Psi(x) & = \{ \psi_i(x) : \forall i \leq n \} \subset g(x)
+        \text{where } \Psi(x) & = \\{ \psi_i(x) : \forall i \leq n \\} \subset g(x)
     \end{aligned}
 $$
 
@@ -39,7 +39,7 @@ $$
     \end{aligned}
 $$
 
-There has been extensive research into the solution to $(2)$, some of which will be discussed in later sections. Example for the method of selecting observation terms, $(1)$, will be completed on a case-by-case basis in the subfolders to this repository.
+There has been extensive research into the solution to $(2)$, some of which will be discussed in later sections. Examples for the method of selecting observation terms, $(1)$, will be completed on a case-by-case basis in the subfolders to this repository.
 
     Primary references:
         M. Budišić, R. Mohr, and I. Mezić, “Applied Koopmanism,” Chaos: An Interdisciplinary Journal
@@ -63,13 +63,13 @@ $$
 Where $r(x,\dot x)$ is the residual error moving from $x$ to $\dot x$ through $\Psi$. Next, a series of data (found through data collection, etc.) is defined$.
 
 $$
-    X = \{ x_i : x_i \in \mathbb{M},\ \forall i \leq P\}
+    X = \\{ x_i : x_i \in \mathbb{M},\ \forall i \leq P \\}
 $$
 
 Where $X$ is a tuple of P-evenly spaced snapshots of the state. The derivative at each snapshot can thus be calculated using a finite-difference approach, etc. to get
 
 $$
-    \dot X = \{ \dot x_i = f(x_i) : \forall x_i \in X \}.
+    \dot X = \\{ \dot x_i = f(x_i) : \forall x_i \in X \\}.
 $$
 
 Using this data, the solution for the Koopman operator can be defined as the minimization of the residual error over the entire data set.
