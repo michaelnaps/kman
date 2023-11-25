@@ -45,8 +45,8 @@ There has been extensive research into the solution to $(2)$, some of which will
         M. Budišić, R. Mohr, and I. Mezić, “Applied Koopmanism,” Chaos: An Interdisciplinary Journal
             of Nonlinear Science, vol. 22, no. 4, p. 047510, Dec. 2012, doi: 10.1063/1.4772195.
         S. L. Brunton, B. W. Brunton, J. L. Proctor, and J. N. Kutz, “Koopman Invariant Subspaces and
-            Finite Linear Representations of Nonlinear Dynamical Systems for Control,” PLOS ONE, vol. 11, no.
-            2, p. e0150171, Feb. 2016, doi: 10.1371/journal.pone.0150171.
+            Finite Linear Representations of Nonlinear Dynamical Systems for Control,” PLOS ONE, vol.
+            11, no. 2, p. e0150171, Feb. 2016, doi: 10.1371/journal.pone.0150171.
 
 ___
 
@@ -115,5 +115,5 @@ Where $K$ is a learned approximation of the Koopman operator from data.
 
     Primary references:
         M. O. Williams, I. G. Kevrekidis, and C. W. Rowley, “A Data–Driven Approximation of the
-            Koopman Operator: Extending Dynamic Mode Decomposition,” J Nonlinear Sci, vol. 25, no. 6, pp.
-            1307–1346, Dec. 2015, doi: 10.1007/s00332-015-9258-5.
+            Koopman Operator: Extending Dynamic Mode Decomposition,” J Nonlinear Sci, vol. 25, no.
+            6, pp. 1307–1346, Dec. 2015, doi: 10.1007/s00332-015-9258-5.
