@@ -1,6 +1,6 @@
 ### **Koopman Operator Notes**
 
-THe **kman.git** repository serves as the testing ground for my research at Boston University. This *readme.md* is in the process of being rewritten as a brief introduction to Koopman operator theory. Some notes on my research into the Koopman-feedback operator and using operators in series are in the folder titled *kman/Anchor*.
+The **kman.git** repository serves as the testing ground for my research at Boston University. This *readme.md* is in the process of being rewritten as a brief introduction to Koopman operator theory. Some notes on my research into the Koopman-feedback operator and using operators in series are in the folder titled *kman/Anchor*.
 
 ___
 ### **The Koopman Operator**
