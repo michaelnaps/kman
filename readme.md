@@ -60,10 +60,10 @@ $$
     \Psi(\dot x) = K \Psi(x) + r(x,\dot x).
 $$
 
-Where $r(x,\dot x)$ is the residual error moving from $x$ to $\dot x$ through $\Psi$. Next, a series of data (found through data collection, etc.) is defined$.
+Where $r(x,\dot x)$ is the residual error moving from $x$ to $\dot x$ through $\Psi$. Next, a series of data (found through data collection, etc.) is defined by
 
 $$
-    X = \\{ x_i : x_i \in \mathbb{M},\ \forall i \leq P \\}
+    X = \\{ x_i : x_i \in \mathbb{M},\ \forall i \leq P \\}.
 $$
 
 Where $X$ is a tuple of P-evenly spaced snapshots of the state. The derivative at each snapshot can thus be calculated using a finite-difference approach, etc. to get
@@ -72,16 +72,16 @@ $$
     \dot X = \\{ \dot x_i = f(x_i) : \forall x_i \in X \\}.
 $$
 
-Using this data, the solution for the Koopman operator can be defined as the minimization of the residual error over the entire data set.
+Using this data, the solution for the Koopman operator can be defined as the minimization of the residual error over the entire data set such that
 
 $$
-    J = \frac{1}{2} || r(X,\dot X) ||^2
+    J = \frac{1}{2} || r(X,\dot X) ||^2.
 $$
 
-Which can be restated in terms of the Koopman operator approximation.
+Which can be restated in terms of the Koopman operator approximation:
 
 $$
-    J = \frac{1}{2} ||\Psi(\dot X) - K \Psi(X) ||^2
+    J = \frac{1}{2} ||\Psi(\dot X) - K \Psi(X) ||^2.
 $$
 
 In this form, the solution for $J$ is a simple least-squares regression such that $K = G^\dagger A$ where $G^\dagger$ is the pseudo-inverse of $G$. More specifically, the matrices $G$ and $A$ are composed of the observation functions for the current state and its derivative such that
@@ -93,16 +93,16 @@ $$
     \end{aligned}
 $$
 
-It is important to note that not all observation functions may be necessary in the final representation of the model. For this reason, single value decomposition (SVD) will be used to prioritize the higher impact terms when computing $G^\dagger$. The single value decomposition equation is restated here for completeness.
+It is important to note that not all observation functions may be necessary in the final representation of the model. For this reason, single value decomposition (SVD) will be used to prioritize the higher impact terms when computing $G^\dagger$. The single value decomposition equation is restated here for completeness:
 
 $$
-    G = U S V^\intercal
+    G = U S V^\intercal.
 $$
 
-Where $U, V \in \mathbb{R}^{N \times s}$ and $S \in \mathbb{R}^{s \times s}$ such that $G$ represents the $s$-most prominent terms in the observation space. The pseudo-inverse can be found by exploiting the nature of the SVD results.
+Where $U, V \in \mathbb{R}^{N \times s}$ and $S \in \mathbb{R}^{s \times s}$ such that $G$ represents the $s$-most prominent terms in the observation space. The pseudo-inverse can be found by exploiting the nature of the SVD results:
 
 $$
-    G^\dagger = V S^{-1} U^\intercal
+    G^\dagger = V S^{-1} U^\intercal.
 $$
 
 This form can then be used to calculate a minimum-error Koopman operator such that
