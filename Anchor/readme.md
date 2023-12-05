@@ -1,5 +1,7 @@
 ### **The Koopman-feedback Operator**
 
+For full report see file titled *kman_in_series.pdf*
+
 The Koopman-feedback operator (KFO) is a preliminary application for our study of using Koopman operators in series to model systems which can be broken into sub-operators via **shift functions**. The definition of a shift function, and a more in-depth discussion of them is forthcoming, but an outline of the KFO will be given here to explain the notation used in the **anchor system** application.
 
 The KFO was first proposed as a solution to the problem where the user is given measurement data which is ambiguously correlated with the system state and control policy. The communication between the Koopman system w.r.t the true system is rendered in the diagram below.
