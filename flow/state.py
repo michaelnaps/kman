@@ -34,24 +34,26 @@ if __name__ == '__main__':
     optvar = Optimizer( cost, eps=eps ).setMaxIter( np.inf )
 
     # Initial guess and system size.
-    p = 100
+    p = 2
     A = 10
     X0 = 2*A*np.random.rand( p,n,1 ) - A
 
     # Solve optimization problem and save steps.
     XList = []
+    qmax = np.inf
     for x0 in X0:
         x = x0
         xList = [x]
         dg = fdm2c( cost, x )
         gnorm = np.linalg.norm( dg )
-        while gnorm > 1e-21:
+        q = 0
+        while gnorm > 1e-21 and q < qmax:
             x = optvar.step( x, dg )
             xList = xList + [x]
             dg = fdm2c( cost, x )
             gnorm = np.linalg.norm( fdm2c( cost, x ) )
-        xList = np.hstack( xList )
-    XList = XList + [xList]
+            q += 1
+        XList = XList + [np.hstack( xList )]
 
     # Create snapshot lists.
     X = np.hstack( [xList[:,:-1] for xList in XList] )
@@ -60,3 +62,4 @@ if __name__ == '__main__':
     # Solve for Koopman operator.
     kvar = KoopmanOperator( observe )
     kvar.edmd( X, Y )
+    print( kvar )
