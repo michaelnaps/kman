@@ -1,6 +1,6 @@
 ### **Koopman Operator Notes**
 
-This repository serves as the testing ground for my research at Boston University. This *readme.md* is in the process of being rewritten as a brief introduction to Koopman operator theory. Some notes on my research into the Koopman-feedback operator and using operators in series are in the folder titled *kman/Anchor*.
+The **kman.git** repository serves as the testing ground for my research at Boston University. This *readme.md* is in the process of being rewritten as a brief introduction to Koopman operator theory. Some notes on my research into the Koopman-feedback operator and using operators in series are in the folder titled *kman/Anchor*.
 
 ___
 ### **The Koopman Operator**
@@ -45,8 +45,8 @@ There has been extensive research into the solution to $(2)$, some of which will
         M. Budišić, R. Mohr, and I. Mezić, “Applied Koopmanism,” Chaos: An Interdisciplinary Journal
             of Nonlinear Science, vol. 22, no. 4, p. 047510, Dec. 2012, doi: 10.1063/1.4772195.
         S. L. Brunton, B. W. Brunton, J. L. Proctor, and J. N. Kutz, “Koopman Invariant Subspaces and
-            Finite Linear Representations of Nonlinear Dynamical Systems for Control,” PLOS ONE, vol. 11, no.
-            2, p. e0150171, Feb. 2016, doi: 10.1371/journal.pone.0150171.
+            Finite Linear Representations of Nonlinear Dynamical Systems for Control,” PLOS ONE, vol.
+            11, no. 2, p. e0150171, Feb. 2016, doi: 10.1371/journal.pone.0150171.
 
 ___
 
@@ -60,10 +60,10 @@ $$
     \Psi(\dot x) = K \Psi(x) + r(x,\dot x).
 $$
 
-Where $r(x,\dot x)$ is the residual error moving from $x$ to $\dot x$ through $\Psi$. Next, a series of data (found through data collection, etc.) is defined$.
+Where $r(x,\dot x)$ is the residual error moving from $x$ to $\dot x$ through $\Psi$. Next, a series of data (found through data collection, etc.) is defined by
 
 $$
-    X = \\{ x_i : x_i \in \mathbb{M},\ \forall i \leq P \\}
+    X = \\{ x_i : x_i \in \mathbb{M},\ \forall i \leq P \\}.
 $$
 
 Where $X$ is a tuple of P-evenly spaced snapshots of the state. The derivative at each snapshot can thus be calculated using a finite-difference approach, etc. to get
@@ -72,16 +72,16 @@ $$
     \dot X = \\{ \dot x_i = f(x_i) : \forall x_i \in X \\}.
 $$
 
-Using this data, the solution for the Koopman operator can be defined as the minimization of the residual error over the entire data set.
+Using this data, the solution for the Koopman operator can be defined as the minimization of the residual error over the entire data set such that
 
 $$
-    J = \frac{1}{2} || r(X,\dot X) ||^2
+    J = \frac{1}{2} || r(X,\dot X) ||^2.
 $$
 
-Which can be restated in terms of the Koopman operator approximation.
+Which can be restated in terms of the Koopman operator approximation:
 
 $$
-    J = \frac{1}{2} ||\Psi(\dot X) - K \Psi(X) ||^2
+    J = \frac{1}{2} ||\Psi(\dot X) - K \Psi(X) ||^2.
 $$
 
 In this form, the solution for $J$ is a simple least-squares regression such that $K = G^\dagger A$ where $G^\dagger$ is the pseudo-inverse of $G$. More specifically, the matrices $G$ and $A$ are composed of the observation functions for the current state and its derivative such that
@@ -93,16 +93,16 @@ $$
     \end{aligned}
 $$
 
-It is important to note that not all observation functions may be necessary in the final representation of the model. For this reason, single value decomposition (SVD) will be used to prioritize the higher impact terms when computing $G^\dagger$. The single value decomposition equation is restated here for completeness.
+It is important to note that not all observation functions may be necessary in the final representation of the model. For this reason, single value decomposition (SVD) will be used to prioritize the higher impact terms when computing $G^\dagger$. The single value decomposition equation is restated here for completeness:
 
 $$
-    G = U S V^\intercal
+    G = U S V^\intercal.
 $$
 
-Where $U, V \in \mathbb{R}^{N \times s}$ and $S \in \mathbb{R}^{s \times s}$ such that $G$ represents the $s$-most prominent terms in the observation space. The pseudo-inverse can be found by exploiting the nature of the SVD results.
+Where $U, V \in \mathbb{R}^{N \times s}$ and $S \in \mathbb{R}^{s \times s}$ such that $G$ represents the $s$-most prominent terms in the observation space. The pseudo-inverse can be found by exploiting the nature of the SVD results:
 
 $$
-    G^\dagger = V S^{-1} U^\intercal
+    G^\dagger = V S^{-1} U^\intercal.
 $$
 
 This form can then be used to calculate a minimum-error Koopman operator such that
@@ -115,5 +115,5 @@ Where $K$ is a learned approximation of the Koopman operator from data.
 
     Primary references:
         M. O. Williams, I. G. Kevrekidis, and C. W. Rowley, “A Data–Driven Approximation of the
-            Koopman Operator: Extending Dynamic Mode Decomposition,” J Nonlinear Sci, vol. 25, no. 6, pp.
-            1307–1346, Dec. 2015, doi: 10.1007/s00332-015-9258-5.
+            Koopman Operator: Extending Dynamic Mode Decomposition,” J Nonlinear Sci, vol. 25, no.
+            6, pp. 1307–1346, Dec. 2015, doi: 10.1007/s00332-015-9258-5.
