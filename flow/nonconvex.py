@@ -61,11 +61,11 @@ if __name__ == '__main__':
         print( 'Complete for x0:', x0.T )
     print( 'xList:', [xList[:,-1] for xList in XList] )
 
-    # Create snapshot lists.
-    X = np.hstack( [xList[:,:-1] for xList in XList] )
-    Y = np.hstack( [xList[:,1:] for xList in XList] )
+    # # Create snapshot lists.
+    # X = np.hstack( [xList[:,:-1] for xList in XList] )
+    # Y = np.hstack( [xList[:,1:] for xList in XList] )
 
-    # Solve for Koopman operator.
-    kvar = KoopmanOperator( observe )
-    kvar.edmd( X, Y )
-    print( kvar )
+    # # Solve for Koopman operator.
+    # kvar = KoopmanOperator( observe )
+    # kvar.edmd( X, Y )
+    # print( kvar )
