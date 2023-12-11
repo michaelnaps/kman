@@ -18,7 +18,6 @@ beta = 100
 
 # Convex objective function.
 def cost(x):
-    # g = x.T@(x - beta)
     g = (x[0]**2 + x[1] - 11)**2 + (x[0] + x[1]**2 - 7)**2
     return g
 
@@ -33,14 +32,17 @@ def observe(x=None):
 if __name__ == '__main__':
     # Optimization variable.
     eps = 1e-21
-    alpha = 1e-12
+    alpha = 1e-9
     optvar = Optimizer( cost, eps=eps )
     optvar.setStepSize( alpha ).setMaxIter( np.inf )
 
     # Initial guess and system size.
     p = 2
     A = 10
-    X0 = 2*A*np.random.rand( p,n,1 ) - A
+    X0 = np.array( [
+        [[0],[0]],
+        [[3.01],[2.01]]
+    ] )
 
     # Solve optimization problem and save steps.
     XList = []
@@ -52,6 +54,7 @@ if __name__ == '__main__':
         gnorm = np.linalg.norm( dg )
         q = 0
         while gnorm > 1e-21 and q < qmax:
+            print( gnorm )
             x = optvar.step( x, dg )
             xList = xList + [x]
             dg = fdm2c( cost, x )
