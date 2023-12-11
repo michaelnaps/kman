@@ -14,6 +14,7 @@ from MPC.Optimizer import *
 
 # Dimension of system.
 n = 2
+beta = 100
 
 # Convex objective function.
 def cost(x):
@@ -31,6 +32,7 @@ def observe(x=None):
 if __name__ == '__main__':
     # Optimization variable.
     eps = 1e-21
+    alpha = 1e-12
     optvar = Optimizer( cost, eps=eps ).setMaxIter( np.inf )
 
     # Initial guess and system size.
@@ -54,6 +56,7 @@ if __name__ == '__main__':
             gnorm = np.linalg.norm( fdm2c( cost, x ) )
             q += 1
         XList = XList + [np.hstack( xList )]
+    print( [xList[:,-1] for xList in XList] )
 
     # Create snapshot lists.
     X = np.hstack( [xList[:,:-1] for xList in XList] )
