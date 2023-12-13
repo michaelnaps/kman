@@ -86,19 +86,17 @@ class Regressor:
 		self.err = self.resError( C )
 		return C, (U,S,V)
 
-	# Proper Orthonal Decomposition (POD)
+	# Classic Proper Orthonal Decomposition (CPOD)
 	# Assumption: Datasets are already flattened.
 	# 			  X and Y are sequentially ordered sets.
-	def pod(self, m=None, EPS=1e-21):
+	def cpod(self, m=None, EPS=1e-21):
 		# Initialize coefficient matrix.
 		N, P, _ = self.Xset.getDataDimn()
 		M = N if m is None else m
 		A = np.empty( (N, P+1) )
 
-		# Combine X and Y sets.
+		# Combine X and Y sets and remove spatial mean.
 		Q = np.hstack( (self.Xset.X, self.Yset.X[:,-1,None]) )
-
-		# Remove spatial mean from data.
 		qAvg = np.mean( Q, axis=1 )[:,None]
 		X = Q - qAvg
 
@@ -111,6 +109,4 @@ class Regressor:
 			h = np.linalg.solve( R, x[:,None] )
 			H[:,i] = h[:,0]
 
-		# Select sufficient modes.
-
-		return H
+		return H, A
