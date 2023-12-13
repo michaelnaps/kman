@@ -89,8 +89,22 @@ class Regressor:
 
 	# Proper Orthonal Decomposition (POD)
 	# Assumption: Datasets are already flattened.
+	# 			  X and Y are sequentially ordered sets.
 	def pod(self, psi):
 		# Initialize coefficient matrix.
-		A = np.empty( (self.Xset.N, self.Xset.P) )
+		N, P, _ = self.Xset.getDataDimn()
+		A = np.empty( (N, P+1) )
 
-		pass  # TODO: Write out steps in notes more thoroughly.
+		# Combine X and Y sets.
+		Q = np.hstack( (self.Xset.X, self.Yset.X[:,-1]) )
+
+		# Remove spatial mean from data.
+		qAvg = np.mean( Q, axis=1 )[:,None]
+		X = Q - qAvg
+
+		# Covariance matrix.
+		R = 1/(P + 1)*X@X.T
+
+		# Perform SVD to find eigenvalues of X.
+
+		return X, Y

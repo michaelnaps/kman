@@ -114,6 +114,12 @@ class Operator:
 		# Return instance of self.
 		return self
 
+	# Proper orthogonal decomposition.
+	def pod(self, X, Y, X0=None):
+		# Initialize regressor class.
+		self.solver = Regressor(X, Y)
+		return self.solver.pod()
+
 # Class: KoopmanOperator
 # Parent Class: Operator
 # Purpose: The Koopman operator is defined as an operator matrix
