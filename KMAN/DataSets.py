@@ -69,8 +69,8 @@ class DataSet:
 			self.M = 1
 		# otherwise, data has 3-D shape (M).
 		else:
-			self.P = X0.shape[1]        # Number of time-steps
-			self.N, self.M = X0.shape   # Number of states/data sets
+			self.P = X0.shape[1]        # Number of time-steps.
+			self.N, self.M = X0.shape   # Number of states/data sets.
 
 	def getDataDimn(self):
 		return self.N, self.P, self.M

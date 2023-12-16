@@ -69,8 +69,7 @@ class Regressor:
 		(U, S, V) = np.linalg.svd( G )
 
 		# Get priority functions from S.
-		if EPS is None:
-			EPS = TOL*max( S )
+		EPS = TOL*max( X ) if EPS is None else EPS
 		ind = S > EPS
 
 		# Truncate space for prioritized functions.
@@ -87,10 +86,27 @@ class Regressor:
 		self.err = self.resError( C )
 		return C, (U,S,V)
 
-	# Proper Orthonal Decomposition (POD)
+	# Classic Proper Orthonal Decomposition (CPOD)
 	# Assumption: Datasets are already flattened.
-	def pod(self, psi):
+	# 			  X and Y are sequentially ordered sets.
+	def cpod(self, m=None, EPS=1e-21):
 		# Initialize coefficient matrix.
-		A = np.empty( (self.Xset.N, self.Xset.P) )
+		N, P, _ = self.Xset.getDataDimn()
+		M = N if m is None else m
+		A = np.empty( (N, P+1) )
 
-		pass  # TODO: Write out steps in notes more thoroughly.
+		# Combine X and Y sets and remove spatial mean.
+		Q = np.hstack( (self.Xset.X, self.Yset.X[:,-1,None]) )
+		qAvg = np.mean( Q, axis=1 )[:,None]
+		X = Q - qAvg
+
+		# Calculate covariance matrix and derive eigenvalues.
+		R = 1/(P + 1)*X@X.T
+
+		# Iterate through X and solve linear SOE.
+		H = np.empty( (N, P+1) )
+		for i, x in enumerate( X.T ):
+			h = np.linalg.solve( R, x[:,None] )
+			H[:,i] = h[:,0]
+
+		return H, A

@@ -114,6 +114,12 @@ class Operator:
 		# Return instance of self.
 		return self
 
+	# Classic Proper orthogonal decomposition.
+	def cpod(self, X, Y, X0=None):
+		# Initialize regressor class.
+		self.solver = Regressor(X, Y)
+		return self.solver.cpod()
+
 # Class: KoopmanOperator
 # Parent Class: Operator
 # Purpose: The Koopman operator is defined as an operator matrix
@@ -132,10 +138,7 @@ class KoopmanOperator( Operator ):
 		self.obsY = Observables( obsY )
 
 		# Shift function inititalization.
-		if T is None:
-			self.T = np.eye( self.obsX.Nk )
-		else:
-			self.T = T
+		self.T = np.eye( self.obsX.Nk ) if T is None else T
 
 		# Koopman operator initialization.
 		if K is None:

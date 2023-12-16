@@ -19,6 +19,7 @@ from KMAN.Operators import *
 dt = 0.001
 A = 10
 Nx = 2
+W = 2
 
 # model function: continuous, second-order
 def model(x):
@@ -26,7 +27,7 @@ def model(x):
 	b = 1.50
 	dx = np.array( [
 		a*(x[0]),
-		b*(x[1] - x[0]**2)
+		b*(x[1] - x[0]**W)
 	] )
 	return dx
 
@@ -61,7 +62,9 @@ if __name__=="__main__":
 	lvar = LieOperator( obsX )
 
 	# Learn operators.
-	kvar.edmd( X,Y )
+	print( kvar.cpod( X,Y ) )
+	exit()
+
 	lvar.K2L( kvar )
 	lvar.resError( X,Y,save=1 )
 	print( 'K:\n', kvar )
@@ -113,4 +116,5 @@ if __name__=="__main__":
 
 	axs[0].legend()
 	fig.tight_layout()
-	plt.show()
+	plt.show( block=0 )
+	input( "Press ENTER to exit program..." )
