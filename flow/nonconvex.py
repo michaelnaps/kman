@@ -14,6 +14,7 @@ from MPC.Optimizer import *
 
 # Dimension of system.
 n = 2
+alpha = 1e-3
 beta = 100
 
 # Convex objective function.
@@ -21,26 +22,28 @@ def cost(x):
     g = (x[0]**2 + x[1] - 11)**2 + (x[0] + x[1]**2 - 7)**2
     return g
 
+def costgrad(x):
+    dg = fdm2c( cost, x )
+    return dg
+
 # Observation function.
 def observe(x=None):
     if x is None:
-        return {'Nk': n}
-    psi = x
+        return {'Nk': 2*n}
+    psi = np.vstack( (x, alpha*costgrad( x )) )
     return psi
 
 # Main execution block.
 if __name__ == '__main__':
     # Optimization variable.
     eps = 1e-21
-    alpha = 1e-3
     optvar = Optimizer( cost, eps=eps )
     optvar.setStepSize( alpha ).setMaxIter( np.inf )
 
     # Initial guess and system size.
-    p = 1
+    p = 2
     A = 1
-    X0 = np.array( [ [[3],[2]] ] ) \
-        + 2*A*np.random.rand( n,p ) - A
+    X0 = 2*A*np.random.rand( p,n,1 ) - A
 
     # Solve optimization problem and save steps.
     XList = []
@@ -58,14 +61,12 @@ if __name__ == '__main__':
             gnorm = np.linalg.norm( fdm2c( cost, x ) )
             q += 1
         XList = XList + [np.hstack( xList )]
-        print( 'Complete for x0:', x0.T )
-    print( 'xList:', [xList[:,-1] for xList in XList] )
+        print( 'Complete for x0:', x0.T, '->', x.T )
 
-    # # Create snapshot lists.
-    # X = np.hstack( [xList[:,:-1] for xList in XList] )
-    # Y = np.hstack( [xList[:,1:] for xList in XList] )
+    # Create snapshot lists.
+    X = np.hstack( [xList[:,:-1] for xList in XList] )
+    Y = np.hstack( [xList[:,1:] for xList in XList] )
 
-    # # Solve for Koopman operator.
-    # kvar = KoopmanOperator( observe )
-    # kvar.edmd( X, Y )
-    # print( kvar )
+    # Solve for Koopman operator.
+    kvar = KoopmanOperator( observe )
+    print( kvar.edmd( X, Y ) )
