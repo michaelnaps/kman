@@ -69,7 +69,7 @@ class Regressor:
 		(U, S, V) = np.linalg.svd( G )
 
 		# Get priority functions from S.
-		EPS = TOL*max( X ) if EPS is None else EPS
+		EPS = TOL*max( S ) if EPS is None else EPS
 		ind = S > EPS
 
 		# Truncate space for prioritized functions.
