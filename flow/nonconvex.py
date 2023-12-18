@@ -18,13 +18,13 @@ np.set_printoptions(precision=3, suppress=True, linewidth=np.inf)
 # Dimension of system.
 n = 2
 alpha = 1e-3
-gamma = 0.9
+gamma = 9e-1
 beta = 100
 
 # Convex objective function.
 def cost(x):
     g = (x[0]**2 + x[1] - 11)**2 + (x[0] + x[1]**2 - 7)**2
-    return g
+    return g[:,None].T
 
 def costgrad(x):
     dg = fdm2c( cost, x )
@@ -40,7 +40,7 @@ def costgradprop(x, p=0):
 
 # Observation function.
 def observe(x=None):
-    p = 3
+    p = 5
     if x is None:
         return {'Nk': (p + 1)*n + 1}
     psi = np.vstack( [x]
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     optvar.setStepSize( alpha ).setMaxIter( np.inf )
 
     # Initial guess and system size.
-    p = 10
+    p = 2
     A = 2.5
     X0 = 2*A*np.random.rand( p,n,1 ) - A
 
@@ -96,3 +96,33 @@ if __name__ == '__main__':
             psiList = psiList + [psi]
         PSIList = PSIList + [np.hstack( psiList )]
         print( 'Complete for x0:', x0.T, '\t->\t', psi[:n].T )
+
+    # Initialize plot variables.
+    fig, axs = plt.subplots()
+
+    # Add level set contour lines.
+    eta = 20
+    xRange = np.linspace( -5, 5, 1000 )
+    yRange = np.linspace( -4, 4, 1000 )
+    xMesh, yMesh = np.meshgrid( xRange, yRange )
+    gMesh = np.vstack( [
+        cost( np.vstack( (xList, yList) ) )
+            for xList, yList in zip( xMesh, yMesh ) ] )
+    levels = [1] + [eta*(i + 1) for i in range( round( np.max( gMesh )/eta ) )]
+    axs.contour( xMesh, yMesh, gMesh, levels=levels, colors='k' )
+
+    # Add gradient descent results to plot.
+    for xList in XList:
+        axs.plot( xList[0,0], xList[1,0], marker='x', color='cornflowerblue' )
+        axs.plot( xList[0], xList[1], color='cornflowerblue' )
+
+    # Add operator results to plot.
+    for psiList in PSIList:
+        axs.plot( psiList[0,0], psiList[1,0], marker='x', color='indianred' )
+        axs.plot( psiList[0], psiList[1], color='indianred' )
+
+    # Display plot.
+    axs.set_aspect('equal', adjustable='box')
+    fig.tight_layout()
+    plt.show( block=0 )
+    input( 'Press ENTER to exit program... ' )
