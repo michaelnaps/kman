@@ -40,7 +40,7 @@ def costgradprop(x, p=0):
 
 # Observation function.
 def observe(x=None):
-    p = 2
+    p = 5
     if x is None:
         return {'Nk': (p + 1)*n + 1}
     psi = np.vstack( [x]
@@ -56,12 +56,12 @@ if __name__ == '__main__':
     optvar.setStepSize( alpha ).setMaxIter( np.inf )
 
     # Initial guess and system size.
-    p = 2
+    p = 4
     A = 2.5
     X0 = 2*A*np.random.rand( p,n,1 ) - A
 
     # Solve optimization problem and save steps.
-    kmax = 100
+    kmax = 1000
     XList = []
     for x0 in X0:
         x = x0
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     gMesh = np.vstack( [
         cost( np.vstack( (xList, yList) ) )
             for xList, yList in zip( xMesh, yMesh ) ] )
-    levels = [1] + [eta*(i + 1) for i in range( round( np.max( gMesh )/eta ) )]
+    levels = [1, 5] + [eta*(i + 1) for i in range( round( np.max( gMesh )/eta ) )]
     axs.contour( xMesh, yMesh, gMesh, levels=levels, colors='k' )
 
     # Add gradient descent results to plot.
@@ -123,7 +123,6 @@ if __name__ == '__main__':
 
     # Add operator results to plot.
     for psiList in PSIList:
-        print( psiList )
         axs.plot( psiList[0,0], psiList[1,0], marker='x', color='indianred' )
         axs.plot( psiList[0], psiList[1], color='indianred' )
 
