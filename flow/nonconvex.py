@@ -40,7 +40,7 @@ def costgradprop(x, p=0):
 
 # Observation function.
 def observe(x=None):
-    p = 10
+    p = 2
     if x is None:
         return {'Nk': (p + 1)*n + 1}
     psi = np.vstack( [x]
@@ -51,7 +51,7 @@ def observe(x=None):
 # Main execution block.
 if __name__ == '__main__':
     # Optimization variable.
-    eps = 1e-9
+    eps = 1e-21
     optvar = Optimizer( cost, eps=eps )
     optvar.setStepSize( alpha ).setMaxIter( np.inf )
 
@@ -61,21 +61,21 @@ if __name__ == '__main__':
     X0 = 2*A*np.random.rand( p,n,1 ) - A
 
     # Solve optimization problem and save steps.
+    kmax = 100
     XList = []
-    kmax = 2500
     for x0 in X0:
         x = x0
-        xList = [x]
         dg = fdm2c( cost, x )
         gnorm = np.linalg.norm( dg )
-        k = 0
-        while k < kmax:  # and gnorm > eps:
+        xList = np.nan*np.ones( (n,kmax+1) )
+        xList[:,0] = x[:,0]
+        for k in range( kmax ):
             x = optvar.step( x, dg )
-            xList = xList + [x]
             dg = fdm2c( cost, x )
             gnorm = np.linalg.norm( fdm2c( cost, x ) )
-            k += 1
-        XList = XList + [np.hstack( xList )]
+            xList[:,k+1] = x[:,0]
+            if gnorm < eps: break
+        XList = XList + [xList[:,:k+1]]
         print( 'Complete for x0 (%s):' % k, x0.T, '\t->\t', x.T )
 
     # Create snapshot lists.
@@ -90,14 +90,15 @@ if __name__ == '__main__':
     PSIList = []
     for x0 in X0:
         psi = kvar.obsX.lift( x0 )
-        psiList = [psi]
-        for _ in range( kmax if np.isfinite( kmax ) else 1e4 ):
+        psiList = np.empty( (observe()['Nk'], kmax+1) )
+        psiList[:,0] = psi[:,0]
+        for k in range( kmax ):
             psi = kvar.K@psi
-            psiList = psiList + [psi]
+            psiList[:,k+1] = psi[:,0]
             if np.linalg.norm( psi ) > 15:
                 print('Operator dynamics diverged.')
                 break
-        PSIList = PSIList + [np.hstack( psiList )]
+        PSIList = PSIList + [psiList]
         print( 'Complete for x0:', x0.T, '\t->\t', psi[:n].T )
 
     # Initialize plot variables.
@@ -122,6 +123,7 @@ if __name__ == '__main__':
 
     # Add operator results to plot.
     for psiList in PSIList:
+        print( psiList )
         axs.plot( psiList[0,0], psiList[1,0], marker='x', color='indianred' )
         axs.plot( psiList[0], psiList[1], color='indianred' )
 
