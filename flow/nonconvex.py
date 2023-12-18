@@ -18,7 +18,7 @@ np.set_printoptions(precision=3, suppress=True, linewidth=np.inf)
 # Dimension of system.
 n = 2
 alpha = 1e-3
-gamma = 9e-1
+gamma = alpha
 beta = 100
 
 # Convex objective function.
@@ -40,7 +40,7 @@ def costgradprop(x, p=0):
 
 # Observation function.
 def observe(x=None):
-    p = 5
+    p = 10
     if x is None:
         return {'Nk': (p + 1)*n + 1}
     psi = np.vstack( [x]
@@ -69,14 +69,14 @@ if __name__ == '__main__':
         dg = fdm2c( cost, x )
         gnorm = np.linalg.norm( dg )
         k = 0
-        while gnorm > eps and k < kmax:
+        while k < kmax:  # and gnorm > eps:
             x = optvar.step( x, dg )
             xList = xList + [x]
             dg = fdm2c( cost, x )
             gnorm = np.linalg.norm( fdm2c( cost, x ) )
             k += 1
         XList = XList + [np.hstack( xList )]
-        print( 'Complete for x0:', x0.T, '\t->\t', x.T )
+        print( 'Complete for x0 (%s):' % k, x0.T, '\t->\t', x.T )
 
     # Create snapshot lists.
     X = np.hstack( [xList[:,:-1] for xList in XList] )
@@ -91,9 +91,12 @@ if __name__ == '__main__':
     for x0 in X0:
         psi = kvar.obsX.lift( x0 )
         psiList = [psi]
-        for _ in range( kmax if np.isfinite( kmax ) else 10000 ):
+        for _ in range( kmax if np.isfinite( kmax ) else 1e4 ):
             psi = kvar.K@psi
             psiList = psiList + [psi]
+            if np.linalg.norm( psi ) > 15:
+                print('Operator dynamics diverged.')
+                break
         PSIList = PSIList + [np.hstack( psiList )]
         print( 'Complete for x0:', x0.T, '\t->\t', psi[:n].T )
 
@@ -102,8 +105,9 @@ if __name__ == '__main__':
 
     # Add level set contour lines.
     eta = 20
-    xRange = np.linspace( -5, 5, 1000 )
-    yRange = np.linspace( -4, 4, 1000 )
+    xBound = (-5, 5);  yBound = (-4, 4)
+    xRange = np.linspace( xBound[0], xBound[1], 1000 )
+    yRange = np.linspace( yBound[0], yBound[1], 1000 )
     xMesh, yMesh = np.meshgrid( xRange, yRange )
     gMesh = np.vstack( [
         cost( np.vstack( (xList, yList) ) )
@@ -123,6 +127,7 @@ if __name__ == '__main__':
 
     # Display plot.
     axs.set_aspect('equal', adjustable='box')
+    axs.grid( 1 )
     fig.tight_layout()
     plt.show( block=0 )
     input( 'Press ENTER to exit program... ' )
