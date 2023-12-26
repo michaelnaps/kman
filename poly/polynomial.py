@@ -48,25 +48,31 @@ def obsX(x=None):
 if __name__=="__main__":
 	# Generating random positions to learn from.
 	N0 = 3
-	X = 2*A*np.random.rand( Nx,N0 ) - A
-
-	# Take derivative of positions using model.
-	dX = np.empty( (Nx, N0) )
+	X = np.empty( (Nx, N0) )
 	Y = np.empty( (Nx, N0) )
-	for i, x in enumerate( X.T ):
-		dX[:,i] = model( x[:,None] )[:,0]
-		Y[:,i] = x + dt*dX[:,i]
+
+	# Create data set using model().
+	X[:,0] = 0.1*np.ones( (Nx,) )
+	for i in range( 1,N0 ):
+		X[:,i] = X[:,i-1] + dt*model( X[:,i-1] )
+		Y[:,i-1] = X[:,i]
+	Y[:,-1] = X[:,-1] + dt*model( X[:,-1] )
 
 	# Initialize L and K operator variables.
 	kvar = KoopmanOperator( obsX )
 	lvar = LieOperator( obsX )
 
 	# Learn operators.
-	print( kvar.cpod( obsX( X ), obsX( Y ) ) )
+	kvar.cpod( obsX( X ), obsX( Y ) )
+	for x, h in zip( X.T, kvar.K.T ):
+		print( '---' )
+		print( x )
+		print( h )
+		print( obsX( x )@h.T )
 	exit()
 
 	lvar.K2L( kvar )
-	lvar.resError( X,Y,save=1 )
+	lvar.resError( X, Y, save=1 )
 	print( 'K:\n', kvar )
 	print( 'L:\n', lvar )
 

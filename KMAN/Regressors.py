@@ -93,14 +93,13 @@ class Regressor:
 		# Initialize coefficient matrix.
 		N, P, _ = self.Xset.getDataDimn()
 		M = N if m is None else m
-		A = np.empty( (N, P+1) )
 
 		# Combine X and Y sets and remove spatial mean.
 		Q = np.hstack( (self.Xset.X, self.Yset.X[:,-1,None]) )
 		qAvg = np.mean( Q, axis=1 )[:,None]
 		X = Q - qAvg
 
-		# Calculate covariance matrix and derive eigenvalues.
+		# Calculate covariance matrix.
 		R = 1/(P + 1)*X@X.T
 
 		# Iterate through X and solve linear SOE.
@@ -110,6 +109,5 @@ class Regressor:
 			H[:,i] = h[:,0]
 
 		print( H )
-		print( np.linalg.norm( Q - (H@X + qAvg) ) )
 
-		return
+		return H
