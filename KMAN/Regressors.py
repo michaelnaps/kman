@@ -50,7 +50,7 @@ class Regressor:
 		# Return residual error.
 		return 1/P*err
 
-	# Least Squares (LS)
+	# Dynamic Mode Decomposition (DMD).
 	# Assumption: Datasets are already flattened.
 	def dmd(self, EPS=None):
 		# Get set dimensions.
@@ -109,4 +109,7 @@ class Regressor:
 			h = np.linalg.solve( R, x[:,None] )
 			H[:,i] = h[:,0]
 
-		return H, A
+		print( H )
+		print( np.linalg.norm( Q - (H@X + qAvg) ) )
+
+		return

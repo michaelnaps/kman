@@ -62,7 +62,7 @@ if __name__=="__main__":
 	lvar = LieOperator( obsX )
 
 	# Learn operators.
-	print( kvar.cpod( X,Y ) )
+	print( kvar.cpod( obsX( X ), obsX( Y ) ) )
 	exit()
 
 	lvar.K2L( kvar )

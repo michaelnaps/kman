@@ -105,7 +105,7 @@ class Operator:
 	# Extended Dynamic Mode Decomposition (EDMD)
 	def dmd(self, X, Y, X0=None, EPS=None):
 		# Initialize Regressor class.
-		self.solver = Regressor(X, Y)
+		self.solver = Regressor( X, Y )
 
 		# Compute Koopman operator through DMD.
 		self.C, self.USV = self.solver.dmd( EPS=EPS )
@@ -117,8 +117,11 @@ class Operator:
 	# Classic Proper orthogonal decomposition.
 	def cpod(self, X, Y, X0=None):
 		# Initialize regressor class.
-		self.solver = Regressor(X, Y)
-		return self.solver.cpod()
+		self.solver = Regressor( X, Y )
+		self.C = self.solver.cpod()
+
+		# Return instance of self.
+		return self
 
 # Class: KoopmanOperator
 # Parent Class: Operator
