@@ -100,14 +100,17 @@ class Regressor:
 		X = Q - qbar
 
 		# Calculate covariance matrix.
-		R = 1/(P + 1)*X@X.T
+		R = 1/(P - 1)*X@X.T
 
 		# Find eigenvalues/vectors of R.
 		phi, H = np.linalg.eig( R )
 
 		# Calculate coefficient matrix A.
-		aList = np.empty( (1,N) )
+		aList = np.empty( (1,M) )
 		for i, (x, h) in enumerate( zip( X.T, H.T ) ):
 			aList[:,i] = x@h.T
 		A = np.ones( (N,1) )@aList
+
+		print( A )
+
 		return A, qbar, (H, phi)

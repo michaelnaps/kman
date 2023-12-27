@@ -272,7 +272,7 @@ class LieOperator( KoopmanOperator ):
 	def K2L(self, kvar, dt=1e-3, real=1):
 		# Grab eignvalues and invert for transition.
 		_, V = np.linalg.eig( kvar.K )
-		Vinv = np.linalg.solve( V,np.eye( self.obsX.Nk ) )
+		Vinv = np.linalg.solve( V, np.eye( self.obsX.Nk ) )
 
 		# Calculate the logarithm of K.
 		Kp = Vinv@kvar.K@V
