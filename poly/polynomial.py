@@ -52,7 +52,7 @@ if __name__=="__main__":
 	Y = np.empty( (Nx, N0) )
 
 	# Create data set using model().
-	X[:,0] = 0.1*np.ones( (Nx,) )
+	X[:,0] = 10*np.ones( (Nx,) )
 	for i in range( 1,N0 ):
 		X[:,i] = X[:,i-1] + dt*model( X[:,i-1] )
 		Y[:,i-1] = X[:,i]

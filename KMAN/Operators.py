@@ -63,7 +63,7 @@ class Operator:
 	def __init__(self, C=None):
 		# Shift and Koopman initialization
 		self.C = C
-		self.USV = None
+		self.leftovers = None
 
 		# Accuracy parameters.
 		self.solver = None
@@ -106,19 +106,23 @@ class Operator:
 	def dmd(self, X, Y, X0=None, EPS=None):
 		# Initialize Regressor class.
 		self.solver = Regressor( X, Y )
+		self.method = 'dmd'
 
 		# Compute Koopman operator through DMD.
-		self.C, self.USV = self.solver.dmd( EPS=EPS )
+		self.C, self.leftovers = self.solver.dmd( EPS=EPS )
 		self.err = self.solver.resError( self.C )
 
 		# Return instance of self.
 		return self
 
-	# Classic Proper orthogonal decomposition.
+	# Classic proper orthogonal decomposition.
 	def cpod(self, X, Y, X0=None):
 		# Initialize regressor class.
 		self.solver = Regressor( X, Y )
-		self.C = self.solver.cpod()
+		self.method = 'cpod'
+
+		# Perform CPOD on lifted states.
+		self.A, self.xAvg, self.leftovers = self.solver.cpod()
 
 		# Return instance of self.
 		return self
