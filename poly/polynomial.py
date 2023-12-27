@@ -48,29 +48,14 @@ def obsX(x=None):
 if __name__=="__main__":
 	# Generating random positions to learn from.
 	N0 = 3
-	X = np.empty( (Nx, N0) )
-	Y = np.empty( (Nx, N0) )
-
-	# Create data set using model().
-	X[:,0] = 10*np.ones( (Nx,) )
-	for i in range( 1,N0 ):
-		X[:,i] = X[:,i-1] + dt*model( X[:,i-1] )
-		Y[:,i-1] = X[:,i]
-	Y[:,-1] = X[:,-1] + dt*model( X[:,-1] )
+	X = 2*A*np.random.rand( Nx,N0 ) - A
+	Y = X + dt*model( X )
 
 	# Initialize L and K operator variables.
 	kvar = KoopmanOperator( obsX )
 	lvar = LieOperator( obsX )
 
-	# Learn operators.
-	kvar.cpod( obsX( X ), obsX( Y ) )
-	for x, h in zip( X.T, kvar.K.T ):
-		print( '---' )
-		print( x )
-		print( h )
-		print( obsX( x )@h.T )
-	exit()
-
+	kvar.edmd( X, Y )
 	lvar.K2L( kvar )
 	lvar.resError( X, Y, save=1 )
 	print( 'K:\n', kvar )
@@ -122,5 +107,5 @@ if __name__=="__main__":
 
 	axs[0].legend()
 	fig.tight_layout()
-	plt.show( block=0 )
+	plt.show()
 	input( "Press ENTER to exit program..." )
