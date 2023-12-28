@@ -52,6 +52,11 @@ class Regressor:
 
 	# Dynamic Mode Decomposition (DMD).
 	# Assumption: Datasets are flattened.
+	# Citations:
+	#	[1] M. O. Williams, I. G. Kevrekidis, and C. W. Rowley, “A Data–Driven
+	#		Approximation of the Koopman Operator: Extending Dynamic Mode
+	#		Decomposition,” J Nonlinear Sci, vol. 25, no. 6, pp. 1307–1346, Dec.
+	#		2015, doi: 10.1007/s00332-015-9258-5.
 	def dmd(self, EPS=None):
 		# Get set dimensions.
 		# Assume Yset is similarly shaped.
@@ -89,6 +94,12 @@ class Regressor:
 	# Classic Proper Orthonal Decomposition (CPOD)
 	# Assumption: Datasets are flattened.
 	# 			  X and Y are sequentially ordered snapshots.
+	# Citations:
+	# 	[1] K. Taira et al., “Modal Analysis of Fluid Flows: An Overview,”
+	#		AIAA Journal, vol. 55, no. 12, pp. 4013–4041, 2017, doi: 10.2514/1.J056060.
+	#	[2] J. Weiss, “A Tutorial on the Proper Orthogonal Decomposition,”
+	#		in AIAA Aviation 2019 Forum, Dallas, Texas: American Institute of
+	#		Aeronautics and Astronautics, Jun. 2019. doi: 10.2514/6.2019-3333.
 	def cpod(self, m=None, EPS=1e-21):
 		# Initialize coefficient matrix.
 		N, P, _ = self.Xset.getDataDimn()
