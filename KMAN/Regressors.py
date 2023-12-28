@@ -94,6 +94,7 @@ class Regressor:
 	# Classic Proper Orthonal Decomposition (CPOD)
 	# Assumption: Datasets are flattened.
 	# 			  X and Y are sequentially ordered snapshots.
+	#			  X and Y have equal dimensions.
 	# Citations:
 	# 	[1] K. Taira et al., “Modal Analysis of Fluid Flows: An Overview,”
 	#		AIAA Journal, vol. 55, no. 12, pp. 4013–4041, 2017, doi: 10.2514/1.J056060.
