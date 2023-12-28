@@ -108,4 +108,3 @@ if __name__=="__main__":
 	axs[0].legend()
 	fig.tight_layout()
 	plt.show()
-	input( "Press ENTER to exit program..." )

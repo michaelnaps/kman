@@ -51,7 +51,7 @@ class Regressor:
 		return 1/P*err
 
 	# Dynamic Mode Decomposition (DMD).
-	# Assumption: Datasets are already flattened.
+	# Assumption: Datasets are flattened.
 	def dmd(self, EPS=None):
 		# Get set dimensions.
 		# Assume Yset is similarly shaped.
@@ -84,11 +84,11 @@ class Regressor:
 		C = A.T @ (Ut @ Sinv @ Vt.T)
 
 		self.err = self.resError( C )
-		return C, (U,S,V)
+		return C, {'U': U, 'S': S, 'V': V}
 
 	# Classic Proper Orthonal Decomposition (CPOD)
-	# Assumption: Datasets are already flattened.
-	# 			  X and Y are sequentially ordered sets.
+	# Assumption: Datasets are flattened.
+	# 			  X and Y are sequentially ordered snapshots.
 	def cpod(self, m=None, EPS=1e-21):
 		# Initialize coefficient matrix.
 		N, P, _ = self.Xset.getDataDimn()
@@ -99,18 +99,14 @@ class Regressor:
 		qbar = np.mean( Q, axis=1 )[:,None]
 		X = Q - qbar
 
-		# Calculate covariance matrix.
-		R = 1/(P - 1)*X@X.T
+		# Form covariance matrix.
+		R = 1/P*X@X.T
 
 		# Find eigenvalues/vectors of R.
-		phi, H = np.linalg.eig( R )
+		phi, PHI = np.linalg.eig( R )
 
 		# Calculate coefficient matrix A.
-		aList = np.empty( (1,M) )
-		for i, (x, h) in enumerate( zip( X.T, H.T ) ):
-			aList[:,i] = x@h.T
-		A = np.ones( (N,1) )@aList
+		A = PHI.T@X
 
-		print( A )
-
-		return A, qbar, (H, phi)
+		# Return relevant data matrices.
+		return None, {'A': A, 'PHI': PHI, 'phi': phi, 'qbar': qbar}

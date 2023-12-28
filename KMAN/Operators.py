@@ -63,7 +63,7 @@ class Operator:
 	def __init__(self, C=None):
 		# Shift and Koopman initialization
 		self.C = C
-		self.leftovers = None
+		self.reldata = {}
 
 		# Accuracy parameters.
 		self.solver = None
@@ -109,7 +109,7 @@ class Operator:
 		self.method = 'dmd'
 
 		# Compute Koopman operator through DMD.
-		self.C, self.leftovers = self.solver.dmd( EPS=EPS )
+		self.C, self.reldata['dmd'] = self.solver.dmd( EPS=EPS )
 		self.err = self.solver.resError( self.C )
 
 		# Return instance of self.
@@ -122,7 +122,7 @@ class Operator:
 		self.method = 'cpod'
 
 		# Perform CPOD on lifted states.
-		self.A, self.xAvg, self.leftovers = self.solver.cpod()
+		_, self.reldata['cpod'] = self.solver.cpod()
 
 		# Return instance of self.
 		return self
@@ -191,6 +191,17 @@ class KoopmanOperator( Operator ):
 
 		# Return instance of self.
 		return err
+
+	# Extended Dynamic Mode Decomposition (EDMD)
+	def cpod(self, X, Y, X0=None):
+		# Lift sets into observation space.
+		TPsiX, PsiY, Psi0 = self.liftData( X, Y, X0=X0 )
+
+		# Compute Koopman operator through DMD.
+		Operator.cpod( self, TPsiX, PsiY, X0=Psi0 )
+
+		# Return instance of self.
+		return self
 
 	# Extended Dynamic Mode Decomposition (EDMD)
 	def edmd(self, X, Y, X0=None, EPS=None):
