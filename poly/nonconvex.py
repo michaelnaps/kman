@@ -38,7 +38,6 @@ if __name__ == '__main__':
 
     # Plot results.
     fig, axs = plt.subplots()
-    axs.grid( 1 )
 
     # Plot objective over range.
     Xlist = np.linspace( -1.25, 2.5, 1000 )
@@ -50,4 +49,5 @@ if __name__ == '__main__':
         axs.plot( X.T, polyn( X ).T )
 
     # Show finished plot.
+    axs.grid( 1 )
     plt.show()
