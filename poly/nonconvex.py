@@ -10,7 +10,7 @@ from MPC.Optimizer import fdm2c
 A = 1.50
 p = 0.56
 n = 1
-m = 10
+m = 100
 
 def polyn(x):
     return x**4 - 3*x**3 + x**2 + x
@@ -24,14 +24,15 @@ def obs(x=None):
     if x is None:
         return {'Nk':2}
     m = x.shape[1]
-    return np.vstack( (x, np.ones( (1,m) )) )
+    psi = np.vstack( (x, np.ones( (1,m) )) )
+    return psi
 
 if __name__ == '__main__':
     # Initial positions.
     X0 = (2*A*np.random.rand( n, m ) - A) + p
     I0 = ['1' if x0 < p else '2' for x0 in X0.T]
-    print( 'X0:', X0 )
-    print( 'I0:', I0 )
+    # print( 'X0:', X0 )
+    # print( 'I0:', I0 )
 
     # Simulation block.
     X1data = []
@@ -55,16 +56,13 @@ if __name__ == '__main__':
     X2 = np.hstack( [X[:,:-1] for X in X2data] )
     Y2 = np.hstack( [X[:,1:] for X in X2data] )
 
-    print( X1 )
-    print( Y1 )
-
     # Kman variables.
     k1var = KoopmanOperator( obs )
     k2var = KoopmanOperator( obs )
 
     # Solve for Koopman operators on sub-domains.
-    k1var.dmd( X1, Y1 )
-    k2var.dmd( X2, Y2 )
+    k1var.edmd( X1, Y1 )
+    k2var.edmd( X2, Y2 )
 
     print( 'K1:', k1var )
     print( 'K2:', k2var )
