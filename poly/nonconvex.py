@@ -120,9 +120,8 @@ if __name__ == '__main__':
             if j % 50 == 0:
                 axs.plot( psilist[i][0], polyn( psilist[i][0] ),
                     marker='x', markersize=5,
-                    linestyle='none',
-                    color=colorlist[i] )
+                    linestyle='none', color=colorlist[i] )
 
     # Show finished plot.
     axs.grid( 1 )
-    # plt.show()
+    plt.show()
