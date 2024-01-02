@@ -11,6 +11,7 @@ A = 2.00
 p = 0.56
 n = 1
 m = 10
+b = 2       # Number of fixed points.
 
 def polyn(x):
     return x**4 - 3*x**3 + x**2 + x
@@ -27,16 +28,27 @@ def obs(x=None):
     psi = np.vstack( (x, np.ones( (1,m) )) )
     return psi
 
+def koopmanStack(Klist):
+    # Stack operators.
+    n, m, p = Klist.shape
+
+    # Main execution loop.
+    Kstack = np.empty( (n*m, p) )
+    for k, K in enumerate( Klist ):
+        Kstack[:,k] = K.reshape( n*m, )
+
+    # Return grid stack.
+    return Kstack
+
 if __name__ == '__main__':
     # Initial positions.
     X0 = (2*A*np.random.rand( n, m ) - A) + p
-    I0 = ['1' if x0 < p else '2' for x0 in X0.T]
+    I0 = [0 if x0 < p else 1 for x0 in X0.T]
     # print( 'X0:', X0 )
     # print( 'I0:', I0 )
 
     # Simulation block.
-    X1data = []
-    X2data = []
+    Xdata = [[] for _ in range( b )]
     for x0, i0 in zip( X0.T, I0 ):
         x = x0[:,None]
         Xsim = [x]
@@ -45,57 +57,52 @@ if __name__ == '__main__':
             x = model( x )
             xnorm = np.linalg.norm( fdm2c( polyn, x ) )
             Xsim = Xsim + [x]
-        if i0 == '1':
-            X1data = X1data + [np.hstack( Xsim )]
-        else:
-            X2data = X2data + [np.hstack( Xsim )]
+        Xdata[i0] = Xdata[i0] + [np.hstack( Xsim )]
 
     # Form training sets.
-    X1 = np.hstack( [X[:,:-1] for X in X1data] )
-    Y1 = np.hstack( [X[:,1:] for X in X1data] )
-    X2 = np.hstack( [X[:,:-1] for X in X2data] )
-    Y2 = np.hstack( [X[:,1:] for X in X2data] )
+    Xlist = [ np.hstack( [x[:,:-1] for x in X] )
+        for X in Xdata ]
+    Ylist = [ np.hstack( [x[:,1:] for x in X] )
+        for X in Xdata ]
 
     # Kman variables.
-    k1var = KoopmanOperator( obs )
-    k2var = KoopmanOperator( obs )
+    Klist = [KoopmanOperator( obs ).edmd( X, Y )
+        for X, Y in zip( Xlist, Ylist ) ]
 
-    # Solve for Koopman operators on sub-domains.
-    k1var.edmd( X1, Y1 )
-    k2var.edmd( X2, Y2 )
+    # Print operators.
+    print( 'Sub-domain Operators:' )
+    for i, K in enumerate( Klist ):
+        print( 'K%s:' % i, K )
 
-    print( 'K1:', k1var )
-    print( 'K2:', k2var )
+    # Perform transform on operator.
+
 
     # Plot results.
     fig, axs = plt.subplots()
 
     # Plot objective over range.
-    Xlist = np.linspace( -1.25, 2.5, 1000 )
-    Ylist = polyn( Xlist )
-    axs.plot( Xlist, Ylist, color='k', linewidth=3 )
+    Xfunc = np.linspace( -1.25, 2.5, 1000 )
+    Yfunc = polyn( Xfunc )
+    axs.plot( Xfunc, Yfunc, color='k', linewidth=3 )
 
     # Plot gradient descent data.
-    for X in X1data:
-        axs.plot( X.T, polyn( X ).T )
-    for X in X2data:
-        axs.plot( X.T, polyn( X ).T )
+    for X in Xdata:
+        for x in X:
+            axs.plot( x.T, polyn( x ).T )
 
     # Operator example cases.
-    psi1 = obs( np.array( [[-1, p-0.01]] ) )
-    psi2 = obs( np.array( [[p+0.01,  2]] ) )
-    for i in range( 2500 ):
-        psi1 = k1var.K@psi1
-        psi2 = k2var.K@psi2
-        if i % 50 == 0:
-            axs.plot( psi1[0], polyn( psi1[0] ),
-                marker='x', markersize=5,
-                linestyle='none',
-                color='cornflowerblue' )
-            axs.plot( psi2[0], polyn( psi2[0] ),
-                marker='x', markersize=5,
-                linestyle='none',
-                color='indianred' )
+    colorlist = ('cornflowerblue', 'indianred')
+    psilist = [
+        obs( np.array( [[-1, p-0.01]] ) ),
+        obs( np.array( [[p+0.01, 2.5]] ) ) ]
+    for j in range( 2500 ):
+        for i, K in enumerate( Klist ):
+            psilist[i] = K.K@psilist[i]
+            if j % 50 == 0:
+                axs.plot( psilist[i][0], polyn( psilist[i][0] ),
+                    marker='x', markersize=5,
+                    linestyle='none',
+                    color=colorlist[i] )
 
     # Show finished plot.
     axs.grid( 1 )
