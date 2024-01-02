@@ -1,16 +1,18 @@
 import sys
 from os.path import expanduser
 sys.path.insert(0, expanduser('~')+'/prog/kman')
+sys.path.insert(0, expanduser('~')+'/prog/four')
 sys.path.insert(0, expanduser('~')+'/prog/mpc')
 
 import matplotlib.pyplot as plt
 from KMAN.Operators import *
+from FOUR.Transforms import *
 from MPC.Optimizer import fdm2c
 
-A = 2.00
-p = 0.56
-n = 1
-m = 10
+p = 0.56    # Center of fixed point boundary.
+A = 2.00    # Width of random initial position.
+n = 1       # Dimension of x/f(x).
+m = 10      # Number of data points.
 b = 2       # Number of fixed points.
 
 def polyn(x):
@@ -30,7 +32,8 @@ def obs(x=None):
 
 def koopmanStack(Klist):
     # Stack operators.
-    n, m, p = Klist.shape
+    p = len( Klist )
+    n, m = Klist[0].shape
 
     # Main execution loop.
     Kstack = np.empty( (n*m, p) )
@@ -66,16 +69,26 @@ if __name__ == '__main__':
         for X in Xdata ]
 
     # Kman variables.
-    Klist = [KoopmanOperator( obs ).edmd( X, Y )
+    Kvarlist = [KoopmanOperator( obs ).edmd( X, Y )
         for X, Y in zip( Xlist, Ylist ) ]
 
     # Print operators.
     print( 'Sub-domain Operators:' )
-    for i, K in enumerate( Klist ):
-        print( 'K%s:' % i, K )
+    for i, K in enumerate( Kvarlist ):
+        print( 'K%s:' % (i + 1), K )
 
-    # Perform transform on operator.
+    # Format operator list in prep for Fourier transform.
+    Kdata = [[Kvar.K for x in X.T] for Kvar, X in zip( Kvarlist, Xlist )]
+    Ktemp = []
+    for i, Klist in enumerate( Kdata ):
+        Ktemp = Ktemp + [koopmanStack( Klist )]
+    Xstack = np.hstack( Xlist )
+    Kstack = np.hstack( Ktemp )
 
+    # Perform transform.
+    print( Xstack.shape )
+    print( Kstack.shape )
+    Fvar = RealFourier( Xstack, Kstack ).dmd( N=100 )
 
     # Plot results.
     fig, axs = plt.subplots()
@@ -96,8 +109,8 @@ if __name__ == '__main__':
         obs( np.array( [[-1, p-0.01]] ) ),
         obs( np.array( [[p+0.01, 2.5]] ) ) ]
     for j in range( 2500 ):
-        for i, K in enumerate( Klist ):
-            psilist[i] = K.K@psilist[i]
+        for i, Kvar in enumerate( Kvarlist ):
+            psilist[i] = Kvar.K@psilist[i]
             if j % 50 == 0:
                 axs.plot( psilist[i][0], polyn( psilist[i][0] ),
                     marker='x', markersize=5,
