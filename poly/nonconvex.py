@@ -86,14 +86,15 @@ if __name__ == '__main__':
     Kstack = np.hstack( Ktemp )
 
     # Perform transform.
-    print( Xstack.shape )
-    print( Kstack.shape )
     Fvar = RealFourier( Xstack, Kstack ).dmd( N=100 )
 
     # Koopman operator solution and formatting function.
-    def koopmanSolve(x):
+    def koopmanSolve(X):
+        Nx = X.shape[1]
         Nk = Kvarlist[0].obsX.Nk
-        return Fvar.solve( x ).reshape( Nk,Nk )
+        Klist = Fvar.solve( X ).reshape( Nk,Nk ) if Nx == 1 \
+            else Fvar.solve( X ).T.reshape( Nx,Nk,Nk )
+        return Klist
 
     # Plot results.
     fig, axs = plt.subplots()
@@ -124,4 +125,4 @@ if __name__ == '__main__':
 
     # Show finished plot.
     axs.grid( 1 )
-    plt.show()
+    # plt.show()
