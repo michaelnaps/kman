@@ -90,6 +90,11 @@ if __name__ == '__main__':
     print( Kstack.shape )
     Fvar = RealFourier( Xstack, Kstack ).dmd( N=100 )
 
+    # Koopman operator solution and formatting function.
+    def koopmanSolve(x):
+        Nk = Kvarlist[0].obsX.Nk
+        return Fvar.solve( x ).reshape( Nk,Nk )
+
     # Plot results.
     fig, axs = plt.subplots()
 
@@ -106,8 +111,8 @@ if __name__ == '__main__':
     # Operator example cases.
     colorlist = ('cornflowerblue', 'indianred')
     psilist = [
-        obs( np.array( [[-1, p-0.01]] ) ),
-        obs( np.array( [[p+0.01, 2.5]] ) ) ]
+        obs( np.array( [[-1.25, p-0.01]] ) ),
+        obs( np.array( [[p+0.01, 2.500]] ) ) ]
     for j in range( 2500 ):
         for i, Kvar in enumerate( Kvarlist ):
             psilist[i] = Kvar.K@psilist[i]
