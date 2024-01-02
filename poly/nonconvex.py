@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 from KMAN.Operators import *
 from MPC.Optimizer import fdm2c
 
-A = 1.50
+A = 2.00
 p = 0.56
 n = 1
-m = 100
+m = 10
 
 def polyn(x):
     return x**4 - 3*x**3 + x**2 + x
@@ -81,6 +81,22 @@ if __name__ == '__main__':
     for X in X2data:
         axs.plot( X.T, polyn( X ).T )
 
+    # Operator example cases.
+    psi1 = obs( np.array( [[-1, p-0.01]] ) )
+    psi2 = obs( np.array( [[p+0.01,  2]] ) )
+    for i in range( 2500 ):
+        psi1 = k1var.K@psi1
+        psi2 = k2var.K@psi2
+        if i % 50 == 0:
+            axs.plot( psi1[0], polyn( psi1[0] ),
+                marker='x', markersize=5,
+                linestyle='none',
+                color='cornflowerblue' )
+            axs.plot( psi2[0], polyn( psi2[0] ),
+                marker='x', markersize=5,
+                linestyle='none',
+                color='indianred' )
+
     # Show finished plot.
     axs.grid( 1 )
-    # plt.show()
+    plt.show()
