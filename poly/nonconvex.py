@@ -45,7 +45,7 @@ def koopmanStack(Klist):
 
 if __name__ == '__main__':
     # Initial positions.
-    X0 = (2*A*np.random.rand( n, m ) - A) + p
+    X0 = (np.linspace( -A, A, m ) + p)[None]
     I0 = [0 if x0 < p else 1 for x0 in X0.T]
     # print( 'X0:', X0 )
     # print( 'I0:', I0 )
@@ -78,15 +78,13 @@ if __name__ == '__main__':
         print( 'K%s:' % (i + 1), K )
 
     # Format operator list in prep for Fourier transform.
-    Kdata = [[Kvar.K for x in X.T] for Kvar, X in zip( Kvarlist, Xlist )]
-    Ktemp = []
-    for i, Klist in enumerate( Kdata ):
-        Ktemp = Ktemp + [koopmanStack( Klist )]
     Xstack = np.hstack( Xlist )
+    Kdata = [[Kvar.K for x in X.T] for Kvar, X in zip( Kvarlist, Xlist )]
+    Ktemp = [koopmanStack( Klist ) for Klist in Kdata]
     Kstack = np.hstack( Ktemp )
 
     # Perform transform.
-    Fvar = RealFourier( Xstack, Kstack ).dmd( N=250 )
+    Fvar = RealFourier( Xstack, Kstack ).dmd( N=1000 )
 
     # Koopman operator solution and formatting function.
     def koopmanSolve(X):
@@ -123,11 +121,12 @@ if __name__ == '__main__':
                     linestyle='none', color=colorlist[i] )
 
     # Coefficient plots.
-    Xrange = np.array( [[1/2*(A*i*1e-3 - A/2) + p
-        for i in range( 1000 )]] )
+    step = 1e-3
+    Xrange = np.array( [[1/2*(A*i*step - A/2) + p
+        for i in range( round( 1/step ) )]] )
     Krange = koopmanSolve( Xrange )
-    axs[1].plot( Xrange[0], Krange[:,0,0] )
-    # axs[1].plot( Xrange[0], Krange[:,0,1] )
+    # axs[1].plot( Xrange[0], Krange[:,0,0] )
+    axs[1].plot( Xrange[0], Krange[:,0,1] )
 
     # Show finished plot.
     for a in axs:
