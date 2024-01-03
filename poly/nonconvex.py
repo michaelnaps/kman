@@ -98,7 +98,8 @@ if __name__ == '__main__':
     fig, axs = plt.subplots( 2,1 )
 
     # Plot objective over range.
-    Xfunc = np.linspace( -1.25, 2.5, 2*l )
+    xmin = -1.25;  xmax = 2.5
+    Xfunc = np.linspace( xmin, xmax, 2*l )
     Yfunc = polyn( Xfunc )
     axs[0].plot( Xfunc, Yfunc, color='k', linewidth=3 )
 
@@ -110,8 +111,8 @@ if __name__ == '__main__':
     # Operator example cases.
     colorlist = ('cornflowerblue', 'indianred')
     psilist = [
-        obs( np.array( [[-1.25, p-0.01]] ) ),
-        obs( np.array( [[p+0.01, 2.500]] ) ) ]
+        obs( np.array( [[xmin, p-0.01]] ) ),
+        obs( np.array( [[p+0.01, xmax]] ) ) ]
     for j in range( 2500 ):
         for i, Kvar in enumerate( Kvarlist ):
             psilist[i] = Kvar.K@psilist[i]
@@ -130,7 +131,7 @@ if __name__ == '__main__':
         for i in range( round( 1/step ) )]] )
     Krange = koopmanSolve( Xrange )
     axs1.plot( Xrange[0], Krange[:,0,0], color='cornflowerblue' )
-    axs2.plot( Xrange[0], Krange[:,0,1], color='indianred' )
+    axs2.plot( Xrange[0], Krange[:,0,1], color='indianred', linestyle=':' )
 
     # Show finished plot.
     for a in axs:
