@@ -12,7 +12,7 @@ from MPC.Optimizer import fdm2c
 p = 0.56    # Center of fixed point boundary.
 A = 2.00    # Width of random initial position.
 n = 1       # Dimension of x/f(x).
-m = 10      # Number of data points.
+m = 50      # Number of data points.
 b = 2       # Number of fixed points.
 
 def polyn(x):
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     Kstack = np.hstack( Ktemp )
 
     # Perform transform.
-    Fvar = RealFourier( Xstack, Kstack ).dmd( N=100 )
+    Fvar = RealFourier( Xstack, Kstack ).dmd( N=250 )
 
     # Koopman operator solution and formatting function.
     def koopmanSolve(X):
@@ -97,17 +97,17 @@ if __name__ == '__main__':
         return Klist
 
     # Plot results.
-    fig, axs = plt.subplots()
+    fig, axs = plt.subplots( 2,1 )
 
     # Plot objective over range.
     Xfunc = np.linspace( -1.25, 2.5, 1000 )
     Yfunc = polyn( Xfunc )
-    axs.plot( Xfunc, Yfunc, color='k', linewidth=3 )
+    axs[0].plot( Xfunc, Yfunc, color='k', linewidth=3 )
 
     # Plot gradient descent data.
     for X in Xdata:
         for x in X:
-            axs.plot( x.T, polyn( x ).T )
+            axs[0].plot( x.T, polyn( x ).T )
 
     # Operator example cases.
     colorlist = ('cornflowerblue', 'indianred')
@@ -118,10 +118,18 @@ if __name__ == '__main__':
         for i, Kvar in enumerate( Kvarlist ):
             psilist[i] = Kvar.K@psilist[i]
             if j % 50 == 0:
-                axs.plot( psilist[i][0], polyn( psilist[i][0] ),
+                axs[0].plot( psilist[i][0], polyn( psilist[i][0] ),
                     marker='x', markersize=5,
                     linestyle='none', color=colorlist[i] )
 
+    # Coefficient plots.
+    Xrange = np.array( [[1/2*(A*i*1e-3 - A/2) + p
+        for i in range( 1000 )]] )
+    Krange = koopmanSolve( Xrange )
+    axs[1].plot( Xrange[0], Krange[:,0,0] )
+    # axs[1].plot( Xrange[0], Krange[:,0,1] )
+
     # Show finished plot.
-    axs.grid( 1 )
+    for a in axs:
+        a.grid( 1 )
     plt.show()
