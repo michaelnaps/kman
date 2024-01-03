@@ -25,7 +25,7 @@ def model(x):
 
 def obs(x=None):
     if x is None:
-        return {'Nk':2}
+        return {'Nk': n+1}
     m = x.shape[1]
     psi = np.vstack( (x, np.ones( (1,m) )) )
     return psi
@@ -78,13 +78,13 @@ if __name__ == '__main__':
         print( 'K%s:' % (i + 1), K )
 
     # Format operator list in prep for Fourier transform.
-    Xstack = np.hstack( Xlist )
-    Kdata = [[Kvar.K for x in X.T] for Kvar, X in zip( Kvarlist, Xlist )]
-    Ktemp = [koopmanStack( Klist ) for Klist in Kdata]
-    Kstack = np.hstack( Ktemp )
+    l = 1000  # Number of training points.
+    Xstack = np.linspace( -A, A, l )[None] + p
+    Kdata = np.array( [Kvarlist[0].K if x < p else Kvarlist[1].K for x in Xstack.T] )
+    Kstack = koopmanStack( Kdata )
 
     # Perform transform.
-    Fvar = RealFourier( Xstack, Kstack ).dmd( N=1000 )
+    Fvar = RealFourier( Xstack, Kstack ).dmd( N=100 )
 
     # Koopman operator solution and formatting function.
     def koopmanSolve(X):
@@ -98,7 +98,7 @@ if __name__ == '__main__':
     fig, axs = plt.subplots( 2,1 )
 
     # Plot objective over range.
-    Xfunc = np.linspace( -1.25, 2.5, 1000 )
+    Xfunc = np.linspace( -1.25, 2.5, 2*l )
     Yfunc = polyn( Xfunc )
     axs[0].plot( Xfunc, Yfunc, color='k', linewidth=3 )
 
@@ -120,13 +120,17 @@ if __name__ == '__main__':
                     marker='x', markersize=5,
                     linestyle='none', color=colorlist[i] )
 
+    # Split axes into twins to plot together.
+    axs1 = axs[1]
+    axs2 = axs[1].twinx()
+
     # Coefficient plots.
     step = 1e-3
-    Xrange = np.array( [[1/2*(A*i*step - A/2) + p
+    Xrange = np.array( [[2*(A*i*step - A/2) + p
         for i in range( round( 1/step ) )]] )
     Krange = koopmanSolve( Xrange )
-    # axs[1].plot( Xrange[0], Krange[:,0,0] )
-    axs[1].plot( Xrange[0], Krange[:,0,1] )
+    axs1.plot( Xrange[0], Krange[:,0,0], color='cornflowerblue' )
+    axs2.plot( Xrange[0], Krange[:,0,1], color='indianred' )
 
     # Show finished plot.
     for a in axs:
