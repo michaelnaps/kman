@@ -95,35 +95,36 @@ if __name__ == '__main__':
         return Klist
 
     # Plot results.
-    fig, axs = plt.subplots( 2,1 )
+    fig, axslist = plt.subplots( 2,1 )
 
     # Plot objective over range.
     xmin = -1.25;  xmax = 2.5
     Xfunc = np.linspace( xmin, xmax, 2*l )
     Yfunc = polyn( Xfunc )
-    axs[0].plot( Xfunc, Yfunc, color='k', linewidth=3 )
+    axslist[0].plot( Xfunc, Yfunc, color='k', linewidth=3 )
 
-    # Plot gradient descent data.
-    for X in Xdata:
-        for x in X:
-            axs[0].plot( x.T, polyn( x ).T )
+    # # Plot gradient descent data.
+    # for X in Xdata:
+    #     for x in X:
+    #         axslist[0].plot( x.T, polyn( x ).T )
 
     # Operator example cases.
     colorlist = ('cornflowerblue', 'indianred')
     psilist = [
-        obs( np.array( [[xmin, p-0.01]] ) ),
-        obs( np.array( [[p+0.01, xmax]] ) ) ]
+        obs( np.array( [[xmin, xmax]] ) ),
+        obs( np.array( [[xmin, xmax]] ) ) ]
     for j in range( 2500 ):
         for i, Kvar in enumerate( Kvarlist ):
+            print( Kvar )
             psilist[i] = Kvar.K@psilist[i]
             if j % 50 == 0:
-                axs[0].plot( psilist[i][0], polyn( psilist[i][0] ),
+                axslist[0].plot( psilist[i][0], polyn( psilist[i][0] ),
                     marker='x', markersize=5,
                     linestyle='none', color=colorlist[i] )
 
     # Split axes into twins to plot together.
-    axs1 = axs[1]
-    axs2 = axs[1].twinx()
+    axs1 = axslist[1]
+    axs2 = axslist[1].twinx()
 
     # Coefficient plots.
     step = 1e-3
@@ -134,6 +135,6 @@ if __name__ == '__main__':
     axs2.plot( Xrange[0], Krange[:,0,1], color='indianred', linestyle=':' )
 
     # Show finished plot.
-    for a in axs:
+    for a in axslist:
         a.grid( 1 )
     plt.show()
