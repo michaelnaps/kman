@@ -11,7 +11,7 @@ from MPC.Optimizer import fdm2c
 
 p = 0.56    # Center of fixed point boundary.
 A = 2.00    # Width of random initial position.
-n = 1       # Dimension of x/f(x).
+n = 2       # Dimension of x/f(x).
 m = 50      # Number of data points.
 b = 2       # Number of fixed points.
 
@@ -23,22 +23,22 @@ def model(x):
     dx = fdm2c( polyn, x )
     return x - alpha*dx
 
-def obs(x=None):
-    if x is None:
+def obs(X=None):
+    if X is None:
         return {'Nk': n+1}
-    m = x.shape[1]
-    psi = np.vstack( (x, np.ones( (1,m) )) )
+    l = X.shape[1]
+    psi = np.vstack( (X, X**2, np.ones( (1,l) )) )
     return psi
 
 def koopmanStack(Klist):
     # Stack operators.
-    p = len( Klist )
-    n, m = Klist[0].shape
+    l = len( Klist )
+    p, q = Klist[0].shape
 
     # Main execution loop.
-    Kstack = np.empty( (n*m, p) )
+    Kstack = np.empty( (p*q, l) )
     for k, K in enumerate( Klist ):
-        Kstack[:,k] = K.reshape( n*m, )
+        Kstack[:,k] = K.reshape( p*q, )
 
     # Return grid stack.
     return Kstack
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     Kstack = koopmanStack( Kdata )
 
     # Perform transform.
-    Fvar = RealFourier( Xstack, Kstack ).dmd( N=100 )
+    Fvar = RealFourier( Xstack, Kstack ).dmd( N=500 )
 
     # Koopman operator solution and formatting function.
     def koopmanSolve(X):
@@ -111,16 +111,15 @@ if __name__ == '__main__':
     # Operator example cases.
     colorlist = ('cornflowerblue', 'indianred')
     psilist = [
-        obs( np.array( [[xmin, xmax]] ) ),
-        obs( np.array( [[xmin, xmax]] ) ) ]
+        obs( np.array( [[xmin, p-0.01]] ) ),
+        obs( np.array( [[p+0.01, xmax]] ) ) ]
     for j in range( 2500 ):
         for i, Kvar in enumerate( Kvarlist ):
-            print( Kvar )
             psilist[i] = Kvar.K@psilist[i]
             if j % 50 == 0:
-                axslist[0].plot( psilist[i][0], polyn( psilist[i][0] ),
-                    marker='x', markersize=5,
-                    linestyle='none', color=colorlist[i] )
+                axslist[0].plot( psilist[i][0], psilist[i][1],
+                    marker='x', markersize=5, linestyle='none',
+                    color=colorlist[i] )
 
     # Split axes into twins to plot together.
     axs1 = axslist[1]
@@ -131,8 +130,8 @@ if __name__ == '__main__':
     Xrange = np.array( [[2*(A*i*step - A/2) + p
         for i in range( round( 1/step ) )]] )
     Krange = koopmanSolve( Xrange )
-    axs1.plot( Xrange[0], Krange[:,0,0], color='cornflowerblue' )
-    axs2.plot( Xrange[0], Krange[:,0,1], color='indianred', linestyle=':' )
+    axs1.plot( Xrange[0], Krange[:,1,0], color='cornflowerblue' )
+    axs2.plot( Xrange[0], Krange[:,1,1], color='indianred', linestyle=':' )
 
     # Show finished plot.
     for a in axslist:
