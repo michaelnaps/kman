@@ -21,7 +21,7 @@ alpha = 1e-3
 gamma = alpha
 beta = 100
 
-# Convex objective function.
+# Nonconvex objective function.
 def cost(x):
     g = (x[0]**2 + x[1] - 11)**2 + (x[0] + x[1]**2 - 7)**2
     return g[:,None].T
