@@ -89,17 +89,14 @@ if __name__ == '__main__':
         [3,-2.805118,-3.779310, 3.584428],
         [2, 3.131312,-3.283186,-1.848126]
     ] )
-    fpsets = [[],[],[],[]]
+    indlist = {i:[] for i in range( 4 )}
     for i, X in enumerate( Xlist ):
         for j, xmin in enumerate( xmins.T ):
             if np.linalg.norm( X[:,-1] - xmin ) < eps:
-                fpsets[j] = fpsets[j] + [X0[:,i,None]]
-
-    # Convert fixed point sets to numpy arrays.
-    for
+                indlist[j] = indlist[j] + [i]
 
     # Create snapshot lists.
-    Xtrain = np.hstack( [ for fp in fpsets] )
+    Xtrain = [np.hstack( Xlist[indlist[i]][:,:-1] ) for i in indlist]
     Ytrain = [fp[0][:,1:] for fp in fpsets]
 
     # Solve for Koopman operator.
