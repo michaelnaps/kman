@@ -11,7 +11,7 @@ from MPC.Optimizer import fdm2c
 
 p = 0.56    # Center of fixed point boundary.
 A = 2.00    # Width of random initial position.
-n = 2       # Dimension of x/f(x).
+n = 1       # Dimension of x/f(x).
 m = 50      # Number of data points.
 b = 2       # Number of fixed points.
 
@@ -27,7 +27,7 @@ def obs(X=None):
     if X is None:
         return {'Nk': n+1}
     l = X.shape[1]
-    psi = np.vstack( (X, X**2, np.ones( (1,l) )) )
+    psi = np.vstack( (X, np.ones( (1,l) )) )
     return psi
 
 def koopmanStack(Klist):
@@ -117,7 +117,7 @@ if __name__ == '__main__':
         for i, Kvar in enumerate( Kvarlist ):
             psilist[i] = Kvar.K@psilist[i]
             if j % 50 == 0:
-                axslist[0].plot( psilist[i][0], psilist[i][1],
+                axslist[0].plot( psilist[i][0], [0,0],
                     marker='x', markersize=5, linestyle='none',
                     color=colorlist[i] )
 
@@ -130,8 +130,8 @@ if __name__ == '__main__':
     Xrange = np.array( [[2*(A*i*step - A/2) + p
         for i in range( round( 1/step ) )]] )
     Krange = koopmanSolve( Xrange )
-    axs1.plot( Xrange[0], Krange[:,1,0], color='cornflowerblue' )
-    axs2.plot( Xrange[0], Krange[:,1,1], color='indianred', linestyle=':' )
+    axs1.plot( Xrange[0], Krange[:,0,0], color='cornflowerblue' )
+    axs2.plot( Xrange[0], Krange[:,0,1], color='indianred', linestyle=':' )
 
     # Show finished plot.
     for a in axslist:
