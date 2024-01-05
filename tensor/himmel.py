@@ -17,7 +17,7 @@ np.set_printoptions(precision=3, suppress=True, linewidth=np.inf)
 
 # Dimension of system and other parameter(s).
 n = 2
-m = 100
+m = 1000
 alpha = 1e-3
 gamma = alpha
 beta = 100
@@ -44,6 +44,9 @@ def costgradprop(x, p=0):
         return costgradprop( x - alpha*costgrad( x ), p=p-1 )
     return costgrad( x )
 
+def costnorm(x):
+    return np.linalg.norm( costgrad( x ) )
+
 # Model function.
 def model(x):
     xp = x - alpha*costgrad(x)
@@ -67,43 +70,44 @@ if __name__ == '__main__':
     # Initial guess and system size.
     X0 = (2*A*np.random.rand( n,m ) - A) + xmax
 
-    # Solve optimization problem and save steps.
-    kmax = 10000
-    Xlist = []
-    for x0 in X0.T:
-        x = x0[:,None]
-        dg = fdm2c( cost, x )
-        X = np.nan*np.ones( (n,kmax+1) )
-        X[:,0] = x[:,0]
-        for k in range( kmax ):
-            x = optvar.step( x, dg )
-            dg = fdm2c( cost, x )
-            X[:,k+1] = x[:,0]
-            if np.linalg.norm( costgrad( x ) ) < eps:
-                break
-        Xlist = Xlist + [X[:,:k+1]]
-        # print( 'Complete for x0 (%s):' % k, x0.T, '\t->\t', x.T )
-
-    # Group initial conditions by their fixed points.
-    xmins = np.array( [
+    # Identifying minima empirically.
+    Xminima = np.array( [
         [3,-2.805118,-3.779310, 3.584428],
         [2, 3.131312,-3.283186,-1.848126]
     ] )
-    indlist = {i:[] for i in range( 4 )}
-    for i, X in enumerate( Xlist ):
-        for j, xmin in enumerate( xmins.T ):
-            if np.linalg.norm( X[:,-1] - xmin ) < eps:
-                indlist[j] = indlist[j] + [i]
+    Xindex = [[] for _ in range( 4 )]
 
-    # Create snapshot lists.
-    Xtrain = [np.hstack( Xlist[indlist[i]][:,:-1] ) for i in indlist]
-    Ytrain = [fp[0][:,1:] for fp in fpsets]
+    # Generate data using steepest-descent method.
+    Xlist = []
+    for x0 in X0.T:
+        x = x0[:,None]
+        X = [x]
+        while costnorm( x ) > eps:
+            x = model( x )
+            X = X + [x]
+        Xlist = Xlist + [np.hstack( X )]
+
+    # Separate initial positions based on final positions.
+    for i, X in enumerate( Xlist ):
+        for j, xmin in enumerate( Xminima.T ):
+            if np.linalg.norm( X[:,-1] - xmin ) < eps:
+                Xindex[j] = Xindex[j] + [i]
+    assert np.hstack( Xindex ).shape[0] == m, \
+        f"({m - np.hstack( Xindex ).shape[0]}) initial position(s) not set."
+
+    # Generate training sets for Koopman sub-domains.
+    Xtrain = [np.hstack( [Xlist[i][:,:-1] for i in indlist] )
+        for indlist in Xindex]
+    Ytrain = [np.hstack( [Xlist[i][:,1:] for i in indlist] )
+        for indlist in Xindex]
 
     # Solve for Koopman operator.
     kvarlist = [KoopmanOperator( observe ).edmd( X, Y )
         for X, Y in zip( Xtrain, Ytrain )]
     for i, kvar in enumerate( kvarlist ):
-        print( 'K%s:' % i, kvar )
+        print( 'K%s:' % (i + 1), kvar )
+        print( 'Eig:', np.linalg.eig( kvar.K )[0] )
+        print( '---' )
 
     # Initialize plot variables.
     fig, axs = plt.subplots()
@@ -121,9 +125,9 @@ if __name__ == '__main__':
     axs.contour( xMesh, yMesh, gMesh, levels=levels, colors='k' )
 
     # Add gradient descent results to plot.
-    for xlist in Xlist:
-        axs.plot( xlist[0,0], xlist[1,0], marker='x', color='cornflowerblue' )
-        axs.plot( xlist[0], xlist[1], color='cornflowerblue' )
+    for X in Xlist:
+        axs.plot( X[0,0], X[1,0], marker='x', color='cornflowerblue' )
+        axs.plot( X[0], X[1], color='cornflowerblue' )
 
     # # Add operator results to plot.
     # for psilist in PSIlist:
