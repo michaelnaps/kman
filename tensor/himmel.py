@@ -17,7 +17,7 @@ np.set_printoptions(precision=3, suppress=True, linewidth=np.inf)
 
 # Dimension of system and other parameter(s).
 n = 2
-m = 1000
+m = 150
 alpha = 1e-3
 gamma = alpha
 beta = 100
@@ -36,16 +36,9 @@ def costgrad(x):
     dg = fdm2c( cost, x )
     return dg
 
-def costgradprop(x, p=0):
-    if p < 0:
-        return None
-    elif p != 0:
-        dg = costgrad( x )
-        return costgradprop( x - alpha*costgrad( x ), p=p-1 )
-    return costgrad( x )
-
 def costnorm(x):
-    return np.linalg.norm( costgrad( x ) )
+    dgnorm = np.linalg.norm( costgrad( x ) )
+    return dgnorm
 
 # Model function.
 def model(x):
@@ -59,6 +52,20 @@ def observe(x=None):
         return {'Nk': n+1}
     psi = np.vstack( [x] + [1] )
     return psi
+
+# Shape functions.
+def koopmanStack(Klist):
+    # Stack operators.
+    l = len( Klist )
+    p, q = Klist[0].shape
+
+    # Main execution loop.
+    Kstack = np.empty( (p*q, l) )
+    for k, K in enumerate( Klist ):
+        Kstack[:,k] = K.reshape( p*q, )
+
+    # Return grid stack.
+    return Kstack
 
 # Main execution block.
 if __name__ == '__main__':
@@ -109,14 +116,16 @@ if __name__ == '__main__':
         print( 'Eig:', np.linalg.eig( kvar.K )[0] )
         print( '---' )
 
+    # # Create Fourier transform mesh on x,y-axes.
+    # xbound = (-5, 5);  ybound = (-4, 4)
+    # xrange = np.linspace( xbound[0], xbound[1], 4 )
+    # yrange = np.linspace( ybound[0], ybound[1], 4 )
+
     # # Initialize plot variables.
     # fig, axs = plt.subplots()
 
     # # Add level set contour lines.
     # eta = 20
-    # xBound = (-5, 5);  yBound = (-4, 4)
-    # xRange = np.linspace( xBound[0], xBound[1], 1000 )
-    # yRange = np.linspace( yBound[0], yBound[1], 1000 )
     # xMesh, yMesh = np.meshgrid( xRange, yRange )
     # gMesh = np.vstack( [
     #     cost( np.vstack( (xlist, ylist) ) )
