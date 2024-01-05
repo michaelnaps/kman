@@ -109,33 +109,33 @@ if __name__ == '__main__':
         print( 'Eig:', np.linalg.eig( kvar.K )[0] )
         print( '---' )
 
-    # Initialize plot variables.
-    fig, axs = plt.subplots()
+    # # Initialize plot variables.
+    # fig, axs = plt.subplots()
 
-    # Add level set contour lines.
-    eta = 20
-    xBound = (-5, 5);  yBound = (-4, 4)
-    xRange = np.linspace( xBound[0], xBound[1], 1000 )
-    yRange = np.linspace( yBound[0], yBound[1], 1000 )
-    xMesh, yMesh = np.meshgrid( xRange, yRange )
-    gMesh = np.vstack( [
-        cost( np.vstack( (xlist, ylist) ) )
-            for xlist, ylist in zip( xMesh, yMesh ) ] )
-    levels = [1, 5] + [eta*(i + 1) for i in range( round( np.max( gMesh )/eta ) )]
-    axs.contour( xMesh, yMesh, gMesh, levels=levels, colors='k' )
+    # # Add level set contour lines.
+    # eta = 20
+    # xBound = (-5, 5);  yBound = (-4, 4)
+    # xRange = np.linspace( xBound[0], xBound[1], 1000 )
+    # yRange = np.linspace( yBound[0], yBound[1], 1000 )
+    # xMesh, yMesh = np.meshgrid( xRange, yRange )
+    # gMesh = np.vstack( [
+    #     cost( np.vstack( (xlist, ylist) ) )
+    #         for xlist, ylist in zip( xMesh, yMesh ) ] )
+    # levels = [1, 5] + [eta*(i + 1) for i in range( round( np.max( gMesh )/eta ) )]
+    # axs.contour( xMesh, yMesh, gMesh, levels=levels, colors='k' )
 
-    # Add gradient descent results to plot.
-    for X in Xlist:
-        axs.plot( X[0,0], X[1,0], marker='x', color='cornflowerblue' )
-        axs.plot( X[0], X[1], color='cornflowerblue' )
+    # # Add gradient descent results to plot.
+    # for X in Xlist:
+    #     axs.plot( X[0,0], X[1,0], marker='x', color='cornflowerblue' )
+    #     axs.plot( X[0], X[1], color='cornflowerblue' )
 
-    # # Add operator results to plot.
-    # for psilist in PSIlist:
-    #     axs.plot( psilist[0,0], psilist[1,0], marker='x', color='indianred' )
-    #     axs.plot( psilist[0], psilist[1], color='indianred' )
+    # # # Add operator results to plot.
+    # # for psilist in PSIlist:
+    # #     axs.plot( psilist[0,0], psilist[1,0], marker='x', color='indianred' )
+    # #     axs.plot( psilist[0], psilist[1], color='indianred' )
 
-    # Display plot.
-    axs.set_aspect('equal', adjustable='box')
-    axs.grid( 1 )
-    fig.tight_layout()
-    plt.show()
+    # # Display plot.
+    # axs.set_aspect('equal', adjustable='box')
+    # axs.grid( 1 )
+    # fig.tight_layout()
+    # plt.show()
