@@ -155,45 +155,55 @@ if __name__ == '__main__':
             else Fvar.solve( X ).T.reshape( Nx,Nk,Nk )
         return Klist
 
-    # Simulate with Koopman tensor results.
-    M = 1000
-    P0 = obs( X0 )
-    Plist = []
-    for p0 in P0.T:
-        p = p0[:,None]
-        P = [p]
-        for _ in range( M ):
-            K = koopmanSolve( p[:n] )
-            if np.linalg.norm( p - K@p ) < 1e-6:
-                break
-            p = K@p
-            # if np.linalg.norm( p ) > 100:
-            #     P = [p0[:,None]]
-            #     break
-            P = P + [p]
-        Plist = Plist + [np.hstack( P )]
+    # # Simulate with Koopman tensor results.
+    # M = 1000
+    # P0 = obs( X0 )
+    # Plist = []
+    # for p0 in P0.T:
+    #     p = p0[:,None]
+    #     P = [p]
+    #     for _ in range( M ):
+    #         K = koopmanSolve( p[:n] )
+    #         if np.linalg.norm( p - K@p ) < 1e-6:
+    #             break
+    #         p = K@p
+    #         # if np.linalg.norm( p ) > 100:
+    #         #     P = [p0[:,None]]
+    #         #     break
+    #         P = P + [p]
+    #     Plist = Plist + [np.hstack( P )]
 
     # Initialize plot variables.
     fig, axs = plt.subplots()
 
     # Add level set contour lines.
     eta = 20
-    xMesh, yMesh = np.meshgrid( xrange, yrange )
-    gMesh = np.vstack( [
+    xmesh, ymesh = np.meshgrid( xrange, yrange )
+    gmesh = np.vstack( [
         cost( np.vstack( (xlist, ylist) ) )
-            for xlist, ylist in zip( xMesh, yMesh ) ] )
-    levels = [1, 5] + [eta*(i + 1) for i in range( round( np.max( gMesh )/eta ) )]
-    axs.contour( xMesh, yMesh, gMesh, levels=levels, colors='k' )
+            for xlist, ylist in zip( xmesh, ymesh ) ] )
+    levels = [1, 5] + [eta*(i + 1) for i in range( round( np.max( gmesh )/eta ) )]
+    axs.contour( xmesh, ymesh, gmesh, levels=levels, colors='k' )
+
+    # Koopman coefficient mesh.
+    indexlist = [(0,0)]
+    kmesh = [np.vstack( [
+        [koopmanSolve( np.vstack( (x, y) ) )[i]
+            for x, y in zip( xlist, ylist )]
+                for xlist, ylist in zip( xmesh, ymesh ) ] )
+                    for i in indexlist]
+    for klist in kmesh:
+        axs.contour( xmesh, ymesh, klist, colors='indianred' )
 
     # Add gradient descent results to plot.
     for X in Xlist:
         axs.plot( X[0,0], X[1,0], marker='x', color='cornflowerblue' )
         axs.plot( X[0], X[1], color='cornflowerblue' )
 
-    # Add Koopman operator results to plot.
-    for P in Plist:
-        axs.plot( P[0,0], P[1,0], marker='x', color='indianred' )
-        axs.plot( P[0], P[1], color='indianred' )
+    # # Add Koopman operator results to plot.
+    # for P in Plist:
+    #     axs.plot( P[0,0], P[1,0], marker='x', color='indianred' )
+    #     axs.plot( P[0], P[1], color='indianred' )
 
     # Display plot.
     axs.set_aspect('equal', adjustable='box')
