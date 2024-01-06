@@ -145,7 +145,9 @@ if __name__ == '__main__':
     Kmesh = koopmanStack( Ksort )
 
     # Solve Fourier transform.
-    Fvar = RealFourier( Xmesh, Kmesh ).dmd( N=50 )
+    Fvar = RealFourier( Xmesh, Kmesh ).dmd( N=250 )
+    print( "Computed transform." )
+
     def koopmanSolve(X):
         Nx = X.shape[1]
         Nk = obs()['Nk']
@@ -165,9 +167,9 @@ if __name__ == '__main__':
             if np.linalg.norm( p - K@p ) < 1e-6:
                 break
             p = K@p
-            if np.linalg.norm( p ) > 100:
-                P = [p0[:,None]]
-                break
+            # if np.linalg.norm( p ) > 100:
+            #     P = [p0[:,None]]
+            #     break
             P = P + [p]
         Plist = Plist + [np.hstack( P )]
 
