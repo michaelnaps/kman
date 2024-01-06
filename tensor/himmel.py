@@ -19,14 +19,14 @@ np.set_printoptions(precision=3, suppress=True, linewidth=np.inf)
 
 # Dimension of system and other parameter(s).
 n = 2
-m = 150
+m = 250
 alpha = 1e-3
 gamma = alpha
 beta = 100
 
 # Local maximum and offset.
-A = 2
-xmax = np.array( [[-0.270845],[-0.923039]] )
+A = 4.00
+xmax = 0* np.array( [[-0.270845],[-0.923039]] )
 
 # Nonconvex objective function.
 def cost(x):
@@ -145,8 +145,8 @@ if __name__ == '__main__':
     Kmesh = koopmanStack( Ksort )
 
     # Solve Fourier transform.
-    Fvar = RealFourier( Xmesh, Kmesh ).dmd( N=250 )
-    print( "Computed transform." )
+    Fvar = RealFourier( Xmesh, Kmesh ).dmd( N=150 )
+    print( "F:", Fvar )
 
     def koopmanSolve(X):
         Nx = X.shape[1]
@@ -186,7 +186,7 @@ if __name__ == '__main__':
     axs.contour( xmesh, ymesh, gmesh, levels=levels, colors='k' )
 
     # Koopman coefficient mesh.
-    indexlist = [(0,0)]
+    indexlist = [(0,2)]
     kmesh = [np.vstack( [
         [koopmanSolve( np.vstack( (x, y) ) )[i]
             for x, y in zip( xlist, ylist )]
