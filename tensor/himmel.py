@@ -48,11 +48,11 @@ def model(x):
     return xp
 
 # Observation function.
-def observe(x=None):
-    p = 5
+def obs(x=None):
     if x is None:
         return {'Nk': n+1}
-    psi = np.vstack( [x] + [1] )
+    m = x.shape[1]
+    psi = np.vstack( (x, np.ones( (1,m) )) )
     return psi
 
 # Shape functions.
@@ -125,7 +125,7 @@ if __name__ == '__main__':
         for indlist in Xindex]
 
     # Solve for Koopman operator.
-    kvarlist = [KoopmanOperator( observe ).edmd( X, Y )
+    kvarlist = [KoopmanOperator( obs ).edmd( X, Y )
         for X, Y in zip( Xtrain, Ytrain )]
     for i, kvar in enumerate( kvarlist ):
         print( 'K%s:' % (i + 1), kvar )
@@ -133,10 +133,10 @@ if __name__ == '__main__':
         print( '---' )
 
     # Create Fourier transform mesh on x,y-axes.
-    l = 100  # Number of grid points.
+    L = 100  # Number of grid points.
     xbound = (-5, 5);  ybound = (-4, 4)
-    xrange = np.linspace( xbound[0], xbound[1], l )
-    yrange = np.linspace( ybound[0], ybound[1], l )
+    xrange = np.linspace( xbound[0], xbound[1], L )
+    yrange = np.linspace( ybound[0], ybound[1], L )
     Xmesh = np.hstack( [
         np.hstack( [np.vstack( (x, y) ) for x in xrange] )
             for y in yrange] )
@@ -145,32 +145,56 @@ if __name__ == '__main__':
     Kmesh = koopmanStack( Ksort )
 
     # Solve Fourier transform.
-    Fvar = RealFourier( Xmesh, Kmesh ).dmd( N=100 )
+    Fvar = RealFourier( Xmesh, Kmesh ).dmd( N=50 )
+    def koopmanSolve(X):
+        Nx = X.shape[1]
+        Nk = obs()['Nk']
+        Klist = Fvar.solve( X ).reshape( Nk,Nk ) if Nx == 1 \
+            else Fvar.solve( X ).T.reshape( Nx,Nk,Nk )
+        return Klist
 
-    # # Initialize plot variables.
-    # fig, axs = plt.subplots()
+    # Simulate with Koopman tensor results.
+    M = 1000
+    P0 = obs( X0 )
+    Plist = []
+    for p0 in P0.T:
+        p = p0[:,None]
+        P = [p]
+        for _ in range( M ):
+            K = koopmanSolve( p[:n] )
+            if np.linalg.norm( p - K@p ) < 1e-6:
+                break
+            p = K@p
+            if np.linalg.norm( p ) > 100:
+                P = [p0[:,None]]
+                break
+            P = P + [p]
+        Plist = Plist + [np.hstack( P )]
 
-    # # Add level set contour lines.
-    # eta = 20
-    # xMesh, yMesh = np.meshgrid( xRange, yRange )
-    # gMesh = np.vstack( [
-    #     cost( np.vstack( (xlist, ylist) ) )
-    #         for xlist, ylist in zip( xMesh, yMesh ) ] )
-    # levels = [1, 5] + [eta*(i + 1) for i in range( round( np.max( gMesh )/eta ) )]
-    # axs.contour( xMesh, yMesh, gMesh, levels=levels, colors='k' )
+    # Initialize plot variables.
+    fig, axs = plt.subplots()
 
-    # # Add gradient descent results to plot.
-    # for X in Xlist:
-    #     axs.plot( X[0,0], X[1,0], marker='x', color='cornflowerblue' )
-    #     axs.plot( X[0], X[1], color='cornflowerblue' )
+    # Add level set contour lines.
+    eta = 20
+    xMesh, yMesh = np.meshgrid( xrange, yrange )
+    gMesh = np.vstack( [
+        cost( np.vstack( (xlist, ylist) ) )
+            for xlist, ylist in zip( xMesh, yMesh ) ] )
+    levels = [1, 5] + [eta*(i + 1) for i in range( round( np.max( gMesh )/eta ) )]
+    axs.contour( xMesh, yMesh, gMesh, levels=levels, colors='k' )
 
-    # # # Add operator results to plot.
-    # # for psilist in PSIlist:
-    # #     axs.plot( psilist[0,0], psilist[1,0], marker='x', color='indianred' )
-    # #     axs.plot( psilist[0], psilist[1], color='indianred' )
+    # Add gradient descent results to plot.
+    for X in Xlist:
+        axs.plot( X[0,0], X[1,0], marker='x', color='cornflowerblue' )
+        axs.plot( X[0], X[1], color='cornflowerblue' )
 
-    # # Display plot.
-    # axs.set_aspect('equal', adjustable='box')
-    # axs.grid( 1 )
-    # fig.tight_layout()
-    # plt.show()
+    # Add Koopman operator results to plot.
+    for P in Plist:
+        axs.plot( P[0,0], P[1,0], marker='x', color='indianred' )
+        axs.plot( P[0], P[1], color='indianred' )
+
+    # Display plot.
+    axs.set_aspect('equal', adjustable='box')
+    axs.grid( 1 )
+    fig.tight_layout()
+    plt.show()
