@@ -2,6 +2,7 @@
 import sys
 from os.path import expanduser
 sys.path.insert( 0, expanduser('~')+'/prog/kman' )  # Koopman operator classes.
+sys.path.insert( 0, expanduser('~')+'/prog/four' )  # Fourier transform classes.
 sys.path.insert( 0, expanduser('~')+'/prog/mpc' )   # Optimization classes.
 
 # Standard imports.
@@ -10,6 +11,7 @@ import matplotlib.pyplot as plt
 
 # Homemade imports.
 from KMAN.Operators import *
+from FOUR.Transforms import *
 from MPC.Optimizer import *
 
 # Set global number print setting.
@@ -67,6 +69,20 @@ def koopmanStack(Klist):
     # Return grid stack.
     return Kstack
 
+def koopmanSort(X):
+    M = X.shape[1]
+    indexlist = [None for i in range( M )]
+    for i, x in enumerate( X.T ):
+        if x[0] > xmax[0] and x[1] > xmax[1]:
+            indexlist[i] = 0
+        elif x[0] < xmax[0] and x[1] > xmax[1]:
+            indexlist[i] = 1
+        elif x[0] < xmax[0] and x[1] < xmax[1]:
+            indexlist[i] = 2
+        elif x[0] > xmax[0] and x[1] < xmax[1]:
+            indexlist[i] = 3
+    return indexlist
+
 # Main execution block.
 if __name__ == '__main__':
     # Optimization variable.
@@ -116,10 +132,20 @@ if __name__ == '__main__':
         print( 'Eig:', np.linalg.eig( kvar.K )[0] )
         print( '---' )
 
-    # # Create Fourier transform mesh on x,y-axes.
-    # xbound = (-5, 5);  ybound = (-4, 4)
-    # xrange = np.linspace( xbound[0], xbound[1], 4 )
-    # yrange = np.linspace( ybound[0], ybound[1], 4 )
+    # Create Fourier transform mesh on x,y-axes.
+    l = 100  # Number of grid points.
+    xbound = (-5, 5);  ybound = (-4, 4)
+    xrange = np.linspace( xbound[0], xbound[1], l )
+    yrange = np.linspace( ybound[0], ybound[1], l )
+    Xmesh = np.hstack( [
+        np.hstack( [np.vstack( (x, y) ) for x in xrange] )
+            for y in yrange] )
+    Kindex = koopmanSort( Xmesh )
+    Ksort = [kvarlist[i].K for i in Kindex]
+    Kmesh = koopmanStack( Ksort )
+
+    # Solve Fourier transform.
+    Fvar = RealFourier( Xmesh, Kmesh ).dmd( N=100 )
 
     # # Initialize plot variables.
     # fig, axs = plt.subplots()
