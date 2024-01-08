@@ -51,8 +51,7 @@ def model(x):
 def obs(x=None):
     if x is None:
         return {'Nk': n+1}
-    m = x.shape[1]
-    psi = np.vstack( (x, np.ones( (1,m) )) )
+    psi = np.array( [x[0],x[1],x[0]**2] )
     return psi
 
 # Shape functions.
@@ -186,7 +185,7 @@ if __name__ == '__main__':
     axs.contour( xmesh, ymesh, gmesh, levels=levels, colors='k' )
 
     # Koopman coefficient mesh.
-    indexlist = [(0,2)]
+    indexlist = [(0,0)]
     kmesh = [np.vstack( [
         [koopmanSolve( np.vstack( (x, y) ) )[i]
             for x, y in zip( xlist, ylist )]
@@ -195,10 +194,10 @@ if __name__ == '__main__':
     for klist in kmesh:
         axs.contour( xmesh, ymesh, klist, colors='indianred' )
 
-    # Add gradient descent results to plot.
-    for X in Xlist:
-        axs.plot( X[0,0], X[1,0], marker='x', color='cornflowerblue' )
-        axs.plot( X[0], X[1], color='cornflowerblue' )
+    # # Add gradient descent results to plot.
+    # for X in Xlist:
+    #     axs.plot( X[0,0], X[1,0], marker='x', color='cornflowerblue' )
+    #     axs.plot( X[0], X[1], color='cornflowerblue' )
 
     # # Add Koopman operator results to plot.
     # for P in Plist:
