@@ -10,15 +10,14 @@ from KMAN.Operators import *
 from MPC.Optimizer import fdm2c
 
 # Hyper paramter(s).
-dt = 0.1
+dt = 0.001
 n = 1
 N = 2
-P = 2
+P = 4
 
 # Objective function and model.
 def polyn(X):
-	# return X**4 - 3*X**3 + X**2 + X
-	return X**2
+	return X**4 - 3*X**3 + X**2 + X
 
 def model(X):
 	# Shape data properly.
@@ -60,6 +59,12 @@ def obs123(X=None):
 	psi23 = obs23( X )
 	return np.vstack( (psi1, psi23) )
 
+def obs1(X=None):
+	if X is None:
+		return {'Nk': n}
+	m = X.shape[1]
+	return X[1].reshape( n,m )
+
 # Shift functions.
 def shift23(Klist):
 	p3 = obs3()['Nk']
@@ -79,8 +84,9 @@ def shift12(Klist):
 
 if __name__ == '__main__':
 	# Initial conditions.
-	A = 10;  N0 = 25
-	X0 = 2*A*np.random.rand( n,N0 ) - A
+	xmax = 0.56
+	A = 2;  N0 = 25
+	X0 = (2*A*np.random.rand( n,N0 ) - A) + xmax
 	X0 = np.vstack( (X0, polyn( X0 )) )
 
 	# Simulate and collect data.
@@ -98,7 +104,7 @@ if __name__ == '__main__':
 	# Create cascade variables.
 	kvar3 = KoopmanOperator( obs3 )
 	kvar2 = KoopmanOperator( obs23, obs2, T=shift23( (kvar3,) ) )
-	kvar1 = KoopmanOperator( obs123, T=shift12( (kvar2, kvar3) ) )
+	kvar1 = KoopmanOperator( obs123, obs1, T=shift12( (kvar2, kvar3) ) )
 
 	# Form data sets for cascade.
 	X = np.hstack( [X[:,:-1] for X in Xlist] )
