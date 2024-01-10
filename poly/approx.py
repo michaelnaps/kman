@@ -13,7 +13,7 @@ from MPC.Optimizer import fdm2c
 dt = 0.001
 n = 1
 N = 2
-P = 4
+W = 4
 
 # Objective function and model.
 def polyn(X):
@@ -41,15 +41,15 @@ def obs3(X=None):
 
 def obs23(X=None):
 	if X is None:
-		return {'Nk': obs3()['Nk'] + (P-1)}
-	psi2 = np.array( [X[0]**p for p in range( 1,P )] )
+		return {'Nk': obs3()['Nk'] + (W-1)}
+	psi2 = np.array( [X[0]**w for w in range( 1,W )] )
 	psi3 = obs3( X )
 	return np.vstack( (psi2, psi3) )
 
 def obs2(X=None):
 	if X is None:
-		return {'Nk': (P-1)}
-	psi2 = np.array( [X[0]**p for p in range( 1,P )] )
+		return {'Nk': (W-1)}
+	psi2 = np.array( [X[0]**w for w in range( 1,W )] )
 	return psi2
 
 def obs123(X=None):
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 	# Create cascade variables.
 	kvar3 = KoopmanOperator( obs3 )
 	kvar2 = KoopmanOperator( obs23, obs2, T=shift23( (kvar3,) ) )
-	kvar1 = KoopmanOperator( obs123, obs1, T=shift12( (kvar2, kvar3) ) )
+	kvar1 = KoopmanOperator( obs123, T=shift12( (kvar2, kvar3) ) )
 
 	# Form data sets for cascade.
 	X = np.hstack( [X[:,:-1] for X in Xlist] )
@@ -119,8 +119,22 @@ if __name__ == '__main__':
 	for i, kvar in enumerate( Klist ):
 		print( 'K%s:'%i, kvar )
 
+	# Simulate using operator.
+	Nk = obs123()['Nk']
+	Plist = np.empty( (N0,Nk,Nt) )
+	for i, x0 in enumerate( X0.T ):
+		p = obs123( x0[:,None] )
+		P = np.empty( (Nk,Nt) )
+		P[:,0] = p[:,0]
+		for k in range( Nt-1 ):
+			p = kvar1.K@p
+			P[:,k+1] = p[:,0]
+		Plist[i,:,:] = P
+
 	# Plot simulation results.
 	fig, axs = plt.subplots()
 	for X in Xlist:
-		axs.plot( X[0], X[1] )
+		axs.plot( X[0], X[1], color='cornflowerblue' )
+	# for P in Plist:
+	# 	axs.plot( P[0], P[1], color='indianred', linestyle='--' )
 	plt.show()
