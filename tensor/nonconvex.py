@@ -9,6 +9,7 @@ from KMAN.Operators import *
 from FOUR.Transforms import *
 from MPC.Optimizer import fdm2c
 
+P = 4       # Highest power in polynomial.
 p = 0.56    # Center of fixed point boundary.
 A = 2.00    # Width of random initial position.
 n = 1       # Dimension of x/f(x).
@@ -25,10 +26,11 @@ def model(x):
 
 def obs(X=None):
     if X is None:
-        return {'Nk': 2*n+1}
+        return {'Nk': P+1+1}
     psi = np.vstack( (
         X, polyn( X ),
-        np.ones( (1,X.shape[1]) )) )
+        [X[0]**i for i in range( 2,P+1 )],
+        np.ones( (1,X.shape[1]) ) ) )
     return psi
 
 def koopmanStack(Klist):
@@ -81,7 +83,8 @@ if __name__ == '__main__':
     # Format operator list in prep for Fourier transform.
     l = 1000  # Number of training points.
     Xstack = np.linspace( -A, A, l )[None] + p
-    Kdata = np.array( [Kvarlist[0].K if x < p else Kvarlist[1].K for x in Xstack.T] )
+    Kdata = np.array( [Kvarlist[0].K
+        if x < p else Kvarlist[1].K for x in Xstack.T] )
     Kstack = koopmanStack( Kdata )
 
     # Perform transform.
@@ -117,7 +120,7 @@ if __name__ == '__main__':
     for j in range( 2500 ):
         for i, Kvar in enumerate( Kvarlist ):
             psilist[i] = Kvar.K@psilist[i]
-            if j % 25 == 0:
+            if j % 50 == 0:
                 axslist[0].plot( psilist[i][0], psilist[i][1],
                     marker='x', markersize=5, linestyle='none',
                     color=colorlist[i] )
