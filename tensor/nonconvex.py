@@ -26,8 +26,9 @@ def model(x):
 def obs(X=None):
     if X is None:
         return {'Nk': 2*n+1}
-    l = X.shape[1]
-    psi = np.vstack( (X, polyn( X ), np.ones( (1,l) )) )
+    psi = np.vstack( (
+        X, polyn( X ),
+        np.ones( (1,X.shape[1]) )) )
     return psi
 
 def koopmanStack(Klist):
