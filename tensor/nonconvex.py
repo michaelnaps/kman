@@ -25,9 +25,9 @@ def model(x):
 
 def obs(X=None):
     if X is None:
-        return {'Nk': n+1}
+        return {'Nk': 2*n+1}
     l = X.shape[1]
-    psi = np.vstack( (X, np.ones( (1,l) )) )
+    psi = np.vstack( (X, polyn( X ), np.ones( (1,l) )) )
     return psi
 
 def koopmanStack(Klist):
@@ -116,8 +116,8 @@ if __name__ == '__main__':
     for j in range( 2500 ):
         for i, Kvar in enumerate( Kvarlist ):
             psilist[i] = Kvar.K@psilist[i]
-            if j % 50 == 0:
-                axslist[0].plot( psilist[i][0], [0,0],
+            if j % 25 == 0:
+                axslist[0].plot( psilist[i][0], psilist[i][1],
                     marker='x', markersize=5, linestyle='none',
                     color=colorlist[i] )
 
