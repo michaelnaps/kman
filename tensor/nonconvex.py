@@ -105,23 +105,27 @@ if __name__ == '__main__':
     xmin = -1.25;  xmax = 2.5
     Xfunc = np.linspace( xmin, xmax, 2*l )
     Yfunc = polyn( Xfunc )
-    axslist[0].plot( Xfunc, Yfunc, color='k', linewidth=3 )
+    axslist[0].plot( Xfunc, Yfunc, color='k', linewidth=2 )
 
     # # Plot gradient descent data.
     # for X in Xdata:
     #     for x in X:
     #         axslist[0].plot( x.T, polyn( x ).T )
 
+    # Generate random list of colors for plot.
+    M = 2      # Number of initial conditions.
+    halph = '0123456789ABCDEF'
+    colorlist = ["#" + ''.join([halph[np.random.choice( len( halph ) )]
+        for _ in range(6)]) for _ in range( M )]
+
     # Operator example cases.
-    colorlist = ('cornflowerblue', 'indianred')
-    psilist = [
-        obs( np.array( [[xmin, p-0.01]] ) ),
-        obs( np.array( [[p+0.01, xmax]] ) ) ]
+    psilist = obs( (xmax - xmin)*np.random.rand( n,M ) - xmin )
     for j in range( 2500 ):
-        for i, Kvar in enumerate( Kvarlist ):
-            psilist[i] = Kvar.K@psilist[i]
+        Klist = koopmanSolve( psilist )
+        for i, K in enumerate( Klist ):
+            psilist[:,i] = (K@psilist[:,i,None])[:,0]
             if j % 50 == 0:
-                axslist[0].plot( psilist[i][0], psilist[i][1],
+                axslist[0].plot( psilist[:,i][0], psilist[:,i][1],
                     marker='x', markersize=5, linestyle='none',
                     color=colorlist[i] )
 
