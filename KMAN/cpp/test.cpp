@@ -35,4 +35,5 @@ int main()
 
     // Create Regressor variable.
     nap::Regressor regr(Xdata, Ydata);
+    cout << regr.dmd() << endl;
 }
