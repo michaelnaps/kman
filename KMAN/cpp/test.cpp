@@ -15,23 +15,33 @@ int main()
 {
     // Model and simulation dimensions.
     const int Nx = 3;
-    const int Nt = 1000;
+    const int Nt = 3;
+    const int N0 = 2;
 
     // Matrix initialization.
-    MatrixXd x = MatrixXd::Random(3,1);
-    MatrixXd Xdata(Nx,Nt-1);
-    MatrixXd Ydata(Nx,Nt-1);
+    MatrixXd x0 = MatrixXd::Random(3,2);
+    MatrixXd Xdata(2*Nx,Nt-1);
+    MatrixXd Ydata(2*Nx,Nt-1);
+
+    // Output initial condition.
+    cout << x0 << endl << "---" << endl;
 
     // Propagate Nt steps of model simulation.
-    for (int i(0); i < Nt-1; ++i) {
-        Xdata.col(i) = x;
-        x = model(x);
-        Ydata.col(i) = x;
+    MatrixXd x(3,1);
+    for (int i(0); i < N0; ++i) {
+        x = x0.col(i);
+        for (int j(0); j < Nt-1; ++j) {
+            Xdata.block<Nx,1>(i*Nx,j) = x;
+            x = model(x);
+            Ydata.block<Nx,1>(i*Nx,j) = x;
+        }
     }
 
-    // // Check that output is as expected.
-    // cout << Xdata << endl;
-    // cout << endl << Ydata << endl;
+    // Check that output is as expected.
+    cout << Xdata << endl << endl;
+    cout << Ydata << endl;
+    cout << "---" << endl;
+    cout << nap::flatten_data( Xdata, Nx ) << endl;
 
     // Create Regressor variable.
     nap::Regressor regr(Xdata, Ydata);

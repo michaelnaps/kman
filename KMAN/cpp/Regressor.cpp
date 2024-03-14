@@ -3,6 +3,27 @@
 
 namespace nap
 {
+    MatrixXd flatten_data(const MatrixXd &X, const int &N)
+    {
+        // Derive secondary set dimensions.
+        const int M = X.cols();
+        const int K = X.rows()/N;
+
+        // Initialize flattened set matrix.
+        MatrixXd Y(N,M*K);
+
+        // Flatten data.
+        int i = 0;
+        int j = 0;
+        for (int k(0); k < K; ++k) {
+            Y.block(0,j,N,M) = X.block(i,0,N,M);
+            i += N;
+            j += M;
+        }
+
+        return Y;
+    }
+
     DataSet::DataSet(const MatrixXd &Xdata):
         X(Xdata),
         X0(Xdata.col(0)),
@@ -34,19 +55,33 @@ namespace nap
     {
         // Initialize DMD matrices.
         const double K = Xset.M*Xset.P;
-        MatrixXd G(Xset.N, Xset.N);
-        MatrixXd A(Xset.N, Yset.N);
+        MatrixXd G = 1/K*Xset.X*Xset.X.transpose();
+        MatrixXd A = 1/K*Xset.X*Yset.X.transpose();
 
-        // Compute regularized matrices.
-        G = 1/K*Xset.X*Xset.X.transpose();
-        A = 1/K*Xset.X*Yset.X.transpose();
+        // Operator and inverted matrix declarations.
+        MatrixXd C(Xset.N, Yset.N);
+        MatrixXd invG(Xset.N, Xset.N);
+        MatrixXd invS = MatrixXd::Zero(Xset.N, Yset.N);
 
         // Compute SVD on input matrix (for inversion).
-        Eigen::JacobiSVD<MatrixXd, Eigen::ComputeFullU | Eigen::ComputeFullV> svd(G);
+        Eigen::JacobiSVD<MatrixXd> svd;
+        // TODO: The svd.compute() method is supposed to be deprecated...
+        svd.compute(G, Eigen::ComputeFullU | Eigen::ComputeFullV);
+
+        // Grab SVD values.
         MatrixXd S = svd.singularValues();
         MatrixXd U = svd.matrixU();
         MatrixXd V = svd.matrixV();
 
-        return S;
+        // Invert S matrix.
+        for (int i(0); i < Xset.N; ++i) {
+            invS(i,i) = 1./S(i);
+        }
+
+        // Invert G and calculate operator.
+        invG = V*invS*U.transpose();
+        C = A.transpose()*invG;
+
+        return C;
     }
 }
