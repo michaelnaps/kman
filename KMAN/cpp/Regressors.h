@@ -19,8 +19,8 @@ namespace nap
 
     public:
         // CONSTRUCTORS:
-        DataSet(const MatrixXd &X);
-        DataSet(const MatrixXd &X, const MatrixXd &X0);
+        DataSet(const MatrixXd &Xdata);
+        DataSet(const MatrixXd &Xdata, const MatrixXd &X0data);
     };
 
     class Regressor:
@@ -33,5 +33,6 @@ namespace nap
     protected:
     public:
         // CONSTRUCTORS:
+        Regressor::Regressor(const MatrixXd &Xdata, const MatrixXd &Ydata);
     };
 }

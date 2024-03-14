@@ -3,21 +3,25 @@
 
 namespace nap
 {
-    DataSet::DataSet(const MatrixXd &Xset)
-    {
-        X = Xset;
-        X0 = Xset.col(0);
-        N = Xset.rows();
-        M = Xset.cols();
-        P = 1;
-    }
+    DataSet::DataSet(const MatrixXd &Xdata):
+        X(Xdata),
+        X0(Xdata.col(0)),
+        N(Xdata.rows()),
+        M(Xdata.cols()),
+        P(1) {}
 
-    DataSet::DataSet(const MatrixXd &Xset, const MatrixXd &X0)
-    {
-        X = Xset;
-        X0 = X0;
-        N = Xset.rows();
-        M = Xset.cols();
-        P = X0.cols();
-    }
+    DataSet::DataSet(const MatrixXd &Xdata, const MatrixXd &X0data):
+        X(Xdata),
+        X0(X0data),
+        N(Xdata.rows()),
+        M(Xdata.cols()),
+        P(X0data.cols()) {}
+
+    Regressor::Regressor(const MatrixXd &Xdata, const Matrix &Ydata):
+        Xset(Xdata),
+        Yset(Ydata) {}
+
+    Regressor::Regressor(const MatrixXd &Xdata, const Matrix &Ydata, const MatrixXd &X0data, const MatrixXd &Y0data):
+        Xset(Xdata, X0data),
+        Yset(Ydata, Y0data) {}
 }
