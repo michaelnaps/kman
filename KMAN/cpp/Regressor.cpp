@@ -24,4 +24,14 @@ namespace nap
     Regressor::Regressor(const MatrixXd &Xdata, const MatrixXd &Ydata, const MatrixXd &X0data, const MatrixXd &Y0data):
         Xset(Xdata, X0data),
         Yset(Ydata, Y0data) {}
+
+    MatrixXd Regressor::dmd()
+    {
+
+    }
+
+    MatrixXd Regressor::dmd(const double &EPS)
+    {
+
+    }
 }
