@@ -58,9 +58,7 @@ namespace nap
         MatrixXd G = 1/K*Xset.X*Xset.X.transpose();
         MatrixXd A = 1/K*Xset.X*Yset.X.transpose();
 
-        // Operator and inverted matrix declarations.
-        MatrixXd C(Xset.N, Yset.N);
-        MatrixXd invG(Xset.N, Xset.N);
+        // Initialize S^-1 matrix.
         MatrixXd invS = MatrixXd::Zero(Xset.N, Yset.N);
 
         // Compute SVD on input matrix (for inversion).
@@ -68,19 +66,15 @@ namespace nap
         // TODO: The svd.compute() method is supposed to be deprecated...
         svd.compute(G, Eigen::ComputeFullU | Eigen::ComputeFullV);
 
-        // Grab SVD values.
-        MatrixXd S = svd.singularValues();
-        MatrixXd U = svd.matrixU();
-        MatrixXd V = svd.matrixV();
-
         // Invert S matrix.
+        MatrixXd S = svd.singularValues();
         for (int i(0); i < Xset.N; ++i) {
             invS(i,i) = 1./S(i);
         }
 
         // Invert G and calculate operator.
-        invG = V*invS*U.transpose();
-        C = A.transpose()*invG;
+        MatrixXd invG = svd.matrixV()*invS*svd.matrixU().transpose();
+        MatrixXd C = A.transpose()*invG;
 
         return C;
     }

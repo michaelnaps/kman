@@ -37,13 +37,25 @@ int main()
         }
     }
 
-    // Check that output is as expected.
-    cout << Xdata << endl << endl;
-    cout << Ydata << endl;
-    cout << "---" << endl;
-    cout << nap::flatten_data( Xdata, Nx ) << endl;
+    // // Check that output is as expected.
+    // cout << Xdata << endl << endl;
+    // cout << Ydata << endl;
+    // cout << "---" << endl;
+    // cout << nap::flatten_data( Xdata, Nx ) << endl;
+
+    // Flatten data matrices for multiple initial conditions.
+    MatrixXd Xflat = nap::flatten_data( Xdata, Nx );
+    MatrixXd Yflat = nap::flatten_data( Ydata, Nx );
 
     // Create Regressor variable.
-    nap::Regressor regr(Xdata, Ydata);
+    nap::Regressor regr(Xflat, Yflat);
+
+    // Print fitted operator to actual.
+    MatrixXd M(3,3);
+    M << 1, 2, 0,
+        0.5, 1, 0.1,
+        0.1, 0, 1;
+    cout << "---" << endl;
+    cout << MatrixXd::Identity(3,3) + 0.01*M << endl;
     cout << regr.dmd() << endl;
 }
