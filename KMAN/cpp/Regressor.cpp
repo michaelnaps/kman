@@ -27,11 +27,26 @@ namespace nap
 
     MatrixXd Regressor::dmd()
     {
-
+        return dmd(TOL);
     }
 
     MatrixXd Regressor::dmd(const double &EPS)
     {
+        // Initialize DMD matrices.
+        const double K = Xset.M*Xset.P;
+        MatrixXd G(Xset.N, Xset.N);
+        MatrixXd A(Xset.N, Yset.N);
 
+        // Compute regularized matrices.
+        G = 1/K*Xset.X*Xset.X.transpose();
+        A = 1/K*Xset.X*Yset.X.transpose();
+
+        // Compute SVD on input matrix (for inversion).
+        Eigen::JacobiSVD<MatrixXd, Eigen::ComputeFullU | Eigen::ComputeFullV> svd(G);
+        MatrixXd S = svd.singularValues();
+        MatrixXd U = svd.matrixU();
+        MatrixXd V = svd.matrixV();
+
+        return S;
     }
 }

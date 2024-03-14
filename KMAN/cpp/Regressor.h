@@ -12,10 +12,7 @@ namespace nap
 {
     class DataSet
     {
-    private:
-        // CONSTANT VARIABLES:
-        const double TOL = 1e-12;
-
+    public:
         // VARIABLES:
         MatrixXd X;     // Data set.
         MatrixXd X0;    // Data set initial conditions.
@@ -23,7 +20,6 @@ namespace nap
         int M;          // Number of data points (per set).
         int P;          // Number of sets.
 
-    public:
         // CONSTRUCTORS:
         DataSet(const MatrixXd &Xdata);
         DataSet(const MatrixXd &Xdata, const MatrixXd &X0data);
@@ -32,6 +28,9 @@ namespace nap
     class Regressor
     {
     private:
+        // CONSTANT VARIABLES:
+        const double TOL = 1e-12;
+
         // VARIABLES:
         DataSet Xset;
         DataSet Yset;
