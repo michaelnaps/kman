@@ -108,10 +108,10 @@ $$
 This form can then be used to calculate a minimum-error Koopman operator such that
 
 $$
-    K = \left( V S^{-1} U^\intercal \right) A.
+    K = \left( V S^{-1} U^\intercal \right) A,
 $$
 
-Where $K$ is a learned approximation of the Koopman operator from data.
+where $K$ is a learned approximation of the Koopman operator from data.
 
     Primary references:
         M. O. Williams, I. G. Kevrekidis, and C. W. Rowley, “A Data–Driven Approximation of the
