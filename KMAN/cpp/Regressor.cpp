@@ -1,5 +1,5 @@
 
-#include "Regressor.cpp"
+#include "Regressor.h"
 
 namespace nap
 {
@@ -17,11 +17,11 @@ namespace nap
         M(Xdata.cols()),
         P(X0data.cols()) {}
 
-    Regressor::Regressor(const MatrixXd &Xdata, const Matrix &Ydata):
+    Regressor::Regressor(const MatrixXd &Xdata, const MatrixXd &Ydata):
         Xset(Xdata),
         Yset(Ydata) {}
 
-    Regressor::Regressor(const MatrixXd &Xdata, const Matrix &Ydata, const MatrixXd &X0data, const MatrixXd &Y0data):
+    Regressor::Regressor(const MatrixXd &Xdata, const MatrixXd &Ydata, const MatrixXd &X0data, const MatrixXd &Y0data):
         Xset(Xdata, X0data),
         Yset(Ydata, Y0data) {}
 }

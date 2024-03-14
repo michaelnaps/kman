@@ -5,9 +5,12 @@
 using Eigen::MatrixXd;
 using namespace std;
 
+#ifndef KMAN_REGRESSOR
+#define KMAN_REGRESSOR
+
 namespace nap
 {
-    class DataSet:
+    class DataSet
     {
     private:
         // VARIABLES:
@@ -23,7 +26,7 @@ namespace nap
         DataSet(const MatrixXd &Xdata, const MatrixXd &X0data);
     };
 
-    class Regressor:
+    class Regressor
     {
     private:
         // VARIABLES:
@@ -33,6 +36,9 @@ namespace nap
     protected:
     public:
         // CONSTRUCTORS:
-        Regressor::Regressor(const MatrixXd &Xdata, const MatrixXd &Ydata);
+        Regressor(const MatrixXd &Xdata, const MatrixXd &Ydata);
+        Regressor(const MatrixXd &Xdata, const MatrixXd &Ydata, const MatrixXd &X0data, const MatrixXd &Y0data);
     };
 }
+
+#endif
