@@ -1,38 +1,34 @@
 
 #include "Regressor.cpp"
 
-MatrixXd model(const MatrixXd &x)
+MatrixXd model(const MatrixXd &x, const MatrixXd &M)
 {
-    const double dt = 0.01;
-    MatrixXd M(3,3);
-    M << 1, 2, 0,
-        0.5, 1, 0.1,
-        0.1, 0, 1;
-    return x + dt*M*x;
+    return x + M*x;
 }
 
 int main()
 {
     // Model and simulation dimensions.
     const int Nx = 3;
-    const int Nt = 3;
-    const int N0 = 2;
+    const int Nt = 50;
+    const int N0 = 3;
+
+    // Propagation matrices.
+    const double dt = 0.1;
+    const MatrixXd M = MatrixXd::Random(Nx,Nx);
 
     // Matrix initialization.
-    MatrixXd x0 = MatrixXd::Random(3,2);
-    MatrixXd Xdata(2*Nx,Nt-1);
-    MatrixXd Ydata(2*Nx,Nt-1);
-
-    // Output initial condition.
-    cout << x0 << endl << "---" << endl;
+    MatrixXd x0 = MatrixXd::Random(Nx,N0);
+    MatrixXd Xdata(N0*Nx,Nt-1);
+    MatrixXd Ydata(N0*Nx,Nt-1);
 
     // Propagate Nt steps of model simulation.
-    MatrixXd x(3,1);
+    MatrixXd x(Nx,1);
     for (int i(0); i < N0; ++i) {
         x = x0.col(i);
         for (int j(0); j < Nt-1; ++j) {
             Xdata.block<Nx,1>(i*Nx,j) = x;
-            x = model(x);
+            x = model(x, dt*M);
             Ydata.block<Nx,1>(i*Nx,j) = x;
         }
     }
@@ -51,11 +47,7 @@ int main()
     nap::Regressor regr(Xflat, Yflat);
 
     // Print fitted operator to actual.
-    MatrixXd M(3,3);
-    M << 1, 2, 0,
-        0.5, 1, 0.1,
-        0.1, 0, 1;
     cout << "---" << endl;
-    cout << MatrixXd::Identity(3,3) + 0.01*M << endl;
+    cout << MatrixXd::Identity(Nx,Nx) + dt*M << endl;
     cout << regr.dmd() << endl;
 }

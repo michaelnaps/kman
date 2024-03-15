@@ -55,8 +55,8 @@ namespace nap
     {
         // Initialize DMD matrices.
         const double K = Xset.M*Xset.P;
-        MatrixXd G = 1/K*Xset.X*Xset.X.transpose();
-        MatrixXd A = 1/K*Xset.X*Yset.X.transpose();
+        MatrixXd G = 1/K*(Xset.X*Xset.X.transpose());
+        MatrixXd A = 1/K*(Xset.X*Yset.X.transpose());
 
         // Initialize S^-1 matrix.
         MatrixXd invS = MatrixXd::Zero(Xset.N, Yset.N);
@@ -75,6 +75,12 @@ namespace nap
         // Invert G and calculate operator.
         MatrixXd invG = svd.matrixV()*invS*svd.matrixU().transpose();
         MatrixXd C = A.transpose()*invG;
+
+        // const double maxS = S.maxCoeff();
+        // cout << "---" << endl;
+        // cout << S << endl;
+        // cout << maxS << endl << "---" << endl;
+        // cout << (S.array() > maxS*TOL) << endl;
 
         return C;
     }
