@@ -9,7 +9,7 @@ MatrixXd model(const MatrixXd &x, const MatrixXd &M)
 int main()
 {
     // Model and simulation dimensions.
-    const int Nx = 3;
+    const int Nx = 4;
     const int Nt = 50;
     const int N0 = 3;
 

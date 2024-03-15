@@ -76,11 +76,11 @@ namespace nap
         MatrixXd invG = svd.matrixV()*invS*svd.matrixU().transpose();
         MatrixXd C = A.transpose()*invG;
 
-        // const double maxS = S.maxCoeff();
-        // cout << "---" << endl;
-        // cout << S << endl;
-        // cout << maxS << endl << "---" << endl;
-        // cout << (S.array() > maxS*TOL) << endl;
+        cout << "---" << endl;
+        const double maxS = S.maxCoeff();
+        cout << S << endl << "---" << endl;
+        cout << maxS << endl << "---" << endl;
+        cout << (S.array() > maxS*EPS) << endl << "---" << endl;
 
         return C;
     }
