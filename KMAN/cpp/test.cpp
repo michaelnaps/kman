@@ -47,7 +47,7 @@ int main()
     nap::Regressor regr(Xflat, Yflat);
 
     // Print fitted operator to actual.
-    cout << "---" << endl;
     cout << MatrixXd::Identity(Nx,Nx) + dt*M << endl;
+    cout << "---" << endl;
     cout << regr.dmd() << endl;
 }
