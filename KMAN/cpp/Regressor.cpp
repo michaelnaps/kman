@@ -24,6 +24,23 @@ namespace nap
         return Y;
     }
 
+    MatrixXd isolate_rows(const MatrixXd &X, const MatrixXd &index)
+    {
+        // Dimensions of isolated list.
+        const int N = index.sum();
+        const int M = X.cols();
+        MatrixXd Y(N,M);
+
+        // Iterate through X, saving appropriate rows.
+        for (int i(0); i < N; ++i) {
+            if index(i,0) {
+                Y.row(i) = X.row(i);
+            }
+        }
+
+        return Y;
+    }
+
     DataSet::DataSet(const MatrixXd &Xdata):
         X(Xdata),
         X0(Xdata.col(0)),
