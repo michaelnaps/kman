@@ -45,7 +45,7 @@ class Regressor:
 		# Calculate residual error in between sets.
 		err = 0
 		for n in range( self.Xset.P ):
-			err += np.linalg.norm( self.Yset.X[:,n,None] - C@self.Xset.X[:,n,None] )**2
+			err += np.sqrt( np.sum( (self.Yset.X[:,n,None] - C@self.Xset.X[:,n,None])**2 ) )
 
 		# Return residual error.
 		return 1/P*err
